@@ -37,13 +37,18 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
             $response = array_combine($matches[1], $matches[2]);
         }
 
-        if($response['ErrorCode'] !== '200')
-        {
-            $error = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main')->get('validator/bff/error'.$response['ErrorCode']);
-
-            return new VatIdValidatorResult(false, array($error));
+        if ($response['ErrorCode'] === '200') {
+            return new VatIdValidatorResult(VatIdValidatorResult::VALID);
         }
 
-        return new VatIdValidatorResult(true);
+        if (in_array($response['ErrorCode'], array(205, 208, 999))) {
+            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE);
+        }
+
+        $error = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main')->get(
+            'validator/bff/error' . $response['ErrorCode']
+        );
+
+        return new VatIdValidatorResult(VatIdValidatorResult::INVALID, array($error));
     }
 }

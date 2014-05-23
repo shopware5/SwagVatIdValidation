@@ -10,12 +10,12 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
 
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
-        $client = new \SoapClient("http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl");
-
-        if (!$client)
+        try
         {
+            $client = new \SoapClient("http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl");
+        } catch (\SoapFault $error) {
             // Verbindungsfehler, WSDL-Datei nicht erreichbar (passiert manchmal)
-            return new VatIdValidatorResult(false, array('Verbindungsfehler'));
+            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE);
         }
 
         $data = $this->getData($customerInformation, $shopInformation);
@@ -25,13 +25,13 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
 
             if ($result->valid == true) {
                 // USt-ID ist gültig
-                return new VatIdValidatorResult(true);
+                return new VatIdValidatorResult(VatIdValidatorResult::VALID);
             } else {
                 // USt-ID ist ungültig
-                return new VatIdValidatorResult(false, array('ungültig'));
+                return new VatIdValidatorResult(VatIdValidatorResult::INVALID, array('ungültig'));
             }
         } catch (\SoapFault $error) {
-            return new VatIdValidatorResult(false, array($error->faultstring));
+            return new VatIdValidatorResult(VatIdValidatorResult::INVALID, array($error->faultstring));
         }
     }
 }
