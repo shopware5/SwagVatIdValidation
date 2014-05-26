@@ -24,7 +24,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
             return new VatIdValidatorResult(VatIdValidatorResult::INVALID, $errors);
         }
 
-        return new VatIdValidatorResult(VatIdValidatorResult::VALID);
+        return new VatIdValidatorResult(VatIdValidatorResult::DUMMY_VALID);
     }
 
     /**
@@ -33,32 +33,38 @@ class DummyVatIdValidator implements VatIdValidatorInterface
      */
     private function checkVatId(VatIdInformation $information)
     {
-        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
+        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/dummyValidator');
 
         $errors = array();
+
+        if (!$information)
+        {
+            $errors[] = $snippets->get('error5');
+            return $errors;
+        }
 
         //All Vat-IDs have a length of 7 to 14 chars
         if (strlen($information->getVatId()) < 7)
         {
-            $errors['209'] = $snippets->get('validator/bff/error209');
+            $errors[] = $snippets->get('error1');
         }
         elseif (strlen($information->getVatId()) > 14)
         {
-            $errors['209'] = $snippets->get('validator/bff/error209');
+            $errors[] = $snippets->get('error2');
         }
 
         //The CountyCode always only consists of letters
         if (!ctype_alpha($information->getCountryCode()))
         {
-            $errors['212'] = $snippets->get('validator/bff/error212');
+            $errors[] = $snippets->get('error3');
         }
 
         //The VatNumber always only consists of alphanumerical chars
         if (!ctype_alnum($information->getVatNumber()))
         {
-            $errors['211'] = $snippets->get('validator/bff/error211');
+            $errors[] = $snippets->get('error4');
         }
 
-        return array_values($errors);
+        return $errors;
     }
 }

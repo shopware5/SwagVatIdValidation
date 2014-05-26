@@ -2,6 +2,8 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Components;
 
+use Shopware\Models\Customer\Billing;
+
 class VatIdCustomerInformation extends VatIdInformation
 {
     protected $company;
@@ -9,14 +11,18 @@ class VatIdCustomerInformation extends VatIdInformation
     protected $zipCode;
     protected $city;
 
-    public function __construct($vatId, $company, $street, $zipCode, $city)
+    public function __construct(Billing $billing, $vatId = null)
     {
+        if(!isset($vatId)) {
+            $vatId = $billing->getVatId();
+        }
+
         parent::__construct($vatId);
 
-        $this->company = $company;
-        $this->street = $street;
-        $this->zipCode = $zipCode;
-        $this->city = $city;
+        $this->company = $billing->getCompany();
+        $this->street = $billing->getStreet() . ' ' . $billing->getStreetNumber();
+        $this->zipCode = $billing->getZipCode();
+        $this->city = $billing->getCity();
     }
 
     public function getCompany()

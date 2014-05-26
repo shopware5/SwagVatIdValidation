@@ -42,10 +42,10 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
         }
 
         if (in_array($response['ErrorCode'], array(205, 208, 999))) {
-            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE);
+            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE, array(), $customerInformation, $shopInformation);
         }
 
-        $error = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main')->get(
+        $error = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/bffValidator')->get(
             'validator/bff/error' . $response['ErrorCode']
         );
 

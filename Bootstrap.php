@@ -1,6 +1,16 @@
 <?php
 
-use Shopware\Plugins\SwagVatIdValidation\Components;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorInterface;
+use Shopware\Plugins\SwagVatIdValidation\Components\DummyVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\SimpleBffVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\ExtendedBffVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\SimpleMiasVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\ExtendedMiasVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
+
+use Shopware\CustomModels\SwagVatIdValidation\VatIdCheck;
 use Shopware\Models\Customer\Billing;
 
 /**
@@ -231,11 +241,12 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         $this->subscribeEvent(
             'Enlight_Controller_Action_PostDispatch_Frontend_Account',
-            'onPostDispatchFrontendAccountBilling'
+            'onPostDispatchFrontendAccount'
         );
     }
 
     /**
+     * Helper function to get the BillingRepository
      * @return \Shopware\Models\Customer\BillingRepository
      */
     private function getBillingRepository()
@@ -248,6 +259,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     }
 
     /**
+     * Helper function to get the VatIdCheckRepository
      * @return \Shopware\CustomModels\SwagVatIdValidation\Repository
      */
     private function getVatIdCheckRepository()
@@ -267,25 +279,69 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     public function ShopwareModulesAdminValidateStep2FilterResult(Enlight_Event_EventArgs $arguments)
     {
         $post = $arguments->getPost();
-
         $errors = $arguments->getReturn();
+        $errors = $this->validateVatId($post['register']['billing'], $errors);
 
-        if ($post['register']['billing']['ustid'] === '') {
-            return $errors;
+        return $errors;
+    }
+
+    /**
+     * Helper function includes the complete check process
+     * @param array $billing
+     * @param array $return
+     * @return array
+     */
+    private function validateVatId($billing, $return = array())
+    {
+        if ($billing['ustid'] === '') {
+            return $return;
         }
 
-        $customer = new Components\VatIdCustomerInformation(
-            $post['register']['billing']['ustid'],
-            $post['register']['billing']['company'],
-            $post['register']['billing']['street'] . ' ' . $post['register']['billing']['streetnumber'],
-            $post['register']['billing']['zipcode'],
-            $post['register']['billing']['city']);
-        $requester = new Components\VatIdInformation($this->Config()->get('vatId'));
+        $billingModel = new Billing();
+        $billingModel->fromArray($billing);
+        $billingModel->setVatId($billing['ustid']);
 
-        $validator = $this->getValidator($requester->getCountryCode());
+        $requester = new VatIdInformation($this->Config()->get('vatId'));
+
+        $validatorResult = $this->validate($billingModel, $requester, true);
+
+        $errors = $this->evaluateValidatorResult($validatorResult);
+
+        return array(array_merge($return[0], $errors[0]), array_merge($return[1], $errors[1]));
+    }
+
+    /**
+     * Helper function to validate a VatId, if validator is not available, the dummy validator can be used optionally
+     * @param Billing $billing
+     * @param VatIdInformation $requester
+     * @return VatIdValidatorResult
+     */
+    private function validate(Billing $billing, VatIdInformation $requester, $dummyValidation = false)
+    {
+        $customer = new VatIdCustomerInformation($billing);
+        $validator = $this->getValidator($requester->getCountryCode(), $customer->getCountryCode());
         $validatorResult = $validator->check($customer, $requester);
 
-        $errors = $arguments->getReturn();
+        if (!$dummyValidation) {
+            return $validatorResult;
+        }
+
+        if ($validatorResult->serviceNotAvailable()) {
+            $dummyValidator = new DummyVatIdValidator();
+            $validatorResult = $dummyValidator->check($customer, $requester);
+        }
+
+        return $validatorResult;
+    }
+
+    /**
+     * Helper function evaluates validators result and returns the error messages
+     * @param VatIdValidatorResult $validatorResult
+     * @return array
+     */
+    private function evaluateValidatorResult(VatIdValidatorResult $validatorResult)
+    {
+        $errors = array(array(), array());
 
         $session = Shopware()->Session();
         unset($session['vatIdValidationNotAvailable']);
@@ -294,15 +350,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             return $errors;
         }
 
-        if ($validatorResult->serviceNotAvailable()) {
-            $dummyValidator = new Components\DummyVatIdValidator();
-            $validatorResult = $dummyValidator->check($customer, $requester);
-
-            if($validatorResult->isValid())
-            {
-                $session['vatIdValidationNotAvailable'] = true;
-                return $errors;
-            }
+        if ($validatorResult->isDummyValid()) {
+            $session['vatIdValidationNotAvailable'] = true;
+            return $errors;
         }
 
         $errors[0] = array_merge($errors[0], $validatorResult->getErrors());
@@ -312,49 +362,45 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     }
 
     /**
-     * Helper method returns the correct vatIdValidator
-     * @param $shopCountryCode
-     * @return Components\VatIdValidatorInterface
+     * Helper function to get the correct validator
+     * @param string $shopCountryCode
+     * @param string $customerCountryCode
+     * @return VatIdValidatorInterface
      */
-    private function getValidator($shopCountryCode)
+    private function getValidator($shopCountryCode, $customerCountryCode)
     {
         if ($this->Config()->get('extendedCheck')) {
-            if ($shopCountryCode === 'DE') {
-                return new Components\ExtendedBffVatIdValidator($this->Config()->get('confirmation'));
-            }
-
-            return new Components\ExtendedMiasVatIdValidator();
+            return $this->getExtendedValidator($shopCountryCode, $customerCountryCode);
         }
 
-        if ($shopCountryCode === 'DE') {
-            return new Components\SimpleBffVatIdValidator();
+        if ($shopCountryCode !== 'DE') {
+            return new SimpleMiasVatIdValidator();
         }
 
-        return new Components\SimpleMiasVatIdValidator();
+        if ($customerCountryCode === 'DE') {
+            return new SimpleMiasVatIdValidator();
+        }
+
+        return new SimpleBffVatIdValidator();
     }
 
     /**
-     * Helper method to get a user billing address
-     * @param integer $billingId
-     * @return Billing
+     * Helper function to get the correct extended validator
+     * @param string $shopCountryCode
+     * @param string $customerCountryCode
+     * @return VatIdValidatorInterface
      */
-    private function getBillingById($billingId)
+    private function getExtendedValidator($shopCountryCode, $customerCountryCode)
     {
-        $billing = $this->getBillingRepository()->findOneById($billingId);
+        if ($shopCountryCode !== 'DE') {
+            return new ExtendedMiasVatIdValidator();
+        }
 
-        return $billing;
-    }
+        if ($customerCountryCode === 'DE') {
+            return new ExtendedMiasVatIdValidator();
+        }
 
-    /**
-     * Helper method to get a user billing address
-     * @param integer $billingId
-     * @return Billing
-     */
-    private function getBillingByCustomerId($userId)
-    {
-        $billing = $this->getBillingRepository()->findOneByCustomerId($userId);
-
-        return $billing;
+        return new ExtendedBffVatIdValidator($this->Config()->get('confirmation'));
     }
 
     /**
@@ -371,24 +417,12 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         if (empty($vatIdCheck)) {
             $vatIdCheck = new \Shopware\CustomModels\SwagVatIdValidation\VatIdCheck();
+            $vatIdCheck->setBillingAddress($billing);
         }
 
-        $vatIdCheck->setBillingAddress($billing);
         $vatIdCheck->setVatId($vatId);
 
         Shopware()->Models()->persist($vatIdCheck);
-        Shopware()->Models()->flush();
-    }
-
-    /**
-     * Helper method to set the VatId from the user billing address
-     * @param Billing $billing
-     */
-    private function setBillingVatId(Billing $billing, $value = '')
-    {
-        $billing->setVatId($value);
-
-        Shopware()->Models()->persist($billing);
         Shopware()->Models()->flush();
     }
 
@@ -404,9 +438,13 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $session = Shopware()->Session();
         if($session['vatIdValidationNotAvailable'])
         {
-            $billing = $this->getBillingById($return[1][0]);
+            $billing = $this->getBillingRepository()->findOneById($return[1][0]);
             $this->saveVatIdForLaterCheck($billing);
-            $this->setBillingVatId($billing);
+            $billing->setVatId('');
+
+            Shopware()->Models()->persist($billing);
+            Shopware()->Models()->flush();
+
             unset($session['vatIdValidationNotAvailable']);
         }
 
@@ -424,13 +462,16 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         $userId = $arguments->getId();
 
-        $billing = $this->getBillingByCustomerId($userId);
+        $billing = $this->getBillingRepository()->findOneById($userId);
 
         if($return[0]['ustid'] === '')
         {
             //Remove Vat-Id from check list
-            $check = $this->getVatIdCheck($billing, true);
-            Shopware()->Db()->exec(sprintf('DELETE FROM s_plugin_swag_vat_id_checks WHERE id = %d', $check[0]['id']));
+            $vatIdCheck = $this->getVatIdCheck($billing);
+
+            Shopware()->Models()->remove($vatIdCheck);
+            Shopware()->Models()->flush($vatIdCheck);
+
             return $return;
         }
 
@@ -455,33 +496,28 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     public function onRunSwagVatIdValidationCronJob(Shopware_Components_Cron_CronJob $job)
     {
-        $vatIdCheck = Shopware()->Db()->fetchAll('SELECT * FROM s_plugin_swag_vat_id_checks');
+        $vatIdChecks = $this->getVatIdCheckRepository()->getVatIdCheckBuilder()->getQuery()->getResult();
+        $requester = new VatIdInformation($this->Config()->get('vatId'));
 
-        $requester = new Components\VatIdInformation($this->Config()->get('vatId'));
-        $validator = $this->getValidator($requester->getCountryCode());
+        /**@var VatIdCheck $vatIdCheck */
+        foreach ($vatIdChecks as $vatIdCheck) {
+            $billing = $vatIdCheck->getBillingAddress();
+            $billing->setVatId($vatIdCheck->getVatId());
 
-        foreach ($vatIdCheck as $check) {
-            $billing = $this->getBillingById($check['billingAddressId']);
-
-            $customer = new Components\VatIdCustomerInformation(
-                $check['vatId'],
-                $billing->getCompany(),
-                $billing->getStreet() . ' ' . $billing->getStreetNumber(),
-                $billing->getZipCode(),
-                $billing->getCity());
-
-            $validatorResult = $validator->check($customer, $requester);
+            $validatorResult = $this->validate($billing, $requester);
 
             if ($validatorResult->serviceNotAvailable()) {
                 continue;
             }
 
             //Remove Vat-Id from check list
-            Shopware()->Db()->exec(sprintf('DELETE FROM s_plugin_swag_vat_id_checks WHERE id = %d', $check['id']));
+            Shopware()->Models()->remove($vatIdCheck);
+            Shopware()->Models()->flush($vatIdCheck);
 
             if ($validatorResult->isValid()) {
                 //save Vat-Id in Billing
-                $this->setBillingVatId($billing, $check['vatId']);
+                Shopware()->Models()->persist($billing);
+                Shopware()->Models()->flush();
             }
         }
 
@@ -489,21 +525,18 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     }
 
     /**
+     * Listener to FrontendAccount (index and billing), shows the vatId and an info, if the validator was not available
      * @param Enlight_Event_EventArgs $arguments
      */
-    public function onPostDispatchFrontendAccountBilling(Enlight_Event_EventArgs $arguments)
+    public function onPostDispatchFrontendAccount(Enlight_Event_EventArgs $arguments)
     {
-        /**@var $controller Shopware_Controllers_Frontend_Index */
+        /** @var $controller Shopware_Controllers_Frontend_Index */
         $controller = $arguments->getSubject();
 
-        /**
-         * @var $request Zend_Controller_Request_Http
-         */
+        /** @var $request Zend_Controller_Request_Http */
         $request = $controller->Request();
 
-        /**
-         * @var $response Zend_Controller_Response_Http
-         */
+        /** @var $response Zend_Controller_Response_Http */
         $response = $controller->Response();
 
         /**
@@ -520,16 +553,12 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             return;
         }
 
-        $user = $this->getCustomer();
-        $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByCustomerIdBuilder()
-            ->setParameter('customerId', $user)
-            ->getQuery()
-            ->getArrayResult();
+        $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByCustomerId(Shopware()->Session()->sUserId);
 
         //Add our plugin template directory to load our slogan extension.
         $view->addTemplateDir($this->Path() . 'Views/');
 
-        if (!empty($vatIdCheck)) {
+        if ($vatIdCheck) {
             $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
 
             $messages = array($snippets->get('messages/checkNotAvailable'));
@@ -538,46 +567,27 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 $messages[] = $snippets->get('messages/emailNotification');
             }
 
-            $view->assign('vatIdCheck', array(
-                    'vatId' => $vatIdCheck[0]['vatId'],
-                    'messages' => $messages
-                )
-            );
+            $view->assign('vatIdCheck', array('vatId' => $vatIdCheck->getVatId(), 'messages' => $messages));
         }
 
         $view->extendsTemplate('frontend/plugins/swag_vat_id_validation/index.tpl');
     }
 
     /**
-     * @return mixed
-     */
-    private function getCustomer()
-    {
-        return Shopware()->Session()->sUserId;
-    }
-
-    /**
+     * Helper function to get the vatId check by billing
      * @param Billing $billing
-     * @param bool $array
-     * @return array|mixed|null
+     * @return null|VatIdCheck
      */
-    private function getVatIdCheck(Billing $billing, $array = false)
+    private function getVatIdCheck(Billing $billing)
     {
-        if ($billing->getVatId()) {
+        if ($billing->getVatId() !== '') {
             return null;
         }
 
-        $billingId = $billing->getId();
+        /** @var VatIdCheck $vatIdCheck */
+        $vatIdCheck =  $this->getVatIdCheckRepository()->getVatIdCheckByBillingId($billing->getId());
 
-        $query = $this->getVatIdCheckRepository()->getVatIdCheckByBillingIdBuilder()
-            ->setParameter('billingId', $billingId)
-            ->getQuery();
-
-        if ($array) {
-            return $query->getArrayResult();
-        }
-
-        return $query->getOneOrNullResult(\Doctrine\ORM\AbstractQuery::HYDRATE_SIMPLEOBJECT);
+        return $vatIdCheck;
     }
 
     /**

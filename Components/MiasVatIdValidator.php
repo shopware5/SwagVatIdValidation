@@ -12,10 +12,12 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
     {
         try
         {
+            $last = error_reporting(0);
             $client = new \SoapClient("http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl");
+            error_reporting($last);
         } catch (\SoapFault $error) {
             // Verbindungsfehler, WSDL-Datei nicht erreichbar (passiert manchmal)
-            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE);
+            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE, array(), $customerInformation, $shopInformation);
         }
 
         $data = $this->getData($customerInformation, $shopInformation);

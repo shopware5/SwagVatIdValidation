@@ -36,22 +36,49 @@ use Shopware\Components\Model\Query\SqlWalker;
  */
 class Repository extends ModelRepository
 {
-    public function getVatIdCheckByBillingIdBuilder()
+    /**
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    public function getVatIdCheckBuilder()
     {
-        $builder = $this->createQueryBuilder('vatIdCheck', 'billing')
-        ->leftJoin('vatIdCheck.billingAddress', 'billing')
-        ->where('billing.id = :billingId');
+        $builder = $this->createQueryBuilder('vatIdCheck')
+            ->select(array('vatIdCheck', 'billing'))
+            ->leftJoin('vatIdCheck.billingAddress', 'billing');
 
         return $builder;
     }
 
-    public function getVatIdCheckByCustomerIdBuilder()
+    /**
+     * @param $billingId
+     * @return VatIdCheck
+     */
+    public function getVatIdCheckByBillingId($billingId)
     {
-        $builder = $this->createQueryBuilder('vatIdCheck', 'billing', 'customer')
-            ->leftJoin('vatIdCheck.billingAddress', 'billing')
-            ->leftJoin('billing.customer', 'customer')
-            ->where('customer.id = :customerId');
+        $builder = $this->getVatIdCheckBuilder()
+            ->where('billing.id = :billingId')
+            ->setParameters(array('billingId' => $billingId));
 
-        return $builder;
+        /** @var VatIdCheck $vatIdCheck */
+        $vatIdCheck = $builder->getQuery()->getOneOrNullResult();
+
+        return $vatIdCheck;
+    }
+
+    /**
+     * @param $customerId
+     * @return VatIdCheck
+     */
+    public function getVatIdCheckByCustomerId($customerId)
+    {
+        $builder = $this->getVatIdCheckBuilder()
+            ->addSelect('customer')
+            ->leftJoin('billing.customer', 'customer')
+            ->where('customer.id = :customerId')
+            ->setParameters(array('customerId' => $customerId));
+
+        /** @var VatIdCheck $vatIdCheck */
+        $vatIdCheck = $builder->getQuery()->getOneOrNullResult();
+
+        return $vatIdCheck;
     }
 }
