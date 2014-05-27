@@ -22,4 +22,14 @@ class SimpleMiasVatIdValidator extends MiasVatIdValidator
             'requesterVatNumber' => $shopInformation->getVatNumber(),
         );
     }
+
+    /**
+     * @param VatIdValidatorResult $result
+     * @param array $response
+     * @return VatIdValidatorResult
+     */
+    protected function addExtendedResults(VatIdValidatorResult $result, $response, VatIdCustomerInformation $customerInformation)
+    {
+        return $result;
+    }
 }

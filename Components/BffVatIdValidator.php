@@ -12,6 +12,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
     }
 
     abstract protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
+    abstract protected function addExtendedResults(VatIdValidatorResult $result, $response);
 
     /**
      * @param array $data
@@ -33,22 +34,35 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
         $response = @file_get_contents($apiRequest, false, $context);
 
         $reg = '#<param>\s*<value><array><data>\s*<value><string>([^<]*)</string></value>\s*<value><string>([^<]*)</string></value>\s*</data></array></value>\s*</param>#msi';
-        if (!empty($response) && preg_match_all($reg, $response, $matches)) {
-            $response = array_combine($matches[1], $matches[2]);
+
+        if(empty($response)) {
+            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE);
         }
 
+        if (preg_match_all($reg, $response, $matches)) {
+            $response = array_combine($matches[1], $matches[2]);
+            $result = $this->getSimpleValidatorResult($response);
+            $result = $this->addExtendedResults($result, $response);
+            return $result;
+        }
+
+        return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE);
+    }
+
+    private function getSimpleValidatorResult($response)
+    {
         if ($response['ErrorCode'] === '200') {
             return new VatIdValidatorResult(VatIdValidatorResult::VALID);
         }
 
         if (in_array($response['ErrorCode'], array(205, 208, 999))) {
-            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE, array(), $customerInformation, $shopInformation);
+            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE);
         }
 
         $error = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/bffValidator')->get(
-            'validator/bff/error' . $response['ErrorCode']
+            'error' . $response['ErrorCode']
         );
 
-        return new VatIdValidatorResult(VatIdValidatorResult::INVALID, array($error));
+        return new VatIdValidatorResult(VatIdValidatorResult::INVALID, array('vatId' => $error));
     }
 }

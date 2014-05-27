@@ -69,7 +69,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     public function getLabel()
     {
-        return 'UstId-Prüfung bei Registrierung';
+        return 'UstId-Prüfung';
     }
 
     /**
@@ -341,22 +341,37 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     private function evaluateValidatorResult(VatIdValidatorResult $validatorResult)
     {
-        $errors = array(array(), array());
-
         $session = Shopware()->Session();
-        unset($session['vatIdValidationNotAvailable']);
+        unset($session['vatIdValidationStatus']);
+
+        $errors = array(
+            $validatorResult->getErrors(),
+            array()
+        );
+
+        foreach ($errors[0] as $key => $error) {
+            $key = strtolower($key);
+
+            if ($key === 'vatid') {
+                $errors[1]['ustid'] = true;
+                break;
+            }
+
+            if ($key === 'street') {
+                $errors[1]['streetnumber'] = true;
+            }
+
+            $errors[1][$key] = true;
+        }
 
         if ($validatorResult->isValid()) {
+            $session['vatIdValidationStatus'] = VatIdValidatorResult::VALID;
             return $errors;
         }
 
         if ($validatorResult->isDummyValid()) {
-            $session['vatIdValidationNotAvailable'] = true;
-            return $errors;
+            $session['vatIdValidationStatus'] = VatIdValidatorResult::UNAVAILABLE;
         }
-
-        $errors[0] = array_merge($errors[0], $validatorResult->getErrors());
-        $errors[1]['ustid'] = true;
 
         return $errors;
     }
@@ -436,7 +451,10 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $return = $arguments->getReturn();
 
         $session = Shopware()->Session();
-        if($session['vatIdValidationNotAvailable'])
+        $status = $session['vatIdValidationStatus'];
+        unset($session['vatIdValidationStatus']);
+
+        if($status === VatIdValidatorResult::UNAVAILABLE)
         {
             $billing = $this->getBillingRepository()->findOneById($return[1][0]);
             $this->saveVatIdForLaterCheck($billing);
@@ -444,8 +462,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
             Shopware()->Models()->persist($billing);
             Shopware()->Models()->flush();
-
-            unset($session['vatIdValidationNotAvailable']);
         }
 
         return $return;
@@ -464,23 +480,30 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         $billing = $this->getBillingRepository()->findOneById($userId);
 
-        if($return[0]['ustid'] === '')
-        {
-            //Remove Vat-Id from check list
+        $session = Shopware()->Session();
+        $status = $session['vatIdValidationStatus'];
+        unset($session['vatIdValidationStatus']);
+
+        if ($return[0]['ustid'] === '') {
+            $status = VatIdValidatorResult::VALID;
+        }
+
+        if ($status === VatIdValidatorResult::VALID) {
+            //Remove Vat-Id from check list, if exists
             $vatIdCheck = $this->getVatIdCheck($billing);
 
-            Shopware()->Models()->remove($vatIdCheck);
-            Shopware()->Models()->flush($vatIdCheck);
+            if($vatIdCheck)
+            {
+                Shopware()->Models()->remove($vatIdCheck);
+                Shopware()->Models()->flush($vatIdCheck);
+            }
 
             return $return;
         }
 
-        $session = Shopware()->Session();
-        if($session['vatIdValidationNotAvailable'])
-        {
+        if ($status === VatIdValidatorResult::UNAVAILABLE) {
             $this->saveVatIdForLaterCheck($billing, $return[0]['ustid']);
             $return[0]['ustid'] = '';
-            unset($session['vatIdValidationNotAvailable']);
         }
 
         return $return;
@@ -580,10 +603,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     private function getVatIdCheck(Billing $billing)
     {
-        if ($billing->getVatId() !== '') {
-            return null;
-        }
-
         /** @var VatIdCheck $vatIdCheck */
         $vatIdCheck =  $this->getVatIdCheckRepository()->getVatIdCheckByBillingId($billing->getId());
 

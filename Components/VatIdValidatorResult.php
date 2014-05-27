@@ -32,6 +32,11 @@ class VatIdValidatorResult
     /**
      * @var array
      */
+    private $extendedStatus;
+
+    /**
+     * @var array
+     */
     private $errors;
 
     /**
@@ -43,7 +48,24 @@ class VatIdValidatorResult
     public function __construct($status, $errors = array())
     {
         $this->status = $status;
+        $this->extendedStatus = array(
+            'company' => $this::UNAVAILABLE,
+            'street' => $this::UNAVAILABLE,
+            'zipCode' => $this::UNAVAILABLE,
+            'city' => $this::UNAVAILABLE
+        );
+
         $this->errors = $errors;
+    }
+
+    public function setExtendedStatus($company, $street, $zipCode, $city)
+    {
+        $this->extendedStatus = array(
+            'company' => $company,
+            'street' => $street,
+            'zipCode' => $zipCode,
+            'city' => $city
+        );
     }
 
     /**
@@ -63,11 +85,80 @@ class VatIdValidatorResult
     }
 
     /**
-     * @return integer
+     * @return bool
      */
     public function serviceNotAvailable()
     {
         return ($this->status === $this::UNAVAILABLE);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCompanyValid()
+    {
+        return ($this->extendedStatus['company'] === $this::VALID);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isStreetValid()
+    {
+        return ($this->extendedStatus['street'] === $this::VALID);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isZipCodeValid()
+    {
+        return ($this->extendedStatus['zipCode'] === $this::VALID);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCityValid()
+    {
+        return ($this->extendedStatus['city'] === $this::VALID);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCompanyAnswered()
+    {
+        return ($this->extendedStatus['company'] !== $this::UNAVAILABLE);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isStreetAnswered()
+    {
+        return ($this->extendedStatus['street'] !== $this::UNAVAILABLE);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isZipCodeAnswered()
+    {
+        return ($this->extendedStatus['zipCode'] !== $this::UNAVAILABLE);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCityAnswered()
+    {
+        return ($this->extendedStatus['city'] !== $this::UNAVAILABLE);
+    }
+
+    public function addError($error, $key = '')
+    {
+        $this->errors[$key] = $error;
     }
 
     /**

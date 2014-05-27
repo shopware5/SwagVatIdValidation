@@ -21,4 +21,14 @@ class SimpleBffVatIdValidator extends BffVatIdValidator
             'Druck' => ''
         );
     }
+
+    /**
+     * @param VatIdValidatorResult $result
+     * @param array $response
+     * @return VatIdValidatorResult
+     */
+    protected function addExtendedResults(VatIdValidatorResult $result, $response)
+    {
+        return $result;
+    }
 }
