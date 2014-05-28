@@ -104,11 +104,54 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     public function install()
     {
         $this->createDatabaseTables();
+        $this->createMailTemplates();
         $this->registerCronJobs();
         $this->createConfiguration();
         $this->registerEvents();
 
         return true;
+    }
+
+    public function createMailTemplates()
+    {
+        $content = "Hallo,\n\nIhre Ust.-Id. konnte soeben erfolgreich geprüft werden.\n\n{\$sAdditionalText}\n\nViele Grüße,\n\nIhr Team von {config name=shopName}";
+        $this->createMailTemplate('CUSTOMERINFORMATION', 'Ihre Ust.-Id. wurde geprüft', $content);
+
+        $content = "Hallo,\n\nes wurden gerade {\$sAmount} Ust-Ids auf Ihre Gültigkeit geprüft. Davon waren {\$sInvalid} ungültig.\n\n{config name=shopName}";
+        $this->createMailTemplate('CRONJOBSUMMARY', 'Zusammenfassung der durchgeführten Ust-Id.-Prüfungen', $content);
+
+        $content = "Hallo,\n\nes gab einen Fehler bei der Prüfung der Ust-Id {\$sVatId}:\n\n{\$sError}\n\n{config name=shopName}";
+        $this->createMailTemplate('VALIDATIONERROR', 'Bei einer Ust.-Id.-Prüfung ist ein Fehler aufgetreten.', $content);
+    }
+
+    private function createMailTemplate($name, $subject, $content)
+    {
+        $mail = new \Shopware\Models\Mail\Mail();
+        $mail->setName('sSWAGVATIDVALIDATION_' . $name);
+        $mail->setFromMail('');
+        $mail->setFromName('');
+        $mail->setSubject($subject);
+        $mail->setContent($content);
+        $mail->setMailtype(\Shopware\Models\Mail\Mail::MAILTYPE_SYSTEM);
+
+        Shopware()->Models()->persist($mail);
+        Shopware()->Models()->flush();
+    }
+
+    private function sendMailByTemplate($name, $to, $context)
+    {
+        $mail = Shopware()->TemplateMail()->createMail('sSWAGVATIDVALIDATION_' . $name, $context);
+        $mail->addTo($to);
+        $mail->send();
+    }
+
+    private function removeMailTemplate($name)
+    {
+        $repository = Shopware()->Models()->getRepository('\Shopware\Models\Mail\Mail');
+
+        $mail = $repository->findOneByName('sSWAGVATIDVALIDATION_' . $name);
+        Shopware()->Models()->remove($mail);
+        Shopware()->Models()->flush($mail);
     }
 
     public function uninstall()
@@ -122,6 +165,10 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     public function secureUninstall()
     {
+        $this->removeMailTemplate('CUSTOMERINFORMATION');
+        $this->removeMailTemplate('CRONJOBSUMMARY');
+        $this->removeMailTemplate('VALIDATIONERROR');
+
         return true;
     }
 
@@ -192,10 +239,20 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         );
 
         $form->setElement(
-            'checkbox',
-            'emailNotification',
+            'text',
+            'shopEmailNotification',
             array(
-                'label' => 'E-Mail-Benachrichtigung',
+                'label' => 'Eigene E-Mail-Benachrichtigungen',
+                'value' => Shopware()->Config()->get('sMAIL'),
+                'description' => 'An diese E-Mail-Adresse erhalten Sie Cronjob-Zusammenfassungen sowie Fehler-Mitteilungen. Wenn leer, werden keine E-Mails versandt.'
+            )
+        );
+
+        $form->setElement(
+            'checkbox',
+            'customerEmailNotification',
+            array(
+                'label' => 'Kunden-Benachrichtigung per E-Mail',
                 'value' => false,
                 'description' => 'Sendet dem Kunden das Ergebnis der Prüfung zu, wenn diese nicht sofort durchgeführt werden konnte.'
             )
@@ -306,6 +363,19 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $validatorResult = $this->validate($billingModel, $requester, true);
 
         $errors = $this->evaluateValidatorResult($validatorResult);
+
+        if(!empty($errors[0]))
+        {
+            $email = $this->Config()->get('shopEmailNotification');
+            if (!empty($email)) {
+                $context = array(
+                    'sVatId' => $billingModel->getVatId(),
+                    'sError' => implode("\n", $validatorResult->getErrors())
+                );
+
+                $this->sendMailByTemplate('VALIDATIONERROR', $email, $context);
+            }
+        }
 
         return array(array_merge($return[0], $errors[0]), array_merge($return[1], $errors[1]));
     }
@@ -522,6 +592,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $vatIdChecks = $this->getVatIdCheckRepository()->getVatIdCheckBuilder()->getQuery()->getResult();
         $requester = new VatIdInformation($this->Config()->get('vatId'));
 
+        $summary = array('sAmount' => 0, 'sInvalid' => 0);
+
         /**@var VatIdCheck $vatIdCheck */
         foreach ($vatIdChecks as $vatIdCheck) {
             $billing = $vatIdCheck->getBillingAddress();
@@ -533,10 +605,14 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 continue;
             }
 
+            $summary['sAmount']++;
+
             if ($validatorResult->isValid()) {
                 //save Vat-Id in Billing
                 Shopware()->Models()->persist($billing);
                 Shopware()->Models()->flush();
+            } else {
+                $summary['sInvalid']++;
             }
 
             $status = $this->getStatus($validatorResult);
@@ -544,6 +620,26 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
             Shopware()->Models()->persist($vatIdCheck);
             Shopware()->Models()->flush();
+
+            $emailFlag = $this->Config()->get('customerEmailNotification');
+            if ($emailFlag) {
+                if($status & VatIdCheck::VALID) {
+                    $context['sAdditionalText'] = 'Sie ist gültig. Sie können nun mehrwertsteuerfrei einkaufen.';
+                } else {
+                    $context['sAdditionalText'] = 'Es wurden Fehler erkannt. Bitte kontrollieren Sie nochmal Ihre Eingaben.';
+                }
+
+                $this->sendMailByTemplate('CUSTOMERINFORMATION', $billing->getCustomer()->getEmail(), $context);
+            }
+        }
+
+        if(empty($summary['sAmount'])) {
+            return true;
+        }
+
+        $email = $this->Config()->get('shopEmailNotification');
+        if (!empty($email)) {
+            $this->sendMailByTemplate('CRONJOBSUMMARY', $email, $summary);
         }
 
         return true;
@@ -668,7 +764,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         if ($status === VatIdCheck::UNCHECKED) {
             $errors['messages'][] = $snippets->get('messages/checkNotAvailable');
 
-            if ($this->Config()->get('emailNotification')) {
+            if ($this->Config()->get('customerEmailNotification')) {
                 $errors['messages'][] = $snippets->get('messages/emailNotification');
             }
 
