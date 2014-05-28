@@ -30,24 +30,36 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      */
     protected function addExtendedResults(VatIdValidatorResult $result, $response, VatIdCustomerInformation $customerInformation)
     {
-        $company = $response->traderName;
+        if (!$response->traderAddress) {
+            return $result;
+        }
+
+        $extendedData = array();
+
+        $extendedData['company'] = array($response->traderName, $customerInformation->getCompany());
 
         $address = explode("\n", $response->traderAddress);
-
-        $street = trim($address[0]);
+        $extendedData['street'] = array($address[0], $customerInformation->getStreet());
 
         $address = trim($address[1]);
         $address = explode(' ', $address, 2);
 
-        $zipCode = $address[0];
-        $city = $address[1];
+        $extendedData['zipCode'] = array($address[0], $customerInformation->getZipCode());
+        $extendedData['city'] = array($address[1], $customerInformation->getCity());
 
-        $company = $this->validateString($company, $customerInformation->getCompany(), $result, 'company');
-        $street = $this->validateString($street, $customerInformation->getStreet(), $result, 'street');
-        $zipCode = $this->validateString($zipCode, $customerInformation->getZipCode(), $result, 'zipCode', 80);
-        $city = $this->validateString($city, $customerInformation->getCity(), $result, 'city');
+        foreach ($extendedData as $key => &$data) {
+            $string1 = trim($data[0]);
+            $string2 = trim($data[1]);
 
-        $result->setExtendedStatus($company, $street, $zipCode, $city);
+            $data = $this->validateString($string1, $string2, $result, $key);
+        }
+
+        $result->setExtendedStatus(
+            $extendedData['company'],
+            $extendedData['street'],
+            $extendedData['zipCode'],
+            $extendedData['city']
+        );
 
         return $result;
     }
@@ -59,11 +71,11 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      * @param $key
      * @return int
      */
-    private function validateString($string1, $string2, VatIdValidatorResult $result, $key, $minPercentage = 85)
+    private function validateString($string1, $string2, VatIdValidatorResult $result, $key)
     {
         $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
 
-        if ($this->isSimiliar($string1, $string2, $minPercentage)) {
+        if ($this->isSimiliar($string1, $string2)) {
             return VatIdValidatorResult::VALID;
         }
 
@@ -77,7 +89,7 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      * @param int $minPercentage
      * @return bool
      */
-    private function isSimiliar($string1, $string2, $minPercentage = 90)
+    private function isSimiliar($string1, $string2, $minPercentage = 80)
     {
         $string1 = strtolower($string1);
         $string2 = strtolower($string2);

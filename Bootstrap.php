@@ -431,11 +431,12 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $vatIdCheck = $this->getVatIdCheck($billing);
 
         if (empty($vatIdCheck)) {
-            $vatIdCheck = new \Shopware\CustomModels\SwagVatIdValidation\VatIdCheck();
+            $vatIdCheck = new VatIdCheck();
             $vatIdCheck->setBillingAddress($billing);
         }
 
         $vatIdCheck->setVatId($vatId);
+        $vatIdCheck->setStatus(VatIdCheck::UNCHECKED);
 
         Shopware()->Models()->persist($vatIdCheck);
         Shopware()->Models()->flush();
@@ -492,8 +493,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             //Remove Vat-Id from check list, if exists
             $vatIdCheck = $this->getVatIdCheck($billing);
 
-            if($vatIdCheck)
-            {
+            if ($vatIdCheck) {
                 Shopware()->Models()->remove($vatIdCheck);
                 Shopware()->Models()->flush($vatIdCheck);
             }
@@ -533,19 +533,69 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 continue;
             }
 
-            //Remove Vat-Id from check list
-            Shopware()->Models()->remove($vatIdCheck);
-            Shopware()->Models()->flush($vatIdCheck);
-
             if ($validatorResult->isValid()) {
                 //save Vat-Id in Billing
                 Shopware()->Models()->persist($billing);
                 Shopware()->Models()->flush();
             }
+
+            $status = $this->getStatus($validatorResult);
+            $vatIdCheck->setStatus($status);
+
+            Shopware()->Models()->persist($vatIdCheck);
+            Shopware()->Models()->flush();
         }
 
         return true;
     }
+
+    private function getStatus(VatIdValidatorResult $validatorResult)
+    {
+        $status = VatIdCheck::CHECKED;
+
+        //When the address data was not checked (simple validation), it's automatically ok
+        if(!$validatorResult->isCompanyAnswered()) {
+            $status |= VatIdCheck::COMPANY_OK;
+        }
+
+        if (!$validatorResult->isStreetAnswered()) {
+            $status |= VatIdCheck::STREET_OK;
+        }
+
+        if (!$validatorResult->isZipCodeAnswered()) {
+            $status |= VatIdCheck::ZIP_CODE_OK;
+        }
+
+        if (!$validatorResult->isCityAnswered()) {
+            $status |= VatIdCheck::CITY_OK;
+        }
+
+        //When the Vat ID is invalid, the address data was not able to be checked
+        if (!$validatorResult->isValid()) {
+            return $status;
+        }
+
+        $status |= VatIdCheck::VAT_ID_OK;
+
+        if($validatorResult->isCompanyValid()) {
+            $status |= VatIdCheck::COMPANY_OK;
+        }
+
+        if ($validatorResult->isStreetValid()) {
+            $status |= VatIdCheck::STREET_OK;
+        }
+
+        if ($validatorResult->isZipCodeValid()) {
+            $status |= VatIdCheck::ZIP_CODE_OK;
+        }
+
+        if ($validatorResult->isCityValid()) {
+            $status |= VatIdCheck::CITY_OK;
+        }
+
+        return $status;
+    }
+
 
     /**
      * Listener to FrontendAccount (index and billing), shows the vatId and an info, if the validator was not available
@@ -578,22 +628,81 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByCustomerId(Shopware()->Session()->sUserId);
 
-        //Add our plugin template directory to load our slogan extension.
-        $view->addTemplateDir($this->Path() . 'Views/');
-
-        if ($vatIdCheck) {
-            $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
-
-            $messages = array($snippets->get('messages/checkNotAvailable'));
-
-            if ($this->Config()->get('emailNotification')) {
-                $messages[] = $snippets->get('messages/emailNotification');
-            }
-
-            $view->assign('vatIdCheck', array('vatId' => $vatIdCheck->getVatId(), 'messages' => $messages));
+        if (!$vatIdCheck) {
+            return;
         }
 
+        //Add our plugin template directory to load our slogan extension.
+        $view->addTemplateDir($this->Path() . 'Views/');
         $view->extendsTemplate('frontend/plugins/swag_vat_id_validation/index.tpl');
+
+        $status = $vatIdCheck->getStatus();
+        $errors = $this->getErrors($status);
+        $view->assign('vatIdCheck',
+            array(
+                'vatId' => $vatIdCheck->getVatId(),
+                'errors' => $errors,
+                'success' => ($status & VatIdCheck::VAT_ID_OK)
+            )
+        );
+
+        if ($status === VatIdCheck::VALID) {
+            Shopware()->Models()->remove($vatIdCheck);
+            Shopware()->Models()->flush($vatIdCheck);
+        }
+    }
+
+    private function getErrors($status)
+    {
+        $errors = array(
+            'messages' => array(),
+            'flags' => array()
+        );
+
+        if ($status === VatIdCheck::VALID) {
+            return $errors;
+        }
+
+        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
+
+        if ($status === VatIdCheck::UNCHECKED) {
+            $errors['messages'][] = $snippets->get('messages/checkNotAvailable');
+
+            if ($this->Config()->get('emailNotification')) {
+                $errors['messages'][] = $snippets->get('messages/emailNotification');
+            }
+
+            return $errors;
+        }
+
+        if (!($status & VatIdCheck::VAT_ID_OK)) {
+            $errors['messages'][] = $snippets->get('validator/error/vatId');
+            $errors['flags']['ustid'] = true;
+            return $errors;
+        }
+
+        if (!($status & VatIdCheck::COMPANY_OK)) {
+            $errors['messages'][] = $snippets->get('validator/extended/error/company');
+            $errors['flags']['company'] = true;
+        }
+
+        if (!($status & VatIdCheck::STREET_OK)) {
+            $errors['messages'][] = $snippets->get('validator/extended/error/street');
+            $errors['flags']['street'] = true;
+            $errors['flags']['streetnumber'] = true;
+        }
+
+        if (!($status & VatIdCheck::ZIP_CODE_OK)) {
+            $errors['messages'][] = $snippets->get('validator/extended/error/zipCode');
+            $errors['flags']['zipcode'] = true;
+        }
+
+        if (!($status & VatIdCheck::CITY_OK)) {
+            $errors['messages'][] = $snippets->get('validator/extended/error/city');
+            $errors['flags']['city'] = true;
+        }
+
+        return $errors;
     }
 
     /**

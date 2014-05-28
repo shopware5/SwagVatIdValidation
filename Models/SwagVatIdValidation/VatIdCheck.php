@@ -50,6 +50,12 @@ class VatIdCheck extends ModelEntity
     protected $id;
 
     /**
+     * @var string
+     * @ORM\Column(name="vatId", type="string", nullable=false)
+     */
+    protected $vatId;
+
+    /**
      * @ORM\OneToOne(
      *      targetEntity="\Shopware\Models\Customer\Billing",
      *      inversedBy="vatIdCheck"
@@ -61,10 +67,22 @@ class VatIdCheck extends ModelEntity
     protected $billingAddress;
 
     /**
-     * @var string
-     * @ORM\Column(name="vatId", type="string", nullable=false)
+     * @var integer
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
-    protected $vatId;
+    protected $status;
+
+    /**
+     * Constants for status column
+     */
+    const UNCHECKED = 0;
+    const CHECKED = 1;
+    const VAT_ID_OK = 2;
+    const COMPANY_OK = 4;
+    const STREET_OK = 8;
+    const ZIP_CODE_OK = 16;
+    const CITY_OK = 32;
+    const VALID = 63;
 
     /**
      * Getter function for the unique id identifier property
@@ -116,5 +134,21 @@ class VatIdCheck extends ModelEntity
     public function getVatId()
     {
         return $this->vatId;
+    }
+
+    /**
+     * @param int $status
+     */
+    public function setStatus($status)
+    {
+        $this->status = $status;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatus()
+    {
+        return $this->status;
     }
 }

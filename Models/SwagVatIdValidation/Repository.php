@@ -43,7 +43,8 @@ class Repository extends ModelRepository
     {
         $builder = $this->createQueryBuilder('vatIdCheck')
             ->select(array('vatIdCheck', 'billing'))
-            ->leftJoin('vatIdCheck.billingAddress', 'billing');
+            ->leftJoin('vatIdCheck.billingAddress', 'billing')
+            ->where('vatIdCheck.status = 0');
 
         return $builder;
     }
