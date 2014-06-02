@@ -36,7 +36,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
         $reg = '#<param>\s*<value><array><data>\s*<value><string>([^<]*)</string></value>\s*<value><string>([^<]*)</string></value>\s*</data></array></value>\s*</param>#msi';
 
         if(empty($response)) {
-            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE);
+            return new VatIdValidatorResult();
         }
 
         if (preg_match_all($reg, $response, $matches)) {
@@ -46,23 +46,23 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
             return $result;
         }
 
-        return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE);
+        return new VatIdValidatorResult();
     }
 
     private function getSimpleValidatorResult($response)
     {
         if ($response['ErrorCode'] === '200') {
-            return new VatIdValidatorResult(VatIdValidatorResult::VALID);
+            return new VatIdValidatorResult(VatIdValidationStatus::VAT_ID_VALID);
         }
 
         if (in_array($response['ErrorCode'], array(205, 208, 999))) {
-            return new VatIdValidatorResult(VatIdValidatorResult::UNAVAILABLE);
+            return new VatIdValidatorResult();
         }
 
         $error = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/bffValidator')->get(
             'error' . $response['ErrorCode']
         );
 
-        return new VatIdValidatorResult(VatIdValidatorResult::INVALID, array('vatId' => $error));
+        return new VatIdValidatorResult(VatIdValidationStatus::INVALID, array('vatId' => $error));
     }
 }

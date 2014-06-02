@@ -6,12 +6,14 @@ use Shopware\Plugins\SwagVatIdValidation\Components\SimpleBffVatIdValidator;
 use Shopware\Plugins\SwagVatIdValidation\Components\ExtendedBffVatIdValidator;
 use Shopware\Plugins\SwagVatIdValidation\Components\SimpleMiasVatIdValidator;
 use Shopware\Plugins\SwagVatIdValidation\Components\ExtendedMiasVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
 
 use Shopware\CustomModels\SwagVatIdValidation\VatIdCheck;
 use Shopware\Models\Customer\Billing;
+use Shopware\Models\Mail\Mail;
 
 /**
  * Shopware 4.0
@@ -42,12 +44,53 @@ use Shopware\Models\Customer\Billing;
  */
 class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Components_Plugin_Bootstrap
 {
+    /** @var  \Shopware\Models\Mail\Mail */
+    private $mailRepository;
+
     /** @var  \Shopware\Models\Customer\BillingRepository */
     private $billingRepository;
 
     /** @var \Shopware\CustomModels\SwagVatIdValidation\Repository */
     private $vatIdCheckRepository;
 
+    /**
+     * Helper function to get the MailRepository
+     * @return \Shopware\Models\Mail\Repository
+     */
+    private function getMailRepository()
+    {
+        if (!$this->mailRepository) {
+            $this->mailRepository = Shopware()->Models()->getRepository('\Shopware\Models\Mail\Mail');
+        }
+
+        return $this->mailRepository;
+    }
+
+    /**
+     * Helper function to get the BillingRepository
+     * @return \Shopware\Models\Customer\BillingRepository
+     */
+    private function getBillingRepository()
+    {
+        if (!$this->billingRepository) {
+            $this->billingRepository = Shopware()->Models()->getRepository('\Shopware\Models\Customer\Billing');
+        }
+
+        return $this->billingRepository;
+    }
+
+    /**
+     * Helper function to get the VatIdCheckRepository
+     * @return \Shopware\CustomModels\SwagVatIdValidation\Repository
+     */
+    private function getVatIdCheckRepository()
+    {
+        if (!$this->vatIdCheckRepository) {
+            $this->vatIdCheckRepository = Shopware()->Models()->getRepository('\Shopware\CustomModels\SwagVatIdValidation\VatIdCheck');
+        }
+
+        return $this->vatIdCheckRepository;
+    }
 
     /**
      * Returns an array with the capabilities of the plugin.
@@ -112,48 +155,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         return true;
     }
 
-    public function createMailTemplates()
-    {
-        $content = "Hallo,\n\nIhre Ust.-Id. konnte soeben erfolgreich geprüft werden.\n\n{\$sAdditionalText}\n\nViele Grüße,\n\nIhr Team von {config name=shopName}";
-        $this->createMailTemplate('CUSTOMERINFORMATION', 'Ihre Ust.-Id. wurde geprüft', $content);
-
-        $content = "Hallo,\n\nes wurden gerade {\$sAmount} Ust-Ids auf Ihre Gültigkeit geprüft. Davon waren {\$sInvalid} ungültig.\n\n{config name=shopName}";
-        $this->createMailTemplate('CRONJOBSUMMARY', 'Zusammenfassung der durchgeführten Ust-Id.-Prüfungen', $content);
-
-        $content = "Hallo,\n\nes gab einen Fehler bei der Prüfung der Ust-Id {\$sVatId}:\n\n{\$sError}\n\n{config name=shopName}";
-        $this->createMailTemplate('VALIDATIONERROR', 'Bei einer Ust.-Id.-Prüfung ist ein Fehler aufgetreten.', $content);
-    }
-
-    private function createMailTemplate($name, $subject, $content)
-    {
-        $mail = new \Shopware\Models\Mail\Mail();
-        $mail->setName('sSWAGVATIDVALIDATION_' . $name);
-        $mail->setFromMail('');
-        $mail->setFromName('');
-        $mail->setSubject($subject);
-        $mail->setContent($content);
-        $mail->setMailtype(\Shopware\Models\Mail\Mail::MAILTYPE_SYSTEM);
-
-        Shopware()->Models()->persist($mail);
-        Shopware()->Models()->flush();
-    }
-
-    private function sendMailByTemplate($name, $to, $context)
-    {
-        $mail = Shopware()->TemplateMail()->createMail('sSWAGVATIDVALIDATION_' . $name, $context);
-        $mail->addTo($to);
-        $mail->send();
-    }
-
-    private function removeMailTemplate($name)
-    {
-        $repository = Shopware()->Models()->getRepository('\Shopware\Models\Mail\Mail');
-
-        $mail = $repository->findOneByName('sSWAGVATIDVALIDATION_' . $name);
-        Shopware()->Models()->remove($mail);
-        Shopware()->Models()->flush($mail);
-    }
-
     public function uninstall()
     {
         $this->secureUninstall();
@@ -202,6 +203,46 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         );
 
         $tool->dropSchema($classes);
+    }
+
+    public function createMailTemplates()
+    {
+        $content = "Hallo,\n\nIhre Ust.-Id. konnte soeben erfolgreich geprüft werden.\n\n{if \$sValid}Sie ist gültig. Sie können nun mehrwertsteuerfrei einkaufen.{else}Es wurden Fehler erkannt. Bitte kontrollieren Sie nochmal Ihre Eingaben.{/if}\n\nViele Grüße,\n\nIhr Team von {config name=shopName}";
+        $this->createMailTemplate('CUSTOMERINFORMATION', 'Ihre Ust.-Id. wurde geprüft', $content);
+
+        $content = "Hallo,\n\nes wurden gerade {\$sAmount} Ust-Ids auf Ihre Gültigkeit geprüft. Davon waren {\$sInvalid} ungültig.\n\n{config name=shopName}";
+        $this->createMailTemplate('CRONJOBSUMMARY', 'Zusammenfassung der durchgeführten Ust-Id.-Prüfungen', $content);
+
+        $content = "Hallo,\n\nes gab einen Fehler bei der Prüfung der Ust-Id {\$sVatId}:\n\n{\$sError}\n\n{config name=shopName}";
+        $this->createMailTemplate('VALIDATIONERROR', 'Bei einer Ust.-Id.-Prüfung ist ein Fehler aufgetreten.', $content);
+    }
+
+    private function createMailTemplate($name, $subject, $content)
+    {
+        $mail = new Mail();
+        $mail->setName('sSWAGVATIDVALIDATION_' . $name);
+        $mail->setFromMail('');
+        $mail->setFromName('');
+        $mail->setSubject($subject);
+        $mail->setContent($content);
+        $mail->setMailtype(Mail::MAILTYPE_SYSTEM);
+
+        Shopware()->Models()->persist($mail);
+        Shopware()->Models()->flush();
+    }
+
+    private function sendMailByTemplate($name, $to, $context)
+    {
+        $mail = Shopware()->TemplateMail()->createMail('sSWAGVATIDVALIDATION_' . $name, $context);
+        $mail->addTo($to);
+        $mail->send();
+    }
+
+    private function removeMailTemplate($name)
+    {
+        $mail = $this->getMailRepository()->findOneByName('sSWAGVATIDVALIDATION_' . $name);
+        Shopware()->Models()->remove($mail);
+        Shopware()->Models()->flush($mail);
     }
 
     private function registerCronJobs()
@@ -300,32 +341,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             'Enlight_Controller_Action_PostDispatch_Frontend_Account',
             'onPostDispatchFrontendAccount'
         );
-    }
-
-    /**
-     * Helper function to get the BillingRepository
-     * @return \Shopware\Models\Customer\BillingRepository
-     */
-    private function getBillingRepository()
-    {
-        if (!$this->billingRepository) {
-            $this->billingRepository = Shopware()->Models()->getRepository('\Shopware\Models\Customer\Billing');
-        }
-
-        return $this->billingRepository;
-    }
-
-    /**
-     * Helper function to get the VatIdCheckRepository
-     * @return \Shopware\CustomModels\SwagVatIdValidation\Repository
-     */
-    private function getVatIdCheckRepository()
-    {
-        if (!$this->vatIdCheckRepository) {
-            $this->vatIdCheckRepository = Shopware()->Models()->getRepository('\Shopware\CustomModels\SwagVatIdValidation\VatIdCheck');
-        }
-
-        return $this->vatIdCheckRepository;
     }
 
     /**
@@ -434,13 +449,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             $errors[1][$key] = true;
         }
 
-        if ($validatorResult->isValid()) {
-            $session['vatIdValidationStatus'] = VatIdValidatorResult::VALID;
-            return $errors;
-        }
-
         if ($validatorResult->isDummyValid()) {
-            $session['vatIdValidationStatus'] = VatIdValidatorResult::UNAVAILABLE;
+            $session['vatIdValidationStatus'] = $validatorResult->getStatus();
         }
 
         return $errors;
@@ -498,15 +508,15 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             $vatId = $billing->getVatId();
         }
 
-        $vatIdCheck = $this->getVatIdCheck($billing);
+        $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByBillingId($billing->getId());
 
-        if (empty($vatIdCheck)) {
+        if (!$vatIdCheck) {
             $vatIdCheck = new VatIdCheck();
             $vatIdCheck->setBillingAddress($billing);
         }
 
         $vatIdCheck->setVatId($vatId);
-        $vatIdCheck->setStatus(VatIdCheck::UNCHECKED);
+        $vatIdCheck->setStatus(VatIdValidationStatus::UNCHECKED);
 
         Shopware()->Models()->persist($vatIdCheck);
         Shopware()->Models()->flush();
@@ -522,10 +532,10 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $return = $arguments->getReturn();
 
         $session = Shopware()->Session();
-        $status = $session['vatIdValidationStatus'];
+        $status = new VatIdValidationStatus($session['vatIdValidationStatus']);
         unset($session['vatIdValidationStatus']);
 
-        if($status === VatIdValidatorResult::UNAVAILABLE)
+        if($status->isDummyValid())
         {
             $billing = $this->getBillingRepository()->findOneById($return[1][0]);
             $this->saveVatIdForLaterCheck($billing);
@@ -552,16 +562,16 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $billing = $this->getBillingRepository()->findOneById($userId);
 
         $session = Shopware()->Session();
-        $status = $session['vatIdValidationStatus'];
+        $status = new VatIdValidationStatus($session['vatIdValidationStatus']);
         unset($session['vatIdValidationStatus']);
 
         if ($return[0]['ustid'] === '') {
-            $status = VatIdValidatorResult::VALID;
+            $status->setStatus(VatIdValidationStatus::VALID);
         }
 
-        if ($status === VatIdValidatorResult::VALID) {
+        if ($status->isValid()) {
             //Remove Vat-Id from check list, if exists
-            $vatIdCheck = $this->getVatIdCheck($billing);
+            $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByBillingId($billing->getId());
 
             if ($vatIdCheck) {
                 Shopware()->Models()->remove($vatIdCheck);
@@ -571,7 +581,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             return $return;
         }
 
-        if ($status === VatIdValidatorResult::UNAVAILABLE) {
+        if ($status->isDummyValid()) {
             $this->saveVatIdForLaterCheck($billing, $return[0]['ustid']);
             $return[0]['ustid'] = '';
         }
@@ -615,7 +625,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 $summary['sInvalid']++;
             }
 
-            $status = $this->getStatus($validatorResult);
+            $status = $validatorResult->getStatus();
             $vatIdCheck->setStatus($status);
 
             Shopware()->Models()->persist($vatIdCheck);
@@ -623,12 +633,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
             $emailFlag = $this->Config()->get('customerEmailNotification');
             if ($emailFlag) {
-                if($status & VatIdCheck::VALID) {
-                    $context['sAdditionalText'] = 'Sie ist gültig. Sie können nun mehrwertsteuerfrei einkaufen.';
-                } else {
-                    $context['sAdditionalText'] = 'Es wurden Fehler erkannt. Bitte kontrollieren Sie nochmal Ihre Eingaben.';
-                }
-
+                $context['sValid'] = $validatorResult->isValid();
                 $this->sendMailByTemplate('CUSTOMERINFORMATION', $billing->getCustomer()->getEmail(), $context);
             }
         }
@@ -644,54 +649,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         return true;
     }
-
-    private function getStatus(VatIdValidatorResult $validatorResult)
-    {
-        $status = VatIdCheck::CHECKED;
-
-        //When the address data was not checked (simple validation), it's automatically ok
-        if(!$validatorResult->isCompanyAnswered()) {
-            $status |= VatIdCheck::COMPANY_OK;
-        }
-
-        if (!$validatorResult->isStreetAnswered()) {
-            $status |= VatIdCheck::STREET_OK;
-        }
-
-        if (!$validatorResult->isZipCodeAnswered()) {
-            $status |= VatIdCheck::ZIP_CODE_OK;
-        }
-
-        if (!$validatorResult->isCityAnswered()) {
-            $status |= VatIdCheck::CITY_OK;
-        }
-
-        //When the Vat ID is invalid, the address data was not able to be checked
-        if (!$validatorResult->isValid()) {
-            return $status;
-        }
-
-        $status |= VatIdCheck::VAT_ID_OK;
-
-        if($validatorResult->isCompanyValid()) {
-            $status |= VatIdCheck::COMPANY_OK;
-        }
-
-        if ($validatorResult->isStreetValid()) {
-            $status |= VatIdCheck::STREET_OK;
-        }
-
-        if ($validatorResult->isZipCodeValid()) {
-            $status |= VatIdCheck::ZIP_CODE_OK;
-        }
-
-        if ($validatorResult->isCityValid()) {
-            $status |= VatIdCheck::CITY_OK;
-        }
-
-        return $status;
-    }
-
 
     /**
      * Listener to FrontendAccount (index and billing), shows the vatId and an info, if the validator was not available
@@ -732,36 +689,41 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $view->addTemplateDir($this->Path() . 'Views/');
         $view->extendsTemplate('frontend/plugins/swag_vat_id_validation/index.tpl');
 
-        $status = $vatIdCheck->getStatus();
+        $status = new VatIdValidationStatus($vatIdCheck->getStatus());
         $errors = $this->getErrors($status);
         $view->assign('vatIdCheck',
             array(
                 'vatId' => $vatIdCheck->getVatId(),
                 'errors' => $errors,
-                'success' => ($status & VatIdCheck::VAT_ID_OK)
+                'success' => $status->isDummyValid()
             )
         );
 
-        if ($status === VatIdCheck::VALID) {
+        if ($status->isValid()) {
             Shopware()->Models()->remove($vatIdCheck);
             Shopware()->Models()->flush($vatIdCheck);
         }
     }
 
-    private function getErrors($status)
+    /**
+     * Helper function sets the ErrorMessages and ErrorFlags by the VatIdValidationStatus
+     * @param VatIdValidationStatus $status
+     * @return array
+     */
+    private function getErrors(VatIdValidationStatus $status)
     {
         $errors = array(
             'messages' => array(),
             'flags' => array()
         );
 
-        if ($status === VatIdCheck::VALID) {
+        if ($status->isValid()) {
             return $errors;
         }
 
         $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
 
-        if ($status === VatIdCheck::UNCHECKED) {
+        if ($status->serviceNotAvailable()) {
             $errors['messages'][] = $snippets->get('messages/checkNotAvailable');
 
             if ($this->Config()->get('customerEmailNotification')) {
@@ -771,29 +733,29 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             return $errors;
         }
 
-        if (!($status & VatIdCheck::VAT_ID_OK)) {
+        if (!$status->isVatIdValid()) {
             $errors['messages'][] = $snippets->get('validator/error/vatId');
             $errors['flags']['ustid'] = true;
             return $errors;
         }
 
-        if (!($status & VatIdCheck::COMPANY_OK)) {
+        if (!$status->isCompanyValid()) {
             $errors['messages'][] = $snippets->get('validator/extended/error/company');
             $errors['flags']['company'] = true;
         }
 
-        if (!($status & VatIdCheck::STREET_OK)) {
+        if (!$status->isStreetValid()) {
             $errors['messages'][] = $snippets->get('validator/extended/error/street');
             $errors['flags']['street'] = true;
             $errors['flags']['streetnumber'] = true;
         }
 
-        if (!($status & VatIdCheck::ZIP_CODE_OK)) {
+        if (!$status->isZipCodeValid()) {
             $errors['messages'][] = $snippets->get('validator/extended/error/zipCode');
             $errors['flags']['zipcode'] = true;
         }
 
-        if (!($status & VatIdCheck::CITY_OK)) {
+        if (!$status->isCityValid()) {
             $errors['messages'][] = $snippets->get('validator/extended/error/city');
             $errors['flags']['city'] = true;
         }

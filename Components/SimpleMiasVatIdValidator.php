@@ -30,6 +30,7 @@ class SimpleMiasVatIdValidator extends MiasVatIdValidator
      */
     protected function addExtendedResults(VatIdValidatorResult $result, $response, VatIdCustomerInformation $customerInformation)
     {
+        $result->setStatus(VatIdValidationStatus::ADDRESS_VALID);
         return $result;
     }
 }

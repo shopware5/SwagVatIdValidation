@@ -39,26 +39,30 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
         $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
 
         foreach ($extendedResults as $key => &$extendedResult) {
-            if ($extendedResult === 'A') {
-                $extendedResult = VatIdValidatorResult::VALID;
-                continue;
-            }
-
             if ($extendedResult === 'B') {
-                $extendedResult = VatIdValidatorResult::INVALID;
+                $extendedResult = false;
                 $result->addError($snippets->get('validator/extended/error/' . $key), $key);
                 continue;
             }
 
-            $extendedResult = VatIdValidatorResult::UNAVAILABLE;
+            $extendedResult = true;
         }
 
-        $result->setExtendedStatus(
-            $extendedResults['company'],
-            $extendedResults['street'],
-            $extendedResults['zipCode'],
-            $extendedResults['city']
-        );
+        if ($extendedResults['company']) {
+            $result->setStatus(VatIdValidationStatus::COMPANY_OK);
+        }
+
+        if ($extendedResults['street']) {
+            $result->setStatus(VatIdValidationStatus::STREET_OK);
+        }
+
+        if ($extendedResults['zipCode']) {
+            $result->setStatus(VatIdValidationStatus::ZIP_CODE_OK);
+        }
+
+        if ($extendedResults['city']) {
+            $result->setStatus(VatIdValidationStatus::CITY_OK);
+        }
 
         return $result;
     }

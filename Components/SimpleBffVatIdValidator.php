@@ -29,6 +29,7 @@ class SimpleBffVatIdValidator extends BffVatIdValidator
      */
     protected function addExtendedResults(VatIdValidatorResult $result, $response)
     {
+        $result->setStatus(VatIdValidationStatus::ADDRESS_VALID);
         return $result;
     }
 }

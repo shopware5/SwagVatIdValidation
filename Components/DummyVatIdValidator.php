@@ -21,10 +21,10 @@ class DummyVatIdValidator implements VatIdValidatorInterface
 
         if(!empty($errors))
         {
-            return new VatIdValidatorResult(VatIdValidatorResult::INVALID, $errors);
+            return new VatIdValidatorResult(VatIdValidationStatus::DUMMY_INVALID, $errors);
         }
 
-        return new VatIdValidatorResult(VatIdValidatorResult::DUMMY_VALID);
+        return new VatIdValidatorResult(VatIdValidationStatus::DUMMY_VALID);
     }
 
     /**

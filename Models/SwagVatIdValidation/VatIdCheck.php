@@ -73,18 +73,6 @@ class VatIdCheck extends ModelEntity
     protected $status;
 
     /**
-     * Constants for status column
-     */
-    const UNCHECKED = 0;
-    const CHECKED = 1;
-    const VAT_ID_OK = 2;
-    const COMPANY_OK = 4;
-    const STREET_OK = 8;
-    const ZIP_CODE_OK = 16;
-    const CITY_OK = 32;
-    const VALID = 63;
-
-    /**
      * Getter function for the unique id identifier property
      *
      * @return integer

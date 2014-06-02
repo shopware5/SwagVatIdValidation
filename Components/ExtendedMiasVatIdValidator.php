@@ -54,33 +54,42 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
             $data = $this->validateString($string1, $string2, $result, $key);
         }
 
-        $result->setExtendedStatus(
-            $extendedData['company'],
-            $extendedData['street'],
-            $extendedData['zipCode'],
-            $extendedData['city']
-        );
+        if ($extendedData['company']) {
+            $result->setStatus(VatIdValidationStatus::COMPANY_OK);
+        }
+
+        if ($extendedData['street']) {
+            $result->setStatus(VatIdValidationStatus::STREET_OK);
+        }
+
+        if ($extendedData['zipCode']) {
+            $result->setStatus(VatIdValidationStatus::ZIP_CODE_OK);
+        }
+
+        if ($extendedData['city']) {
+            $result->setStatus(VatIdValidationStatus::CITY_OK);
+        }
 
         return $result;
     }
 
     /**
-     * @param $string1
-     * @param $string2
+     * @param string $string1
+     * @param string $string2
      * @param VatIdValidatorResult $result
-     * @param $key
-     * @return int
+     * @param string $key
+     * @return bool
      */
     private function validateString($string1, $string2, VatIdValidatorResult $result, $key)
     {
         $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
 
         if ($this->isSimiliar($string1, $string2)) {
-            return VatIdValidatorResult::VALID;
+            return true;
         }
 
         $result->addError($snippets->get('validator/extended/error/' . $key), $key);
-        return VatIdValidatorResult::INVALID;
+        return false;
     }
 
     /**
