@@ -125,7 +125,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     }
 
     /**
-     * Returns an array with some informations about the plugin.
+     * Returns an array with some information about the plugin.
      * @return array
      */
     public function getInfo()
@@ -323,24 +323,24 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             array(
                 'en_GB' => array(
                     'vatId' => array(
-                        'label' => 'Own VAT Reg. No.',
-                        'description' => 'Your own Vat Reg. No. which should be used for the validations.'
+                        'label' => 'Own VAT ID',
+                        'description' => 'Your own VAT ID number which is required for validation. During the validation process, your VAT ID is never given to your customers.'
                     ),
                     'shopEmailNotification' => array(
                         'label' => 'Own email notifications',
-                        'description' => 'You will get a notification if an error occurs by validate a VAT Reg. No. You also will receive a short cronjob summary.'
+                        'description' => 'If provided, you will receive an email when a VAT ID validation error occurs. You also will receive a regular summary of these errors.'
                     ),
                     'customerEmailNotification' => array(
-                        'label' => 'Customers email notifications',
-                        'description' => 'The customer will get the result of its validation via email, if the service was immediately not available.'
+                        'label' => 'Customer email notifications',
+                        'description' => 'The customer will get the result of his validation via email, if the validation could not be performed immediately.'
                     ),
                     'extendedCheck' => array(
-                        'label' => 'Extended Checks',
-                        'description' => 'A qualified confirmation request can only be put from german VAT Reg. Nos. for foreign VAT. Reg. Nos. If the requested county return the address data, the plugin will compare it manually in each other case.'
+                        'label' => 'Extended checks',
+                        'description' => 'If enabled, this plugin will compare the address provided by the customer with the data available in the remote VAT ID validation service. Note: depending on the market of both you and your customer, the completeness of the available information for comparison may be limited.'
                     ),
                     'confirmation' => array(
-                        'label' => 'Offical mail confirmation',
-                        'description' => 'Requests an offical mail confirmation for qualified checks. A qualified confirmation request can only be put from german VAT Reg. Nos. for foreign VAT. Reg. Nos.'
+                        'label' => 'Official mail confirmation',
+                        'description' => 'Only available for German-based shops. Requests an official mail confirmation for qualified checks of foreign VAT IDs.'
                     )
                 )
             )
@@ -436,6 +436,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      * Helper function to validate a VatId, if validator is not available, the dummy validator can be used optionally
      * @param Billing $billing
      * @param VatIdInformation $requester
+     * @param bool $dummyValidation
      * @return VatIdValidatorResult
      */
     private function validate(Billing $billing, VatIdInformation $requester, $dummyValidation = false)
@@ -540,6 +541,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      * @param Billing $billing
      * @param int $status
      * @param bool $removeBillingVatId
+     * @internal param string $vatId
      */
 
     private function saveVatIdCheck(Billing $billing, $status = 0, $removeBillingVatId  = true)
