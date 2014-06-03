@@ -38,8 +38,8 @@ class VatIdValidationStatus
     const DUMMY_VALID = 2;
 
     /**
-     * Status 3 happens when
-     * - the VatId was checked and is valid
+     * Status 3 can be used for
+     * - setting the VatId was checked and is valid
      */
     const VAT_ID_VALID = 3;
 

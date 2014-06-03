@@ -20,3 +20,21 @@
         </div>
     {/if}
 {/block}
+
+{block name='frontend_checkout_confirm_error_messages' prepend}
+    {if $vatIdCheck.success}
+        <div class="success bold center">
+            {se namespace="frontend/swag_vat_id_validation/main" name="messages/validationSuccessful"}{/se}
+        </div>
+    {/if}
+{/block}
+
+{block name='frontend_checkout_confirm_error_messages' append}
+    {if $vatIdCheck.errors.messages|count > 0}
+        <div class="error center bold">
+            <p>{se namespace="frontend/swag_vat_id_validation/main" name="messages/notUsedForOrder"}{/se}</p>
+            <p>{$vatIdCheck.errors.messages|implode:'<br>'}</p>
+            {se namespace="frontend/swag_vat_id_validation/main" name="messages/editYourBilling"}{/se}
+        </div>
+    {/if}
+{/block}

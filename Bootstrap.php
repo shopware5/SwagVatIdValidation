@@ -112,7 +112,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     public function getLabel()
     {
-        return 'UstId-Prüfung';
+        return 'Ust-IdNr.-Prüfung';
     }
 
     /**
@@ -133,7 +133,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         return array(
             'version' => $this->getVersion(),
             'label' => $this->getLabel(),
-            //'description' => file_get_contents(__DIR__ . '/info.txt'),
+            'description' => file_get_contents(__DIR__ . '/info.txt'),
         );
     }
 
@@ -207,14 +207,14 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     public function createMailTemplates()
     {
-        $content = "Hallo,\n\nIhre Ust.-Id. konnte soeben erfolgreich geprüft werden.\n\n{if \$sValid}Sie ist gültig. Sie können nun mehrwertsteuerfrei einkaufen.{else}Es wurden Fehler erkannt. Bitte kontrollieren Sie nochmal Ihre Eingaben.{/if}\n\nViele Grüße,\n\nIhr Team von {config name=shopName}";
-        $this->createMailTemplate('CUSTOMERINFORMATION', 'Ihre Ust.-Id. wurde geprüft', $content);
+        $content = "Hallo,\n\nIhre USt-IdNr. konnte soeben erfolgreich geprüft werden.\n\n{if \$sValid}Sie ist gültig. Sie können nun mehrwertsteuerfrei einkaufen.{else}Es wurden Fehler erkannt. Bitte kontrollieren Sie nochmal Ihre Eingaben.{/if}\n\nViele Grüße,\n\nIhr Team von {config name=shopName}";
+        $this->createMailTemplate('CUSTOMERINFORMATION', 'Ihre USt-IdNr. wurde geprüft', $content);
 
-        $content = "Hallo,\n\nes wurden gerade {\$sAmount} Ust-Ids auf Ihre Gültigkeit geprüft. Davon waren {\$sInvalid} ungültig.\n\n{config name=shopName}";
-        $this->createMailTemplate('CRONJOBSUMMARY', 'Zusammenfassung der durchgeführten Ust-Id.-Prüfungen', $content);
+        $content = "Hallo,\n\nes wurden gerade {\$sAmount} USt-IdNrn. auf Ihre Gültigkeit geprüft. Davon waren {\$sInvalid} ungültig.\n\n{config name=shopName}";
+        $this->createMailTemplate('CRONJOBSUMMARY', 'Zusammenfassung der durchgeführten USt-IdNr.-Prüfungen', $content);
 
-        $content = "Hallo,\n\nes gab einen Fehler bei der Prüfung der Ust-Id {\$sVatId}:\n\n{\$sError}\n\n{config name=shopName}";
-        $this->createMailTemplate('VALIDATIONERROR', 'Bei einer Ust.-Id.-Prüfung ist ein Fehler aufgetreten.', $content);
+        $content = "Hallo,\n\nes gab einen Fehler bei der Prüfung der USt-IdNr. {\$sVatId}:\n\n{\$sError}\n\n{config name=shopName}";
+        $this->createMailTemplate('VALIDATIONERROR', 'Bei einer USt-IdNr.-Prüfung ist ein Fehler aufgetreten.', $content);
     }
 
     private function createMailTemplate($name, $subject, $content)
@@ -272,9 +272,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             'text',
             'vatId',
             array(
-                'label' => 'UstId-Nummer',
+                'label' => 'Eigene USt-IdNr.',
                 'value' => Shopware()->Config()->get('sTAXNUMBER'),
-                'description' => 'Eigene UstId-Nummer, die zur Prüfung verwendet werden soll.',
+                'description' => 'Eigene USt-IdNr., die zur Prüfung verwendet werden soll.',
                 'required' => true
             )
         );
@@ -305,7 +305,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             array(
                 'label' => 'Erweiterte Prüfung durchführen',
                 'value' => false,
-                'description' => 'Die erweiterte Prüfung kann nur von deutschen UstId-Nummern angefragt werden.'
+                'description' => 'Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden. Sofern der angefragte EU-Mitgliedsstaat die Adressdaten bereit stellt, werden diese anderenfalls manuell durch das Plugin verglichen.'
             )
         );
 
@@ -315,7 +315,34 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             array(
                 'label' => 'Amtliche Bestätigungsmitteilung',
                 'value' => false,
-                'description' => 'Amtliche Bestätigungsmitteilung bei der erweiterten Überprüfung anfordern.'
+                'description' => 'Amtliche Bestätigungsmitteilung bei qualifizierten Bestätigungsanfragen anfordern. Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden.'
+            )
+        );
+
+        $this->addFormTranslations(
+            array(
+                'en_GB' => array(
+                    'vatId' => array(
+                        'label' => 'Own VAT Reg. No.',
+                        'description' => 'Your own Vat Reg. No. which should be used for the validations.'
+                    ),
+                    'shopEmailNotification' => array(
+                        'label' => 'Own email notifications',
+                        'description' => 'You will get a notification if an error occurs by validate a VAT Reg. No. You also will receive a short cronjob summary.'
+                    ),
+                    'customerEmailNotification' => array(
+                        'label' => 'Customers email notifications',
+                        'description' => 'The customer will get the result of its validation via email, if the service was immediately not available.'
+                    ),
+                    'extendedCheck' => array(
+                        'label' => 'Extended Checks',
+                        'description' => 'A qualified confirmation request can only be put from german VAT Reg. Nos. for foreign VAT. Reg. Nos. If the requested county return the address data, the plugin will compare it manually in each other case.'
+                    ),
+                    'confirmation' => array(
+                        'label' => 'Offical mail confirmation',
+                        'description' => 'Requests an offical mail confirmation for qualified checks. A qualified confirmation request can only be put from german VAT Reg. Nos. for foreign VAT. Reg. Nos.'
+                    )
+                )
             )
         );
     }
@@ -338,8 +365,18 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         );
 
         $this->subscribeEvent(
+            'Shopware_Modules_Admin_Login_Successful',
+            'ShopwareModulesAdminLoginSuccessful'
+        );
+
+        $this->subscribeEvent(
             'Enlight_Controller_Action_PostDispatch_Frontend_Account',
             'onPostDispatchFrontendAccount'
+        );
+
+        $this->subscribeEvent(
+            'Enlight_Controller_Action_PostDispatch_Frontend_Checkout',
+            'onPostDispatchFrontendCheckout'
         );
     }
 
@@ -449,7 +486,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             $errors[1][$key] = true;
         }
 
-        if ($validatorResult->isDummyValid()) {
+        if ($validatorResult->isVatIdValid() || $validatorResult->isDummyValid()) {
             $session['vatIdValidationStatus'] = $validatorResult->getStatus();
         }
 
@@ -499,15 +536,14 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     }
 
     /**
-     * Helper method to save the VatId for later checks if the the validation service was not available
+     * Helper method to save the VatIdCheck in the database and optionally remove the VatId from users billing
      * @param Billing $billing
+     * @param int $status
+     * @param bool $removeBillingVatId
      */
-    private function saveVatIdForLaterCheck(Billing $billing, $vatId = '')
-    {
-        if ($vatId === '') {
-            $vatId = $billing->getVatId();
-        }
 
+    private function saveVatIdCheck(Billing $billing, $status = 0, $removeBillingVatId  = true)
+    {
         $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByBillingId($billing->getId());
 
         if (!$vatIdCheck) {
@@ -515,11 +551,19 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             $vatIdCheck->setBillingAddress($billing);
         }
 
-        $vatIdCheck->setVatId($vatId);
-        $vatIdCheck->setStatus(VatIdValidationStatus::UNCHECKED);
+        $vatIdCheck->setVatId($billing->getVatId());
+        $vatIdCheck->setStatus($status);
 
         Shopware()->Models()->persist($vatIdCheck);
         Shopware()->Models()->flush();
+
+        if($removeBillingVatId)
+        {
+            $billing->setVatId('');
+
+            Shopware()->Models()->persist($billing);
+            Shopware()->Models()->flush();
+        }
     }
 
     /**
@@ -537,12 +581,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         if($status->isDummyValid())
         {
+            /** @var Billing $billing */
             $billing = $this->getBillingRepository()->findOneById($return[1][0]);
-            $this->saveVatIdForLaterCheck($billing);
-            $billing->setVatId('');
-
-            Shopware()->Models()->persist($billing);
-            Shopware()->Models()->flush();
+            $this->saveVatIdCheck($billing);
         }
 
         return $return;
@@ -559,6 +600,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         $userId = $arguments->getId();
 
+        /** @var Billing $billing */
         $billing = $this->getBillingRepository()->findOneById($userId);
 
         $session = Shopware()->Session();
@@ -582,7 +624,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         }
 
         if ($status->isDummyValid()) {
-            $this->saveVatIdForLaterCheck($billing, $return[0]['ustid']);
+            $billing->setVatId($return[0]['ustid']);
+            $this->saveVatIdCheck($billing, VatIdValidationStatus::UNCHECKED, false);
             $return[0]['ustid'] = '';
         }
 
@@ -656,9 +699,24 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     public function onPostDispatchFrontendAccount(Enlight_Event_EventArgs $arguments)
     {
-        /** @var $controller Shopware_Controllers_Frontend_Index */
-        $controller = $arguments->getSubject();
+        $this->postDispatchFrontendController($arguments->getSubject(), array('index', 'billing'));
+    }
 
+    /**
+     * Listener to FrontendAccount (index and billing), shows the vatId and an info, if the validator was not available
+     * @param Enlight_Event_EventArgs $arguments
+     */
+    public function onPostDispatchFrontendCheckout(Enlight_Event_EventArgs $arguments)
+    {
+        $this->postDispatchFrontendController($arguments->getSubject(), array('confirm'));
+    }
+
+    /**
+     * @param Enlight_Controller_Action $controller
+     * @param array $actions
+     */
+    public function postDispatchFrontendController(Enlight_Controller_Action $controller, $actions)
+    {
         /** @var $request Zend_Controller_Request_Http */
         $request = $controller->Request();
 
@@ -674,7 +732,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         if (!$request->isDispatched()
             || $response->isException()
             || !$view->hasTemplate()
-            || !in_array($request->getActionName(), array('index', 'billing'))
+            || !in_array($request->getActionName(), $actions)
         ) {
             return;
         }
@@ -695,7 +753,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             array(
                 'vatId' => $vatIdCheck->getVatId(),
                 'errors' => $errors,
-                'success' => $status->isDummyValid()
+                'success' => $status->isVatIdValid()
             )
         );
 
@@ -763,17 +821,33 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         return $errors;
     }
 
-    /**
-     * Helper function to get the vatId check by billing
-     * @param Billing $billing
-     * @return null|VatIdCheck
-     */
-    private function getVatIdCheck(Billing $billing)
+    public function ShopwareModulesAdminLoginSuccessful(Enlight_Event_EventArgs $arguments)
     {
-        /** @var VatIdCheck $vatIdCheck */
-        $vatIdCheck =  $this->getVatIdCheckRepository()->getVatIdCheckByBillingId($billing->getId());
+        $user = $arguments->getUser();
 
-        return $vatIdCheck;
+        /** @var Billing $billing */
+        $billing = $this->getBillingRepository()->findOneByCustomerId($user['id']);
+
+        $vatId = $billing->getVatId();
+
+        if ($vatId === '') {
+            return;
+        }
+
+        $requester = new VatIdInformation($this->Config()->get('vatId'));
+        $validatorResult = $this->validate($billing, $requester, true);
+
+        if ($validatorResult->isValid()) {
+            return;
+        }
+
+        $status = $validatorResult->getStatus();
+
+        if ($validatorResult->isDummyValid()) {
+            $status = VatIdValidationStatus::UNCHECKED;
+        }
+
+        $this->saveVatIdCheck($billing, $status);
     }
 
     /**
