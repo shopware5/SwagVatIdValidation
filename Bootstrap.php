@@ -1,23 +1,7 @@
 <?php
-
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorInterface;
-use Shopware\Plugins\SwagVatIdValidation\Components\DummyVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\SimpleBffVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\ExtendedBffVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\SimpleMiasVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\ExtendedMiasVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-
-use Shopware\CustomModels\SwagVatIdValidation\VatIdCheck;
-use Shopware\Models\Customer\Billing;
-use Shopware\Models\Mail\Mail;
-
 /**
- * Shopware 4.0
- * Copyright © 2012 shopware AG
+ * Shopware 4
+ * Copyright © shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -36,9 +20,27 @@ use Shopware\Models\Mail\Mail;
  * The licensing of the program under the AGPLv3 does not imply a
  * trademark license. Therefore any rights, title and interest in
  * our trademarks remain entirely with us.
- *
+ */
+
+use Shopware\Plugins\SwagVatIdValidation\Components\Validators\VatIdValidatorInterface;
+use Shopware\Plugins\SwagVatIdValidation\Components\Validators\DummyVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleBffVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedBffVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleMiasVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedMiasVatIdValidator;
+
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
+
+use Shopware\CustomModels\SwagVatIdValidation\VatIdCheck;
+use Shopware\Models\Customer\Billing;
+use Shopware\Models\Mail\Mail;
+
+/**
  * @category   Shopware
- * @package   Shopware_Plugins
+ * @package    Shopware_Plugins
  * @subpackage SwagVatIdValidation
  * @copyright  Copyright (c) 2012, shopware AG (http://www.shopware.de)
  */
@@ -112,7 +114,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     public function getLabel()
     {
-        return 'Ust-IdNr.-Prüfung';
+        return 'VAT Validation';
     }
 
     /**
@@ -133,7 +135,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         return array(
             'version' => $this->getVersion(),
             'label' => $this->getLabel(),
-            'description' => file_get_contents(__DIR__ . '/info.txt'),
+            'description' => file_get_contents($this->Path() . 'info_de.txt').file_get_contents($this->Path() . 'info_en.txt'),
         );
     }
 
@@ -208,16 +210,19 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     public function createMailTemplates()
     {
         $content = "Hallo,\n\nIhre USt-IdNr. konnte soeben erfolgreich geprüft werden.\n\n{if \$sValid}Sie ist gültig. Sie können nun mehrwertsteuerfrei einkaufen.{else}Es wurden Fehler erkannt. Bitte kontrollieren Sie nochmal Ihre Eingaben.{/if}\n\nViele Grüße,\n\nIhr Team von {config name=shopName}";
-        $this->createMailTemplate('CUSTOMERINFORMATION', 'Ihre USt-IdNr. wurde geprüft', $content);
+        $translations = array('en_GB' => array('subject' => "", 'content' => ""));
+        $this->createMailTemplate('CUSTOMERINFORMATION', 'Ihre USt-IdNr. wurde geprüft', $content, $translations);
 
         $content = "Hallo,\n\nes wurden gerade {\$sAmount} USt-IdNrn. auf Ihre Gültigkeit geprüft. Davon waren {\$sInvalid} ungültig.\n\n{config name=shopName}";
-        $this->createMailTemplate('CRONJOBSUMMARY', 'Zusammenfassung der durchgeführten USt-IdNr.-Prüfungen', $content);
+        $translations = array('en_GB' => array('subject' => "", 'content' => ""));
+        $this->createMailTemplate('CRONJOBSUMMARY', 'Zusammenfassung der durchgeführten USt-IdNr.-Prüfungen', $content, $translations);
 
         $content = "Hallo,\n\nes gab einen Fehler bei der Prüfung der USt-IdNr. {\$sVatId}:\n\n{\$sError}\n\n{config name=shopName}";
-        $this->createMailTemplate('VALIDATIONERROR', 'Bei einer USt-IdNr.-Prüfung ist ein Fehler aufgetreten.', $content);
+        $translations = array('en_GB' => array('subject' => "", 'content' => ""));
+        $this->createMailTemplate('VALIDATIONERROR', 'Bei einer USt-IdNr.-Prüfung ist ein Fehler aufgetreten.', $content, $translations);
     }
 
-    private function createMailTemplate($name, $subject, $content)
+    private function createMailTemplate($name, $subject, $content, $translations = array())
     {
         $mail = new Mail();
         $mail->setName('sSWAGVATIDVALIDATION_' . $name);
@@ -229,6 +234,20 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         Shopware()->Models()->persist($mail);
         Shopware()->Models()->flush();
+
+        foreach($translations as $locale => $translationData)
+        {
+            $localeRepository = Shopware()->Models()->getRepository('\Shopware\Models\Shop\Locale');
+
+            $translation = new \Shopware\Models\Translation\Translation();
+            $translation->setLocale($localeRepository->findOneByLocale($locale));
+            $translation->setType('config_mails');
+            $translation->setKey($mail->getId());
+            $translation->setData(serialize($translationData));
+
+            Shopware()->Models()->persist($translation);
+            Shopware()->Models()->flush();
+        }
     }
 
     private function sendMailByTemplate($name, $to, $context)
@@ -240,9 +259,29 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     private function removeMailTemplate($name)
     {
+        /** @var Mail $mail */
         $mail = $this->getMailRepository()->findOneByName('sSWAGVATIDVALIDATION_' . $name);
+
+        $this->removeMailTranslations($mail->getId());
+
         Shopware()->Models()->remove($mail);
         Shopware()->Models()->flush($mail);
+    }
+
+    private function removeMailTranslations($mailTemplateId)
+    {
+        $translationRepository = Shopware()->Models()->getRepository('\Shopware\Models\Translation\Translation');
+        $translations = $translationRepository->findByKey($mailTemplateId);
+
+        /** @var \Shopware\Models\Translation\Translation $translation */
+        foreach($translations as $translation) {
+            if ($translation->getType() !== 'config_mails') {
+                continue;
+            }
+
+            Shopware()->Models()->remove($translation);
+            Shopware()->Models()->flush($translation);
+        }
     }
 
     private function registerCronJobs()
@@ -370,12 +409,12 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         );
 
         $this->subscribeEvent(
-            'Enlight_Controller_Action_PostDispatch_Frontend_Account',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Account',
             'onPostDispatchFrontendAccount'
         );
 
         $this->subscribeEvent(
-            'Enlight_Controller_Action_PostDispatch_Frontend_Checkout',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout',
             'onPostDispatchFrontendCheckout'
         );
     }
@@ -406,22 +445,25 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             return $return;
         }
 
-        $billingModel = new Billing();
-        $billingModel->fromArray($billing);
-        $billingModel->setVatId($billing['ustid']);
+        $customer = new VatIdCustomerInformation(
+            $billing['ustid'],
+            $billing['company'],
+            $billing['street'] . ' ' .$billing['streetnumber'],
+            $billing['zipcode'],
+            $billing['city']
+        );
 
         $requester = new VatIdInformation($this->Config()->get('vatId'));
 
-        $validatorResult = $this->validate($billingModel, $requester, true);
+        $validatorResult = $this->validate($customer, $requester, true);
 
         $errors = $this->evaluateValidatorResult($validatorResult);
 
-        if(!empty($errors[0]))
-        {
+        if (!empty($errors[0])) {
             $email = $this->Config()->get('shopEmailNotification');
             if (!empty($email)) {
                 $context = array(
-                    'sVatId' => $billingModel->getVatId(),
+                    'sVatId' => $customer->getVatId(),
                     'sError' => implode("\n", $validatorResult->getErrors())
                 );
 
@@ -434,26 +476,31 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Helper function to validate a VatId, if validator is not available, the dummy validator can be used optionally
-     * @param Billing $billing
+     * @param VatIdCustomerInformation $customer
      * @param VatIdInformation $requester
      * @param bool $dummyValidation
      * @return VatIdValidatorResult
      */
-    private function validate(Billing $billing, VatIdInformation $requester, $dummyValidation = false)
+    private function validate(VatIdCustomerInformation $customer, VatIdInformation $requester, $dummyValidation = false)
     {
-        $customer = new VatIdCustomerInformation($billing);
-        $validator = $this->getValidator($requester->getCountryCode(), $customer->getCountryCode());
+        //Get the correct validator (using an api)
+        $validator = $this->createValidator($customer->getCountryCode(), $requester->getCountryCode());
+
+        //Send the request to the validator
         $validatorResult = $validator->check($customer, $requester);
 
+        //if dummy should not validate, return the api's validator result
         if (!$dummyValidation) {
             return $validatorResult;
         }
 
+        //if the api service was unavailable the dummy validator checks, whether the vatId could be valid
         if ($validatorResult->serviceNotAvailable()) {
             $dummyValidator = new DummyVatIdValidator();
             $validatorResult = $dummyValidator->check($customer, $requester);
         }
 
+        //return the validator result
         return $validatorResult;
     }
 
@@ -496,21 +543,21 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Helper function to get the correct validator
-     * @param string $shopCountryCode
      * @param string $customerCountryCode
+     * @param string $shopCountryCode
      * @return VatIdValidatorInterface
      */
-    private function getValidator($shopCountryCode, $customerCountryCode)
+    private function createValidator($customerCountryCode, $shopCountryCode)
     {
         if ($this->Config()->get('extendedCheck')) {
-            return $this->getExtendedValidator($shopCountryCode, $customerCountryCode);
-        }
-
-        if ($shopCountryCode !== 'DE') {
-            return new SimpleMiasVatIdValidator();
+            return $this->createExtendedValidator($customerCountryCode, $shopCountryCode);
         }
 
         if ($customerCountryCode === 'DE') {
+            return new SimpleMiasVatIdValidator();
+        }
+
+        if ($shopCountryCode !== 'DE') {
             return new SimpleMiasVatIdValidator();
         }
 
@@ -519,17 +566,17 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Helper function to get the correct extended validator
-     * @param string $shopCountryCode
      * @param string $customerCountryCode
+     * @param string $shopCountryCode
      * @return VatIdValidatorInterface
      */
-    private function getExtendedValidator($shopCountryCode, $customerCountryCode)
+    private function createExtendedValidator($customerCountryCode, $shopCountryCode)
     {
-        if ($shopCountryCode !== 'DE') {
+        if ($customerCountryCode === 'DE') {
             return new ExtendedMiasVatIdValidator();
         }
 
-        if ($customerCountryCode === 'DE') {
+        if ($shopCountryCode !== 'DE') {
             return new ExtendedMiasVatIdValidator();
         }
 
@@ -652,9 +699,16 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         /**@var VatIdCheck $vatIdCheck */
         foreach ($vatIdChecks as $vatIdCheck) {
             $billing = $vatIdCheck->getBillingAddress();
-            $billing->setVatId($vatIdCheck->getVatId());
 
-            $validatorResult = $this->validate($billing, $requester);
+            $customer = new VatIdCustomerInformation(
+                $vatIdCheck->getVatId(),
+                $billing->getCompany(),
+                $billing->getStreet() . ' ' .$billing->getStreetNumber(),
+                $billing->getZipCode(),
+                $billing->getCity()
+            );
+
+            $validatorResult = $this->validate($customer, $requester);
 
             if ($validatorResult->serviceNotAvailable()) {
                 continue;
@@ -664,6 +718,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
             if ($validatorResult->isValid()) {
                 //save Vat-Id in Billing
+                $billing->setVatId($vatIdCheck->getVatId());
+
                 Shopware()->Models()->persist($billing);
                 Shopware()->Models()->flush();
             } else {
@@ -731,11 +787,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $view = $controller->View();
 
         //Check if there is a template and if an exception has occurred
-        if (!$request->isDispatched()
-            || $response->isException()
-            || !$view->hasTemplate()
-            || !in_array($request->getActionName(), $actions)
-        ) {
+        if (!in_array($request->getActionName(), $actions)) {
             return;
         }
 
@@ -836,8 +888,16 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             return;
         }
 
+        $customer = new VatIdCustomerInformation(
+            $vatId,
+            $billing->getCompany(),
+            $billing->getStreet() . ' ' .$billing->getStreetNumber(),
+            $billing->getZipCode(),
+            $billing->getCity()
+        );
+
         $requester = new VatIdInformation($this->Config()->get('vatId'));
-        $validatorResult = $this->validate($billing, $requester, true);
+        $validatorResult = $this->validate($customer, $requester, true);
 
         if ($validatorResult->isValid()) {
             return;

@@ -1,11 +1,51 @@
 <?php
+/**
+ * Shopware 4
+ * Copyright © shopware AG
+ *
+ * According to our dual licensing model, this program can be used either
+ * under the terms of the GNU Affero General Public License, version 3,
+ * or under a proprietary license.
+ *
+ * The texts of the GNU Affero General Public License with an additional
+ * permission and of our proprietary license can be found at and
+ * in the LICENSE file you have received along with this program.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * "Shopware" is a registered trademark of shopware AG.
+ * The licensing of the program under the AGPLv3 does not imply a
+ * trademark license. Therefore any rights, title and interest in
+ * our trademarks remain entirely with us.
+ */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Components;
+namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
+
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 abstract class BffVatIdValidator implements VatIdValidatorInterface
 {
+    /**
+     * The Bff validator (http://evatr.bff-online.de) works only for requests from german VAT Ids for foreign VAT Ids.
+     * When you request a qualified confirmation request, it returns whether an address data is correct or not.
+     * Some countries (like Germany) does not return the address data, so the address data will not be checked.
+     * Additionally you can order an official mail confirmation for qualified confirmation requests.
+     */
+
+    /**
+     * @var bool
+     */
     protected $confirmation;
 
+    /**
+     * @param bool $confirmation
+     */
     public function __construct($confirmation = false)
     {
         $this->confirmation = $confirmation;
@@ -15,7 +55,8 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
     abstract protected function addExtendedResults(VatIdValidatorResult $result, $response);
 
     /**
-     * @param array $data
+     * @param VatIdCustomerInformation $customerInformation
+     * @param VatIdInformation $shopInformation
      * @return VatIdValidatorResult
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
@@ -41,7 +82,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
 
         if (preg_match_all($reg, $response, $matches)) {
             $response = array_combine($matches[1], $matches[2]);
-            $result = $this->getSimpleValidatorResult($response);
+            $result = $this->createSimpleValidatorResult($response);
             $result = $this->addExtendedResults($result, $response);
             return $result;
         }
@@ -49,7 +90,11 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
         return new VatIdValidatorResult();
     }
 
-    private function getSimpleValidatorResult($response)
+    /**
+     * @param array $response
+     * @return VatIdValidatorResult
+     */
+    private function createSimpleValidatorResult($response)
     {
         if ($response['ErrorCode'] === '200') {
             return new VatIdValidatorResult(VatIdValidationStatus::VAT_ID_VALID);

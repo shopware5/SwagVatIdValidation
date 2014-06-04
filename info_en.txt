@@ -1,0 +1,28 @@
+<div style="padding-bottom:12px;color:999;">
+    <p>Dieses Plugin überprüft die Umsatzsteuer-Identifikationsnummer des Kunden auf ihre Richtigkeit.</p>
+    <br>
+    <p>Geprüft wird an folgenden Stellen:</p>
+    <br>
+    <ul>
+        <li>1. Bei Registrierung eines Neukunden</li>
+        <li>2. Bei Änderung der Rechnungsadresse</li>
+        <li>3. Im Bestellvorgang nach Angabe der Rechnungsadresse (optional)</li>
+    </ul>
+    <br>
+    <p>Wird eine Ust.-Id. als ungültig erkannt, wird der Benutzer zur Korrektur der Daten angewiesen.</p>
+    <p>Solange eine Ust.-Id. nicht überprüft werden konnte, kann der Kunde auch nicht mit ihr bestellen.</p>
+    <br>
+    <p>Mit diesem Plugin kann sowohl eine einfache als auch eine qualifizierte Bestätigungsabfrage gestellt werden.</p>
+    <p>Bei der qualifizierten Bestätigungsabfrage kann zudem eine amtliche Bestätigungsmitteilung angefordert werden, die Ihnen als Nachweis der Überprüfungspflicht dient.<br>
+    Bedingung hierfür ist jedoch, dass Sie über eine deutsche und Ihr Kunde über eine ausländische Ust.-Id. verfügen.</p>
+    <br>
+    <p>Für alle anderen Fälle kann keine "richtige" qualifizierte Bestätigungsabfrage durchgeführt werden, da nicht alle Länder Angaben zur hinterlegten Adresse zur Abfrage bereit stellen. Wird die Adresse jedoch zurückgegeben, wird diese mit den Angaben des Kunden durch das Plugin manuell verglichen.</p>
+    <p>In jedem Fall kann jedoch bei Bestellabschluss eine E-Mail mit exakter Angabe vom Anfragezeitpunkt, Ergebnis der Anfrage und ggf. auch einer eindeutigen Abfragenummer an Sie verschickt werden.</p>
+    <br>
+    <p>Weitere Informationen zu dem Thema erhalten Sie unter folgenden Links:</p>
+    <br>
+    <ul>
+        <li>- <a target="_blank" href="http://www.bzst.de/DE/Steuern_International/USt_Identifikationsnummer/Bestaetigung/Bestaetigung_node.html">Bundeszentralamt für Steuern</a>
+        <li>- <a target="_blank" href="http://ec.europa.eu/taxation_customs/vies/faq.html">Europäische Kommission</a>
+    </ul>
+</div>

@@ -1,6 +1,33 @@
 <?php
+/**
+ * Shopware 4
+ * Copyright © shopware AG
+ *
+ * According to our dual licensing model, this program can be used either
+ * under the terms of the GNU Affero General Public License, version 3,
+ * or under a proprietary license.
+ *
+ * The texts of the GNU Affero General Public License with an additional
+ * permission and of our proprietary license can be found at and
+ * in the LICENSE file you have received along with this program.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * "Shopware" is a registered trademark of shopware AG.
+ * The licensing of the program under the AGPLv3 does not imply a
+ * trademark license. Therefore any rights, title and interest in
+ * our trademarks remain entirely with us.
+ */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Components;
+namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
+
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 class ExtendedMiasVatIdValidator extends MiasVatIdValidator
 {
@@ -74,6 +101,8 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
     }
 
     /**
+     * Helper function to check the similarity of two address data strings
+     * If the difference is to big, the correct error message will be set to result
      * @param string $string1
      * @param string $string2
      * @param VatIdValidatorResult $result
@@ -82,17 +111,17 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      */
     private function validateString($string1, $string2, VatIdValidatorResult $result, $key)
     {
-        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
-
         if ($this->isSimiliar($string1, $string2)) {
             return true;
         }
 
+        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
         $result->addError($snippets->get('validator/extended/error/' . $key), $key);
         return false;
     }
 
     /**
+     * Helper function to check the similarity of two strings. On default, there have to be a minimum accordance of 80%.
      * @param $string1
      * @param $string2
      * @param int $minPercentage
