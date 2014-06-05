@@ -49,12 +49,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     /** @var  \Shopware\Models\Mail\Mail */
     private $mailRepository;
 
-    /** @var  \Shopware\Models\Customer\BillingRepository */
-    private $billingRepository;
-
-    /** @var \Shopware\CustomModels\SwagVatIdValidation\Repository */
-    private $vatIdCheckRepository;
-
     /**
      * Helper function to get the MailRepository
      * @return \Shopware\Models\Mail\Repository
@@ -66,32 +60,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         }
 
         return $this->mailRepository;
-    }
-
-    /**
-     * Helper function to get the BillingRepository
-     * @return \Shopware\Models\Customer\BillingRepository
-     */
-    private function getBillingRepository()
-    {
-        if (!$this->billingRepository) {
-            $this->billingRepository = Shopware()->Models()->getRepository('\Shopware\Models\Customer\Billing');
-        }
-
-        return $this->billingRepository;
-    }
-
-    /**
-     * Helper function to get the VatIdCheckRepository
-     * @return \Shopware\CustomModels\SwagVatIdValidation\Repository
-     */
-    private function getVatIdCheckRepository()
-    {
-        if (!$this->vatIdCheckRepository) {
-            $this->vatIdCheckRepository = Shopware()->Models()->getRepository('\Shopware\CustomModels\SwagVatIdValidation\VatIdCheck');
-        }
-
-        return $this->vatIdCheckRepository;
     }
 
     /**
@@ -150,7 +118,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     {
         $this->createDatabaseTables();
         $this->createMailTemplates();
-        $this->registerCronJobs();
         $this->createConfiguration();
         $this->registerEvents();
 
@@ -168,8 +135,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     public function secureUninstall()
     {
-        $this->removeMailTemplate('CUSTOMERINFORMATION');
-        $this->removeMailTemplate('CRONJOBSUMMARY');
         $this->removeMailTemplate('VALIDATIONERROR');
 
         return true;
@@ -209,45 +174,31 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     public function createMailTemplates()
     {
-        $content = "Hallo,\n\nIhre USt-IdNr. konnte soeben erfolgreich geprüft werden.\n\n{if \$sValid}Sie ist gültig. Sie können nun mehrwertsteuerfrei einkaufen.{else}Es wurden Fehler erkannt. Bitte kontrollieren Sie nochmal Ihre Eingaben.{/if}\n\nViele Grüße,\n\nIhr Team von {config name=shopName}";
-        $translations = array('en_GB' => array('subject' => "", 'content' => ""));
-        $this->createMailTemplate('CUSTOMERINFORMATION', 'Ihre USt-IdNr. wurde geprüft', $content, $translations);
-
-        $content = "Hallo,\n\nes wurden gerade {\$sAmount} USt-IdNrn. auf Ihre Gültigkeit geprüft. Davon waren {\$sInvalid} ungültig.\n\n{config name=shopName}";
-        $translations = array('en_GB' => array('subject' => "", 'content' => ""));
-        $this->createMailTemplate('CRONJOBSUMMARY', 'Zusammenfassung der durchgeführten USt-IdNr.-Prüfungen', $content, $translations);
-
+        //Template
         $content = "Hallo,\n\nes gab einen Fehler bei der Prüfung der USt-IdNr. {\$sVatId}:\n\n{\$sError}\n\n{config name=shopName}";
-        $translations = array('en_GB' => array('subject' => "", 'content' => ""));
-        $this->createMailTemplate('VALIDATIONERROR', 'Bei einer USt-IdNr.-Prüfung ist ein Fehler aufgetreten.', $content, $translations);
-    }
 
-    private function createMailTemplate($name, $subject, $content, $translations = array())
-    {
         $mail = new Mail();
-        $mail->setName('sSWAGVATIDVALIDATION_' . $name);
+        $mail->setName('sSWAGVATIDVALIDATION_VALIDATIONERROR');
         $mail->setFromMail('');
         $mail->setFromName('');
-        $mail->setSubject($subject);
+        $mail->setSubject('Die Ust-IdNr. eines Bestandskunden ist abgelaufen');
         $mail->setContent($content);
         $mail->setMailtype(Mail::MAILTYPE_SYSTEM);
 
         Shopware()->Models()->persist($mail);
         Shopware()->Models()->flush();
 
-        foreach($translations as $locale => $translationData)
-        {
-            $localeRepository = Shopware()->Models()->getRepository('\Shopware\Models\Shop\Locale');
+        //Translation
+        $localeRepository = Shopware()->Models()->getRepository('\Shopware\Models\Shop\Locale');
 
-            $translation = new \Shopware\Models\Translation\Translation();
-            $translation->setLocale($localeRepository->findOneByLocale($locale));
-            $translation->setType('config_mails');
-            $translation->setKey($mail->getId());
-            $translation->setData(serialize($translationData));
+        $translation = new \Shopware\Models\Translation\Translation();
+        $translation->setLocale($localeRepository->findOneByLocale('en_GB'));
+        $translation->setType('config_mails');
+        $translation->setKey($mail->getId());
+        $translation->setData(serialize(array('subject' => "", 'content' => "")));
 
-            Shopware()->Models()->persist($translation);
-            Shopware()->Models()->flush();
-        }
+        Shopware()->Models()->persist($translation);
+        Shopware()->Models()->flush();
     }
 
     private function sendMailByTemplate($name, $to, $context)
@@ -284,21 +235,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         }
     }
 
-    private function registerCronJobs()
-    {
-        $this->createCronJob(
-            'SwagCheckVatIds',
-            'SwagVatIdValidationCron',
-            3600,
-            true
-        );
-
-        $this->subscribeEvent(
-            'Shopware_CronJob_SwagVatIdValidationCron',
-            'onRunSwagVatIdValidationCronJob'
-        );
-    }
-
     /**
      * Creates the configuration fields.
      * Selects first a row of the s_articles_attributes to get all possible article attributes.
@@ -322,19 +258,19 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             'text',
             'shopEmailNotification',
             array(
-                'label' => 'Eigene E-Mail-Benachrichtigungen',
+                'label' => 'E-Mail-Benachrichtigung',
                 'value' => Shopware()->Config()->get('sMAIL'),
-                'description' => 'An diese E-Mail-Adresse erhalten Sie Cronjob-Zusammenfassungen sowie Fehler-Mitteilungen. Wenn leer, werden keine E-Mails versandt.'
+                'description' => 'An diese E-Mail-Adresse erhalten Sie eine Mitteilungen, wenn die Ust-IdNr. eines Bestandskunden abgelaufen ist. Wenn leer, erhalten Sie keine E-Mail.'
             )
         );
 
         $form->setElement(
             'checkbox',
-            'customerEmailNotification',
+            'vatIdRequired',
             array(
-                'label' => 'Kunden-Benachrichtigung per E-Mail',
+                'label' => 'Ust-IdNr.-Angabe ist Pflicht',
                 'value' => false,
-                'description' => 'Sendet dem Kunden das Ergebnis der Prüfung zu, wenn diese nicht sofort durchgeführt werden konnte.'
+                'description' => 'Wandelt das Feld für die Ust-IdNr. in ein Pflichtfeld um.'
             )
         );
 
@@ -367,11 +303,11 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                     ),
                     'shopEmailNotification' => array(
                         'label' => 'Own email notifications',
-                        'description' => 'If provided, you will receive an email when a VAT ID validation error occurs. You also will receive a regular summary of these errors.'
+                        'description' => 'If provided, you will receive an email when a VAT ID validation error occurs.'
                     ),
-                    'customerEmailNotification' => array(
-                        'label' => 'Customer email notifications',
-                        'description' => 'The customer will get the result of his validation via email, if the validation could not be performed immediately.'
+                    'vatIdRequired' => array(
+                        'label' => 'VAT ID is required',
+                        'description' => 'VAT ID is required'
                     ),
                     'extendedCheck' => array(
                         'label' => 'Extended checks',
@@ -388,528 +324,43 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     private function registerEvents()
     {
+        // The SubscriberInterface is available in SW 4.1.4 and later
+        if (!$this->assertVersionGreaterThen('4.1.4')) {
+            throw new \RuntimeException('At least Shopware 4.1.4 is required');
+        }
+
+        // Register an early event for our event subscribers
         $this->subscribeEvent(
-            'Shopware_Modules_Admin_ValidateStep2_FilterResult',
-            'ShopwareModulesAdminValidateStep2FilterResult'
+            'Enlight_Controller_Front_DispatchLoopStartup',
+            'onStartDispatch'
         );
 
-        $this->subscribeEvent(
-            'Shopware_Modules_Admin_SaveRegisterBillingAttributes_FilterSql',
-            'ShopwareModulesAdminSaveRegisterBillingAttributesFilterSql'
+        return;
+    }
+
+    /**
+     * This callback function is triggered at the very beginning of the dispatch process and allows
+     * us to register additional events on the fly. This way you won't ever need to reinstall you
+     * plugin for new events - any event and hook can simply be registerend in the event subscribers
+     */
+    public function onStartDispatch(Enlight_Event_EventArgs $args)
+    {
+        $config = $this->Config();
+        $path = $this->Path();
+        $action = $args->getRequest()->getParam('action');
+
+
+        $subscribers = array(
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Account($config, $path),
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Checkout($config, $path),
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Login($config, $action),
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Register($config, $action),
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Update($config, $action)
         );
 
-        $this->subscribeEvent(
-            'Shopware_Modules_Admin_UpdateBilling_FilterSql',
-            'onShopwareModulesAdminUpdateBillingFilterSql'
-        );
-
-        $this->subscribeEvent(
-            'Shopware_Modules_Admin_Login_Successful',
-            'ShopwareModulesAdminLoginSuccessful'
-        );
-
-        $this->subscribeEvent(
-            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Account',
-            'onPostDispatchFrontendAccount'
-        );
-
-        $this->subscribeEvent(
-            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout',
-            'onPostDispatchFrontendCheckout'
-        );
-    }
-
-    /**
-     * Listener to ValidateStep2, checks the VatId
-     * @param Enlight_Event_EventArgs $arguments
-     * @return mixed
-     */
-    public function ShopwareModulesAdminValidateStep2FilterResult(Enlight_Event_EventArgs $arguments)
-    {
-        $post = $arguments->getPost();
-        $errors = $arguments->getReturn();
-        $errors = $this->validateVatId($post['register']['billing'], $errors);
-
-        return $errors;
-    }
-
-    /**
-     * Helper function includes the complete check process
-     * @param array $billing
-     * @param array $return
-     * @return array
-     */
-    private function validateVatId($billing, $return = array())
-    {
-        if ($billing['ustid'] === '') {
-            return $return;
+        foreach ($subscribers as $subscriber) {
+            $this->Application()->Events()->addSubscriber($subscriber);
         }
-
-        $customer = new VatIdCustomerInformation(
-            $billing['ustid'],
-            $billing['company'],
-            $billing['street'] . ' ' .$billing['streetnumber'],
-            $billing['zipcode'],
-            $billing['city']
-        );
-
-        $requester = new VatIdInformation($this->Config()->get('vatId'));
-
-        $validatorResult = $this->validate($customer, $requester, true);
-
-        $errors = $this->evaluateValidatorResult($validatorResult);
-
-        if (!empty($errors[0])) {
-            $email = $this->Config()->get('shopEmailNotification');
-            if (!empty($email)) {
-                $context = array(
-                    'sVatId' => $customer->getVatId(),
-                    'sError' => implode("\n", $validatorResult->getErrors())
-                );
-
-                $this->sendMailByTemplate('VALIDATIONERROR', $email, $context);
-            }
-        }
-
-        return array(array_merge($return[0], $errors[0]), array_merge($return[1], $errors[1]));
-    }
-
-    /**
-     * Helper function to validate a VatId, if validator is not available, the dummy validator can be used optionally
-     * @param VatIdCustomerInformation $customer
-     * @param VatIdInformation $requester
-     * @param bool $dummyValidation
-     * @return VatIdValidatorResult
-     */
-    private function validate(VatIdCustomerInformation $customer, VatIdInformation $requester, $dummyValidation = false)
-    {
-        //Get the correct validator (using an api)
-        $validator = $this->createValidator($customer->getCountryCode(), $requester->getCountryCode());
-
-        //Send the request to the validator
-        $validatorResult = $validator->check($customer, $requester);
-
-        //if dummy should not validate, return the api's validator result
-        if (!$dummyValidation) {
-            return $validatorResult;
-        }
-
-        //if the api service was unavailable the dummy validator checks, whether the vatId could be valid
-        if ($validatorResult->serviceNotAvailable()) {
-            $dummyValidator = new DummyVatIdValidator();
-            $validatorResult = $dummyValidator->check($customer, $requester);
-        }
-
-        //return the validator result
-        return $validatorResult;
-    }
-
-    /**
-     * Helper function evaluates validators result and returns the error messages
-     * @param VatIdValidatorResult $validatorResult
-     * @return array
-     */
-    private function evaluateValidatorResult(VatIdValidatorResult $validatorResult)
-    {
-        $session = Shopware()->Session();
-        unset($session['vatIdValidationStatus']);
-
-        $errors = array(
-            $validatorResult->getErrors(),
-            array()
-        );
-
-        foreach ($errors[0] as $key => $error) {
-            $key = strtolower($key);
-
-            if ($key === 'vatid') {
-                $errors[1]['ustid'] = true;
-                break;
-            }
-
-            if ($key === 'street') {
-                $errors[1]['streetnumber'] = true;
-            }
-
-            $errors[1][$key] = true;
-        }
-
-        if ($validatorResult->isVatIdValid() || $validatorResult->isDummyValid()) {
-            $session['vatIdValidationStatus'] = $validatorResult->getStatus();
-        }
-
-        return $errors;
-    }
-
-    /**
-     * Helper function to get the correct validator
-     * @param string $customerCountryCode
-     * @param string $shopCountryCode
-     * @return VatIdValidatorInterface
-     */
-    private function createValidator($customerCountryCode, $shopCountryCode)
-    {
-        if ($this->Config()->get('extendedCheck')) {
-            return $this->createExtendedValidator($customerCountryCode, $shopCountryCode);
-        }
-
-        if ($customerCountryCode === 'DE') {
-            return new SimpleMiasVatIdValidator();
-        }
-
-        if ($shopCountryCode !== 'DE') {
-            return new SimpleMiasVatIdValidator();
-        }
-
-        return new SimpleBffVatIdValidator();
-    }
-
-    /**
-     * Helper function to get the correct extended validator
-     * @param string $customerCountryCode
-     * @param string $shopCountryCode
-     * @return VatIdValidatorInterface
-     */
-    private function createExtendedValidator($customerCountryCode, $shopCountryCode)
-    {
-        if ($customerCountryCode === 'DE') {
-            return new ExtendedMiasVatIdValidator();
-        }
-
-        if ($shopCountryCode !== 'DE') {
-            return new ExtendedMiasVatIdValidator();
-        }
-
-        return new ExtendedBffVatIdValidator($this->Config()->get('confirmation'));
-    }
-
-    /**
-     * Helper method to save the VatIdCheck in the database and optionally remove the VatId from users billing
-     * @param Billing $billing
-     * @param int $status
-     * @param bool $removeBillingVatId
-     * @internal param string $vatId
-     */
-
-    private function saveVatIdCheck(Billing $billing, $status = 0, $removeBillingVatId  = true)
-    {
-        $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByBillingId($billing->getId());
-
-        if (!$vatIdCheck) {
-            $vatIdCheck = new VatIdCheck();
-            $vatIdCheck->setBillingAddress($billing);
-        }
-
-        $vatIdCheck->setVatId($billing->getVatId());
-        $vatIdCheck->setStatus($status);
-
-        Shopware()->Models()->persist($vatIdCheck);
-        Shopware()->Models()->flush();
-
-        if($removeBillingVatId)
-        {
-            $billing->setVatId('');
-
-            Shopware()->Models()->persist($billing);
-            Shopware()->Models()->flush();
-        }
-    }
-
-    /**
-     * Listener to saveRegisterBilling, the billing is already saved, so the vat id have to be removed
-     * @param Enlight_Event_EventArgs $arguments
-     * @return mixed
-     */
-    public function ShopwareModulesAdminSaveRegisterBillingAttributesFilterSql(Enlight_Event_EventArgs $arguments)
-    {
-        $return = $arguments->getReturn();
-
-        $session = Shopware()->Session();
-        $status = new VatIdValidationStatus($session['vatIdValidationStatus']);
-        unset($session['vatIdValidationStatus']);
-
-        if($status->isDummyValid())
-        {
-            /** @var Billing $billing */
-            $billing = $this->getBillingRepository()->findOneById($return[1][0]);
-            $this->saveVatIdCheck($billing);
-        }
-
-        return $return;
-    }
-
-    /**
-     * Listener to updateBilling, the billing is not saved yet, so the data can be easily changed
-     * @param Enlight_Event_EventArgs $arguments
-     * @return mixed
-     */
-    public function onShopwareModulesAdminUpdateBillingFilterSql(Enlight_Event_EventArgs $arguments)
-    {
-        $return = $arguments->getReturn();
-
-        $userId = $arguments->getId();
-
-        /** @var Billing $billing */
-        $billing = $this->getBillingRepository()->findOneById($userId);
-
-        $session = Shopware()->Session();
-        $status = new VatIdValidationStatus($session['vatIdValidationStatus']);
-        unset($session['vatIdValidationStatus']);
-
-        if ($return[0]['ustid'] === '') {
-            $status->setStatus(VatIdValidationStatus::VALID);
-        }
-
-        if ($status->isValid()) {
-            //Remove Vat-Id from check list, if exists
-            $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByBillingId($billing->getId());
-
-            if ($vatIdCheck) {
-                Shopware()->Models()->remove($vatIdCheck);
-                Shopware()->Models()->flush($vatIdCheck);
-            }
-
-            return $return;
-        }
-
-        if ($status->isDummyValid()) {
-            $billing->setVatId($return[0]['ustid']);
-            $this->saveVatIdCheck($billing, VatIdValidationStatus::UNCHECKED, false);
-            $return[0]['ustid'] = '';
-        }
-
-        return $return;
-    }
-
-    /**
-     * CronJob checks all vat ids in the 's_plugin_swag_vat_id_checks' database table.
-     * If an id is valid, it will be removed from the table and set in the billing address
-     * If an id in invalid, it will also be removed from the table, but will not be set in the billing address
-     * If the service is still unavailable, the vat id keeps in the table and will not be set in the billing address
-     * @param Shopware_Components_Cron_CronJob $job
-     * @return bool
-     */
-    public function onRunSwagVatIdValidationCronJob(Shopware_Components_Cron_CronJob $job)
-    {
-        $vatIdChecks = $this->getVatIdCheckRepository()->getVatIdCheckBuilder()->getQuery()->getResult();
-        $requester = new VatIdInformation($this->Config()->get('vatId'));
-
-        $summary = array('sAmount' => 0, 'sInvalid' => 0);
-
-        /**@var VatIdCheck $vatIdCheck */
-        foreach ($vatIdChecks as $vatIdCheck) {
-            $billing = $vatIdCheck->getBillingAddress();
-
-            $customer = new VatIdCustomerInformation(
-                $vatIdCheck->getVatId(),
-                $billing->getCompany(),
-                $billing->getStreet() . ' ' .$billing->getStreetNumber(),
-                $billing->getZipCode(),
-                $billing->getCity()
-            );
-
-            $validatorResult = $this->validate($customer, $requester);
-
-            if ($validatorResult->serviceNotAvailable()) {
-                continue;
-            }
-
-            $summary['sAmount']++;
-
-            if ($validatorResult->isValid()) {
-                //save Vat-Id in Billing
-                $billing->setVatId($vatIdCheck->getVatId());
-
-                Shopware()->Models()->persist($billing);
-                Shopware()->Models()->flush();
-            } else {
-                $summary['sInvalid']++;
-            }
-
-            $status = $validatorResult->getStatus();
-            $vatIdCheck->setStatus($status);
-
-            Shopware()->Models()->persist($vatIdCheck);
-            Shopware()->Models()->flush();
-
-            $emailFlag = $this->Config()->get('customerEmailNotification');
-            if ($emailFlag) {
-                $context['sValid'] = $validatorResult->isValid();
-                $this->sendMailByTemplate('CUSTOMERINFORMATION', $billing->getCustomer()->getEmail(), $context);
-            }
-        }
-
-        if(empty($summary['sAmount'])) {
-            return true;
-        }
-
-        $email = $this->Config()->get('shopEmailNotification');
-        if (!empty($email)) {
-            $this->sendMailByTemplate('CRONJOBSUMMARY', $email, $summary);
-        }
-
-        return true;
-    }
-
-    /**
-     * Listener to FrontendAccount (index and billing), shows the vatId and an info, if the validator was not available
-     * @param Enlight_Event_EventArgs $arguments
-     */
-    public function onPostDispatchFrontendAccount(Enlight_Event_EventArgs $arguments)
-    {
-        $this->postDispatchFrontendController($arguments->getSubject(), array('index', 'billing'));
-    }
-
-    /**
-     * Listener to FrontendAccount (index and billing), shows the vatId and an info, if the validator was not available
-     * @param Enlight_Event_EventArgs $arguments
-     */
-    public function onPostDispatchFrontendCheckout(Enlight_Event_EventArgs $arguments)
-    {
-        $this->postDispatchFrontendController($arguments->getSubject(), array('confirm'));
-    }
-
-    /**
-     * @param Enlight_Controller_Action $controller
-     * @param array $actions
-     */
-    public function postDispatchFrontendController(Enlight_Controller_Action $controller, $actions)
-    {
-        /** @var $request Zend_Controller_Request_Http */
-        $request = $controller->Request();
-
-        /** @var $response Zend_Controller_Response_Http */
-        $response = $controller->Response();
-
-        /**
-         * @var $view Enlight_View_Default
-         */
-        $view = $controller->View();
-
-        //Check if there is a template and if an exception has occurred
-        if (!in_array($request->getActionName(), $actions)) {
-            return;
-        }
-
-        $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByCustomerId(Shopware()->Session()->sUserId);
-
-        if (!$vatIdCheck) {
-            return;
-        }
-
-        //Add our plugin template directory to load our slogan extension.
-        $view->addTemplateDir($this->Path() . 'Views/');
-        $view->extendsTemplate('frontend/plugins/swag_vat_id_validation/index.tpl');
-
-        $status = new VatIdValidationStatus($vatIdCheck->getStatus());
-        $errors = $this->getErrors($status);
-        $view->assign('vatIdCheck',
-            array(
-                'vatId' => $vatIdCheck->getVatId(),
-                'errors' => $errors,
-                'success' => $status->isVatIdValid()
-            )
-        );
-
-        if ($status->isValid()) {
-            Shopware()->Models()->remove($vatIdCheck);
-            Shopware()->Models()->flush($vatIdCheck);
-        }
-    }
-
-    /**
-     * Helper function sets the ErrorMessages and ErrorFlags by the VatIdValidationStatus
-     * @param VatIdValidationStatus $status
-     * @return array
-     */
-    private function getErrors(VatIdValidationStatus $status)
-    {
-        $errors = array(
-            'messages' => array(),
-            'flags' => array()
-        );
-
-        if ($status->isValid()) {
-            return $errors;
-        }
-
-        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
-
-        if ($status->serviceNotAvailable()) {
-            $errors['messages'][] = $snippets->get('messages/checkNotAvailable');
-
-            if ($this->Config()->get('customerEmailNotification')) {
-                $errors['messages'][] = $snippets->get('messages/emailNotification');
-            }
-
-            return $errors;
-        }
-
-        if (!$status->isVatIdValid()) {
-            $errors['messages'][] = $snippets->get('validator/error/vatId');
-            $errors['flags']['ustid'] = true;
-            return $errors;
-        }
-
-        if (!$status->isCompanyValid()) {
-            $errors['messages'][] = $snippets->get('validator/extended/error/company');
-            $errors['flags']['company'] = true;
-        }
-
-        if (!$status->isStreetValid()) {
-            $errors['messages'][] = $snippets->get('validator/extended/error/street');
-            $errors['flags']['street'] = true;
-            $errors['flags']['streetnumber'] = true;
-        }
-
-        if (!$status->isZipCodeValid()) {
-            $errors['messages'][] = $snippets->get('validator/extended/error/zipCode');
-            $errors['flags']['zipcode'] = true;
-        }
-
-        if (!$status->isCityValid()) {
-            $errors['messages'][] = $snippets->get('validator/extended/error/city');
-            $errors['flags']['city'] = true;
-        }
-
-        return $errors;
-    }
-
-    public function ShopwareModulesAdminLoginSuccessful(Enlight_Event_EventArgs $arguments)
-    {
-        $user = $arguments->getUser();
-
-        /** @var Billing $billing */
-        $billing = $this->getBillingRepository()->findOneByCustomerId($user['id']);
-
-        $vatId = $billing->getVatId();
-
-        if ($vatId === '') {
-            return;
-        }
-
-        $customer = new VatIdCustomerInformation(
-            $vatId,
-            $billing->getCompany(),
-            $billing->getStreet() . ' ' .$billing->getStreetNumber(),
-            $billing->getZipCode(),
-            $billing->getCity()
-        );
-
-        $requester = new VatIdInformation($this->Config()->get('vatId'));
-        $validatorResult = $this->validate($customer, $requester, true);
-
-        if ($validatorResult->isValid()) {
-            return;
-        }
-
-        $status = $validatorResult->getStatus();
-
-        if ($validatorResult->isDummyValid()) {
-            $status = VatIdValidationStatus::UNCHECKED;
-        }
-
-        $this->saveVatIdCheck($billing, $status);
     }
 
     /**
