@@ -24,27 +24,46 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
+use Shopware\Models\Customer\Billing;
+
 /**
  * This example is going to show how to test your methods without global shopware state
  *
  * Class Account
  * @package Shopware\Plugins\SwagScdExample\Subscriber
  */
-class Registration extends TemplateExtension
+class SaveBilling extends ValidationPoint
 {
     public static function getSubscribedEvents()
     {
         return array(
-            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Register' => 'onPostDispatchFrontendRegister'
+            'Shopware_Modules_Admin_ValidateStep2_FilterResult' => 'onValidateStep2FilterResult'
         );
     }
 
     /**
-     * Listener to FrontendAccount (index and billing), shows the vatId and an info, if the validator was not available
      * @param \Enlight_Event_EventArgs $arguments
+     * @return array|mixed
      */
-    public function onPostDispatchFrontendRegister(\Enlight_Event_EventArgs $arguments)
+    public function onValidateStep2FilterResult(\Enlight_Event_EventArgs $arguments)
     {
-        $this->postDispatchFrontendController($arguments->getSubject(), array('index'));
+        $post = $arguments->getPost();
+        $errors = $arguments->getReturn();
+
+        $result = $this->validate(
+            $post['register']['billing']['ustid'],
+            $post['register']['billing']['company'],
+            $post['register']['billing']['street'],
+            $post['register']['billing']['zipcode'],
+            $post['register']['billing']['city']
+        );
+
+        $errors = array(
+            array_merge($result->getErrorMessages(), $errors[0]),
+            array_merge($result->getErrorFlags(), $errors[1])
+        );
+
+        return $errors;
     }
 }

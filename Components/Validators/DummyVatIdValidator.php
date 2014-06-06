@@ -26,7 +26,6 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 class DummyVatIdValidator implements VatIdValidatorInterface
@@ -36,6 +35,17 @@ class DummyVatIdValidator implements VatIdValidatorInterface
      * Vat Ids, that have an invalid format, have not to be written in the database for later checks.
      */
 
+    /** @var  VatIdValidatorResult */
+    private $result;
+
+    /**
+     * Constructor sets the snippet namespace
+     */
+    public function __construct()
+    {
+        $this->result = new VatIdValidatorResult('dummyValidator');
+    }
+
     /**
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdInformation $shopInformation
@@ -43,46 +53,27 @@ class DummyVatIdValidator implements VatIdValidatorInterface
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation = null)
     {
-        $errors = $this->checkVatId($customerInformation);
-
-        if (!empty($errors)) {
-            return new VatIdValidatorResult(VatIdValidationStatus::INVALID, $errors);
-        }
-
-        return new VatIdValidatorResult(VatIdValidationStatus::VALID);
-    }
-
-    /**
-     * @param VatIdInformation $information
-     * @return array
-     */
-    private function checkVatId(VatIdInformation $information)
-    {
-        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/dummyValidator');
-
-        $errors = array();
-
-        if ($information->getVatId() === '') {
-            return $errors;
+        if ($customerInformation->getVatId() === '') {
+            return $this->result;
         }
 
         //All Vat-IDs have a length of 7 to 14 chars
-        if (strlen($information->getVatId()) < 7) {
-            $errors[] = $snippets->get('error1');
-        } elseif (strlen($information->getVatId()) > 14) {
-            $errors[] = $snippets->get('error2');
+        if (strlen($customerInformation->getVatId()) < 7) {
+            $this->result->setVatIdInvalid('1');
+        } elseif (strlen($customerInformation->getVatId()) > 14) {
+            $this->result->setVatIdInvalid('2');
         }
 
         //The CountyCode always only consists of letters
-        if (!ctype_alpha($information->getCountryCode())) {
-            $errors[] = $snippets->get('error3');
+        if (!ctype_alpha($customerInformation->getCountryCode())) {
+            $this->result->setVatIdInvalid('3');
         }
 
         //The VatNumber always only consists of alphanumerical chars
-        if (!ctype_alnum($information->getVatNumber())) {
-            $errors[] = $snippets->get('error4');
+        if (!ctype_alnum($customerInformation->getVatNumber())) {
+            $this->result->setVatIdInvalid('4');
         }
 
-        return $errors;
+        return $this->result;
     }
 }

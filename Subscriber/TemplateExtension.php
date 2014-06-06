@@ -27,6 +27,7 @@ namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
 
 use Enlight\Event\SubscriberInterface;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 /**
  * This example is going to show how to test your methods without global shopware state
@@ -79,9 +80,13 @@ abstract class TemplateExtension implements SubscriberInterface
         $session = Shopware()->Session();
 
         if($session->offsetExists('vatIdValidationStatus')) {
-            $status = new VatIdValidationStatus($session->offsetGet('vatIdValidationStatus'));
+            $serialized = $session->offsetGet('vatIdValidationStatus');
+
+            $result = new VatIdValidatorResult();
+            $result->unserialize($serialized);
             $session->offsetUnset('vatIdValidationStatus');
-            $errors = $this->getErrors($status);
+
+            $errors['messages'] = $result->getErrorMessages();
         }
 
         $view->assign('vatIdCheck', array(

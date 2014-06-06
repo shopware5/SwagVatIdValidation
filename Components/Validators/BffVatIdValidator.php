@@ -38,9 +38,10 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
      * Additionally you can order an official mail confirmation for qualified confirmation requests.
      */
 
-    /**
-     * @var bool
-     */
+    /** @var  VatIdValidatorResult */
+    protected $result;
+
+    /** @var bool */
     protected $confirmation;
 
     /**
@@ -48,11 +49,12 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
      */
     public function __construct($confirmation = false)
     {
+        $this->result = new VatIdValidatorResult('bffValidator');
         $this->confirmation = $confirmation;
     }
 
     abstract protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
-    abstract protected function addExtendedResults(VatIdValidatorResult $result, $response);
+    abstract protected function addExtendedResults($response);
 
     /**
      * @param VatIdCustomerInformation $customerInformation
@@ -77,33 +79,28 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
         $reg = '#<param>\s*<value><array><data>\s*<value><string>([^<]*)</string></value>\s*<value><string>([^<]*)</string></value>\s*</data></array></value>\s*</param>#msi';
 
         if(empty($response)) {
-            return new VatIdValidatorResult();
+            $this->result->setServiceUnavailable();
+            return $this->result;
         }
 
         if (preg_match_all($reg, $response, $matches)) {
             $response = array_combine($matches[1], $matches[2]);
-            $result = $this->createSimpleValidatorResult($response);
-            $result = $this->addExtendedResults($result, $response);
-            return $result;
+            $this->createSimpleValidatorResult($response);
+            $this->addExtendedResults($response);
         }
 
-        return new VatIdValidatorResult();
+        return $this->result;
     }
 
     /**
      * @param array $response
-     * @return VatIdValidatorResult
      */
     private function createSimpleValidatorResult($response)
     {
         if ($response['ErrorCode'] === '200') {
-            return new VatIdValidatorResult(VatIdValidationStatus::VAT_ID_OK);
+            return;
         }
 
-        $error = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/bffValidator')->get(
-            'error' . $response['ErrorCode']
-        );
-
-        return new VatIdValidatorResult(VatIdValidationStatus::INVALID, array('vatId' => $error));
+        $this->result->setVatIdInvalid($response['ErrorCode']);
     }
 }

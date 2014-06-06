@@ -311,10 +311,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $subscribers = array(
             new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Account($config, $path),
             new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Checkout($config, $path),
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Registration($config, $path),
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Register($config, $path),
             new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Login($config, $action),
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Register($config, $action),
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Update($config, $action)
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\SaveBilling($config)
         );
 
         foreach ($subscribers as $subscriber) {

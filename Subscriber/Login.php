@@ -38,8 +38,21 @@ use Shopware\Models\Customer\Billing;
  */
 class Login extends ValidationPoint
 {
+    private static $action;
+
+    public function __construct($config, $action)
+    {
+        parent::__construct($config);
+        self::$action = $action;
+    }
+
+
     public static function getSubscribedEvents()
     {
+        if (self::$action === 'saveRegister') {
+            return array();
+        }
+
         return array(
             'Shopware_Modules_Admin_Login_Successful' => 'onLoginSuccessful'
         );
@@ -74,6 +87,6 @@ class Login extends ValidationPoint
         );
 
         $session = Shopware()->Session();
-        $session->offsetSet('vatIdValidationStatus', $result->getStatus());
+        $session->offsetSet('vatIdValidationStatus', $result->serialize());
     }
 }

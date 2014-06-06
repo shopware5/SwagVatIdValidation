@@ -26,8 +26,6 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 class SimpleBffVatIdValidator extends BffVatIdValidator
 {
@@ -50,13 +48,9 @@ class SimpleBffVatIdValidator extends BffVatIdValidator
     }
 
     /**
-     * @param VatIdValidatorResult $result
      * @param array $response
-     * @return VatIdValidatorResult
      */
-    protected function addExtendedResults(VatIdValidatorResult $result, $response)
+    protected function addExtendedResults($response)
     {
-        $result->setStatus(VatIdValidationStatus::ADDRESS_VALID);
-        return $result;
     }
 }

@@ -11,15 +11,6 @@
     {/if}
 {/block}
 
-{* Success messages *}
-{block name="frontend_account_index_success_messages" append}
-    {if $vatIdCheck.success}
-        <div class="success bold center grid_16">
-            {se namespace="frontend/swag_vat_id_validation/main" name="messages/validationSuccessful"}{/se}
-        </div>
-    {/if}
-{/block}
-
 {block name='frontend_checkout_confirm_error_messages' prepend}
     {if $vatIdCheck.success}
         <div class="success bold center">

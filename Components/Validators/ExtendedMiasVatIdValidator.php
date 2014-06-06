@@ -26,7 +26,6 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 class ExtendedMiasVatIdValidator extends MiasVatIdValidator
@@ -34,7 +33,7 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
     /**
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdInformation $shopInformation
-     * @return VatIdValidatorResult
+     * @return array
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
@@ -51,14 +50,13 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
     }
 
     /**
-     * @param VatIdValidatorResult $result
      * @param array $response
-     * @return VatIdValidatorResult
+     * @param VatIdCustomerInformation $customerInformation
      */
-    protected function addExtendedResults(VatIdValidatorResult $result, $response, VatIdCustomerInformation $customerInformation)
+    protected function addExtendedResults($response, VatIdCustomerInformation $customerInformation)
     {
         if (!$response->traderAddress) {
-            return $result;
+            return;
         }
 
         $extendedData = array();
@@ -74,30 +72,28 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
         $extendedData['zipCode'] = array($address[0], $customerInformation->getZipCode());
         $extendedData['city'] = array($address[1], $customerInformation->getCity());
 
-        foreach ($extendedData as $key => &$data) {
+        foreach ($extendedData as &$data) {
             $string1 = trim($data[0]);
             $string2 = trim($data[1]);
 
-            $data = $this->validateString($string1, $string2, $result, $key);
+            $data = $this->validateString($string1, $string2);
         }
 
-        if ($extendedData['company']) {
-            $result->setStatus(VatIdValidationStatus::COMPANY_OK);
+        if (!$extendedData['company']) {
+            $this->result->setCompanyInvalid();
         }
 
-        if ($extendedData['street']) {
-            $result->setStatus(VatIdValidationStatus::STREET_OK);
+        if (!$extendedData['street']) {
+            $this->result->setStreetInvalid();
         }
 
-        if ($extendedData['zipCode']) {
-            $result->setStatus(VatIdValidationStatus::ZIP_CODE_OK);
+        if (!$extendedData['zipCode']) {
+            $this->result->setZipCodeInvalid();
         }
 
-        if ($extendedData['city']) {
-            $result->setStatus(VatIdValidationStatus::CITY_OK);
+        if (!$extendedData['city']) {
+            $this->result->setCityInvalid();
         }
-
-        return $result;
     }
 
     /**
@@ -109,14 +105,12 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      * @param string $key
      * @return bool
      */
-    private function validateString($string1, $string2, VatIdValidatorResult $result, $key)
+    private function validateString($string1, $string2)
     {
         if ($this->isSimiliar($string1, $string2)) {
             return true;
         }
 
-        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
-        $result->addError($snippets->get('validator/extended/error/' . $key), $key);
         return false;
     }
 
@@ -127,7 +121,7 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      * @param int $minPercentage
      * @return bool
      */
-    private function isSimiliar($string1, $string2, $minPercentage = 80)
+    private function isSimiliar($string1, $string2, $minPercentage = 75)
     {
         $string1 = strtolower($string1);
         $string2 = strtolower($string2);

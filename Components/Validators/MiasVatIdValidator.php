@@ -26,7 +26,6 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 abstract class MiasVatIdValidator implements VatIdValidatorInterface
@@ -39,7 +38,23 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
      */
 
     abstract protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
-    abstract protected function addExtendedResults(VatIdValidatorResult $result, $response, VatIdCustomerInformation $customerInformation);
+    abstract protected function addExtendedResults($response, VatIdCustomerInformation $customerInformation);
+
+    /** @var  VatIdValidatorResult */
+    protected $result;
+
+    public function exception_handler($exception) {
+        echo "Nicht aufgefangene Exception: " , $exception->getMessage(), "\n";
+    }
+
+    /**
+     * Constructor sets the snippet namespace
+     */
+    public function __construct()
+    {
+        $this->result = new VatIdValidatorResult('miasValidator');
+        set_exception_handler('exception_handler');
+    }
 
     /**
      * @param VatIdCustomerInformation $customerInformation
@@ -48,15 +63,11 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
-        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/miasValidator');
-
         try {
-            $last = error_reporting(0);
             $client = new \SoapClient("http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl");
-            error_reporting($last);
         } catch (\SoapFault $error) {
-            // Verbindungsfehler, WSDL-Datei nicht erreichbar (passiert manchmal)
-            return new VatIdValidatorResult();
+            $this->result->setServiceUnavailable();
+            return $this->result;
         }
 
         $data = $this->getData($customerInformation, $shopInformation);
@@ -65,22 +76,23 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
             $response = $client->checkVatApprox($data);
 
             if ($response->valid == true) {
-                // USt-ID ist gültig
-                $result = new VatIdValidatorResult(VatIdValidationStatus::VAT_ID_OK);
-                $this->addExtendedResults($result, $response, $customerInformation);
-                return $result;
+                // Vat Id is valid
+                $this->addExtendedResults($response, $customerInformation);
+                return $this->result;
             }
 
-            // USt-ID ist ungültig
-            $errorMessage = $snippets->get('error1');
-            return new VatIdValidatorResult(VatIdValidationStatus::INVALID, array('vatId' => $errorMessage));
+            // Vat Id is invalid
+            $this->result->setVatIdInvalid('1');
+            return $this->result;
         } catch (\SoapFault $error) {
             $errorMessage = strtoupper($error->faultstring);
-            if (!in_array($errorMessage, array('SERVICE_UNAVAILABLE', 'MS_UNAVAILABLE', 'TIMEOUT', 'SERVER_BUSY'))) {
-                $errorMessage = $snippets->get('error2');
+            if (in_array($errorMessage, array('SERVICE_UNAVAILABLE', 'MS_UNAVAILABLE', 'TIMEOUT', 'SERVER_BUSY'))) {
+                $this->result->setServiceUnavailable();
+                return $this->result;
             }
 
-            return new VatIdValidatorResult(VatIdValidationStatus::INVALID, array('vatId' => $errorMessage));
+            $this->result->setVatIdInvalid('2');
+            return $this->result;
         }
     }
 }

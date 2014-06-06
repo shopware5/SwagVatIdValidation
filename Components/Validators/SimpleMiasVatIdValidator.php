@@ -26,7 +26,6 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 class SimpleMiasVatIdValidator extends MiasVatIdValidator
@@ -34,7 +33,7 @@ class SimpleMiasVatIdValidator extends MiasVatIdValidator
     /**
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdInformation $shopInformation
-     * @return VatIdValidatorResult
+     * @return array
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
@@ -51,13 +50,10 @@ class SimpleMiasVatIdValidator extends MiasVatIdValidator
     }
 
     /**
-     * @param VatIdValidatorResult $result
      * @param array $response
-     * @return VatIdValidatorResult
+     * @param VatIdCustomerInformation $customerInformation
      */
-    protected function addExtendedResults(VatIdValidatorResult $result, $response, VatIdCustomerInformation $customerInformation)
+    protected function addExtendedResults($response, VatIdCustomerInformation $customerInformation)
     {
-        $result->setStatus(VatIdValidationStatus::ADDRESS_VALID);
-        return $result;
     }
 }

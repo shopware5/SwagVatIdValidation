@@ -54,7 +54,7 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
      * @param array $response
      * @return VatIdValidatorResult
      */
-    protected function addExtendedResults(VatIdValidatorResult $result, $response)
+    protected function addExtendedResults($response)
     {
         $extendedResults = array(
             'company' => $response['Erg_Name'],
@@ -63,34 +63,22 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
             'city' => $response['Erg_Ort']
         );
 
-        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
+        $extendedResults = array_keys($extendedResults, 'B', true);
 
-        foreach ($extendedResults as $key => &$extendedResult) {
-            if ($extendedResult === 'B') {
-                $extendedResult = false;
-                $result->addError($snippets->get('validator/extended/error/' . $key), $key);
-                continue;
-            }
-
-            $extendedResult = true;
+        if (in_array('company', $extendedResults)) {
+            $this->result->setCompanyInvalid();
         }
 
-        if ($extendedResults['company']) {
-            $result->setStatus(VatIdValidationStatus::COMPANY_OK);
+        if (in_array('street', $extendedResults)) {
+            $this->result->setStreetInvalid();
         }
 
-        if ($extendedResults['street']) {
-            $result->setStatus(VatIdValidationStatus::STREET_OK);
+        if (in_array('zipCode', $extendedResults)) {
+            $this->result->setZipCodeInvalid();
         }
 
-        if ($extendedResults['zipCode']) {
-            $result->setStatus(VatIdValidationStatus::ZIP_CODE_OK);
+        if (in_array('city', $extendedResults)) {
+            $this->result->setCityInvalid();
         }
-
-        if ($extendedResults['city']) {
-            $result->setStatus(VatIdValidationStatus::CITY_OK);
-        }
-
-        return $result;
     }
 }
