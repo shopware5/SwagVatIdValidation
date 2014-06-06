@@ -49,36 +49,31 @@ class Login extends ValidationPoint
     {
         $user = $arguments->getUser();
 
-        /** @var Billing $billing */
-        $billing = $this->getBillingRepository()->findOneByCustomerId($user['id']);
+        $billing = $this->getBillingRepository()->createQueryBuilder('billing')
+            ->select(
+                'billing.id',
+                'billing.vatId',
+                'billing.company',
+                'billing.street',
+                'billing.streetNumber',
+                'billing.zipCode',
+                'billing.city'
+            )
+            ->where('billing.customerId = :customerId')
+            ->setParameter('customerId', $user['id'])
+            ->setMaxResults(1)
+            ->getQuery()->getArrayResult();
 
-        $vatId = $billing->getVatId();
-
-        if ($vatId === '') {
-            return;
-        }
-
-        $customer = new VatIdCustomerInformation(
-            $vatId,
-            $billing->getCompany(),
-            $billing->getStreet() . ' ' . $billing->getStreetNumber(),
-            $billing->getZipCode(),
-            $billing->getCity()
+        $result = $this->validate(
+            $billing[0]['vatId'],
+            $billing[0]['company'],
+            $billing[0]['street'] . ' ' . $billing[0]['streetNumber'],
+            $billing[0]['zipCode'],
+            $billing[0]['city'],
+            $billing[0]['id']
         );
 
-        $requester = new VatIdInformation($this->config->get('vatId'));
-        $validatorResult = $this->validate($customer, $requester, true);
-
-        if ($validatorResult->isValid()) {
-            return;
-        }
-
-        $status = $validatorResult->getStatus();
-
-        if ($validatorResult->isDummyValid()) {
-            $status = VatIdValidationStatus::UNCHECKED;
-        }
-
-        $this->saveVatIdCheck($billing, $status);
+        $session = Shopware()->Session();
+        $session->offsetSet('vatIdValidationStatus', $result->getStatus());
     }
 }

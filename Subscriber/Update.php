@@ -53,35 +53,6 @@ class Update extends ValidationPoint
 
         $userId = $arguments->getId();
 
-        /** @var Billing $billing */
-        $billing = $this->getBillingRepository()->findOneById($userId);
-
-        $session = Shopware()->Session();
-        $status = new VatIdValidationStatus($session['vatIdValidationStatus']);
-        unset($session['vatIdValidationStatus']);
-
-        if ($return[0]['ustid'] === '') {
-            $status->setStatus(VatIdValidationStatus::VALID);
-        }
-
-        if ($status->isValid()) {
-            //Remove Vat-Id from check list, if exists
-            $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByBillingId($billing->getId());
-
-            if ($vatIdCheck) {
-                Shopware()->Models()->remove($vatIdCheck);
-                Shopware()->Models()->flush($vatIdCheck);
-            }
-
-            return $return;
-        }
-
-        if ($status->isDummyValid()) {
-            $billing->setVatId($return[0]['ustid']);
-            $this->saveVatIdCheck($billing, VatIdValidationStatus::UNCHECKED, false);
-            $return[0]['ustid'] = '';
-        }
-
         return $return;
     }
 }

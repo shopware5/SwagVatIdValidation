@@ -66,7 +66,7 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
 
             if ($response->valid == true) {
                 // USt-ID ist gültig
-                $result = new VatIdValidatorResult(VatIdValidationStatus::VAT_ID_VALID);
+                $result = new VatIdValidatorResult(VatIdValidationStatus::VAT_ID_OK);
                 $this->addExtendedResults($result, $response, $customerInformation);
                 return $result;
             }
@@ -76,11 +76,10 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
             return new VatIdValidatorResult(VatIdValidationStatus::INVALID, array('vatId' => $errorMessage));
         } catch (\SoapFault $error) {
             $errorMessage = strtoupper($error->faultstring);
-            if (in_array($errorMessage, array('SERVICE_UNAVAILABLE', 'MS_UNAVAILABLE', 'TIMEOUT', 'SERVER_BUSY'))) {
-                return new VatIdValidatorResult();
+            if (!in_array($errorMessage, array('SERVICE_UNAVAILABLE', 'MS_UNAVAILABLE', 'TIMEOUT', 'SERVER_BUSY'))) {
+                $errorMessage = $snippets->get('error2');
             }
 
-            $errorMessage = $snippets->get('error2');
             return new VatIdValidatorResult(VatIdValidationStatus::INVALID, array('vatId' => $errorMessage));
         }
     }

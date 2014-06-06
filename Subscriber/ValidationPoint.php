@@ -32,14 +32,15 @@ use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleMiasVatIdVa
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedMiasVatIdValidator;
 
 
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
 
 use Enlight\Event\SubscriberInterface;
 
-use Shopware\CustomModels\SwagVatIdValidation\VatIdCheck;
 use Shopware\Models\Customer\Billing;
+use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult2;
 
 /**
  * This example is going to show how to test your methods without global shopware state
@@ -56,9 +57,6 @@ abstract class ValidationPoint implements SubscriberInterface
 
     /** @var  \Shopware\Models\Customer\BillingRepository */
     private $billingRepository;
-
-    /** @var \Shopware\CustomModels\SwagVatIdValidation\Repository */
-    private $vatIdCheckRepository;
 
     public function __construct($config, $action)
     {
@@ -80,135 +78,97 @@ abstract class ValidationPoint implements SubscriberInterface
     }
 
     /**
-     * Helper function to get the VatIdCheckRepository
-     * @return \Shopware\CustomModels\SwagVatIdValidation\Repository
+     * @param \Enlight_Event_EventArgs $arguments
+     * @return array|mixed
      */
-    protected function getVatIdCheckRepository()
-    {
-        if (!$this->vatIdCheckRepository) {
-            $this->vatIdCheckRepository = Shopware()->Models()->getRepository(
-                '\Shopware\CustomModels\SwagVatIdValidation\VatIdCheck'
-            );
-        }
-
-        return $this->vatIdCheckRepository;
-    }
-
     public function onValidateStep2FilterResult(\Enlight_Event_EventArgs $arguments)
     {
         $post = $arguments->getPost();
         $errors = $arguments->getReturn();
 
-        $errors = $this->validateVatId($post['register']['billing'], $errors);
-
-        return $errors;
-    }
-
-    /**
-     * Helper function includes the complete check process
-     * @param array $billing
-     * @param array $return
-     * @return array
-     */
-    private function validateVatId($billing, $return = array())
-    {
-        if ($billing['ustid'] === '') {
-            return $return;
-        }
-
-        $customer = new VatIdCustomerInformation(
-            $billing['ustid'],
-            $billing['company'],
-            $billing['street'] . ' ' . $billing['streetnumber'],
-            $billing['zipcode'],
-            $billing['city']
+        $result = $this->validate(
+            $post['register']['billing']['ustid'],
+            $post['register']['billing']['company'],
+            $post['register']['billing']['street'],
+            $post['register']['billing']['zipcode'],
+            $post['register']['billing']['city']
         );
-
-        $requester = new VatIdInformation($this->config->get('vatId'));
-
-        $validatorResult = $this->validate($customer, $requester, true);
-
-        $errors = $this->evaluateValidatorResult($validatorResult);
-
-        if (!empty($errors[0])) {
-            $email = $this->config->get('shopEmailNotification');
-            if (!empty($email)) {
-                $context = array(
-                    'sVatId' => $customer->getVatId(),
-                    'sError' => implode("\n", $validatorResult->getErrors())
-                );
-
-//                $this->sendMailByTemplate('VALIDATIONERROR', $email, $context);
-            }
-        }
-
-        return array(array_merge($return[0], $errors[0]), array_merge($return[1], $errors[1]));
-    }
-
-    /**
-     * Helper function to validate a VatId, if validator is not available, the dummy validator can be used optionally
-     * @param VatIdCustomerInformation $customer
-     * @param VatIdInformation $requester
-     * @param bool $dummyValidation
-     * @return VatIdValidatorResult
-     */
-    protected function validate(VatIdCustomerInformation $customer, VatIdInformation $requester, $dummyValidation = false) {
-        //Get the correct validator (using an api)
-        $validator = $this->createValidator($customer->getCountryCode(), $requester->getCountryCode());
-
-        //Send the request to the validator
-        $validatorResult = $validator->check($customer, $requester);
-
-        //if dummy should not validate, return the api's validator result
-        if (!$dummyValidation) {
-            return $validatorResult;
-        }
-
-        //if the api service was unavailable the dummy validator checks, whether the vatId could be valid
-        if ($validatorResult->serviceNotAvailable()) {
-            $dummyValidator = new DummyVatIdValidator();
-            $validatorResult = $dummyValidator->check($customer, $requester);
-        }
-
-        //return the validator result
-        return $validatorResult;
-    }
-
-    /**
-     * Helper function evaluates validators result and returns the error messages
-     * @param VatIdValidatorResult $validatorResult
-     * @return array
-     */
-    private function evaluateValidatorResult(VatIdValidatorResult $validatorResult)
-    {
-        $session = Shopware()->Session();
-        unset($session['vatIdValidationStatus']);
 
         $errors = array(
-            $validatorResult->getErrors(),
-            array()
+            array_merge($result->getErrors(), $errors[0]),
+            array_merge(array(), $errors[1])
         );
 
-        foreach ($errors[0] as $key => $error) {
-            $key = strtolower($key);
-
-            if ($key === 'vatid') {
-                $errors[1]['ustid'] = true;
-                break;
-            }
-
-            if ($key === 'street') {
-                $errors[1]['streetnumber'] = true;
-            }
-
-            $errors[1][$key] = true;
-        }
-
-        if ($validatorResult->isVatIdValid() || $validatorResult->isDummyValid()) {
-            $session['vatIdValidationStatus'] = $validatorResult->getStatus();
-        }
+        $session = Shopware()->Session();
+        $session->offsetSet('vatIdValidationStatus', $result->getStatus());
 
         return $errors;
+    }
+
+    /**
+     * Helper function for the whole validation process
+     * If billing Id is set, the matching customer billing address will be removed if validation result is invalid
+     * @param $vatId
+     * @param $company
+     * @param $street
+     * @param $zipCode
+     * @param $city
+     * @param null $billingId
+     * @return VatIdValidatorResult
+     */
+    public function validate($vatId, $company, $street, $zipCode, $city, $billingId = null)
+    {
+        //Dummy validation
+        $customerInformation = new VatIdCustomerInformation($vatId, $company, $street, $zipCode, $city);
+        $result = $this->validateWithDummyValidator($customerInformation);
+
+        if (!$result->isValid()) {
+            //show error, remove VAT ID, send e-mail
+            $this->evaluateValidatorResult($billingId, $customerInformation, $result);
+            return $result;
+        }
+
+        //API validation
+        $shopInformation = new VatIdInformation($this->config->get('vatId'));
+        $result = $this->validateWithApiValidator($customerInformation, $shopInformation);
+
+        if (!$result->isValid()) {
+            //show error, remove VAT ID, send e-mail
+            $this->evaluateValidatorResult($billingId, $customerInformation, $result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Helper function to check a VAT Id with the dummy validator
+     * @param VatIdCustomerInformation $customerInformation
+     * @return VatIdValidatorResult
+     */
+    private function validateWithDummyValidator(VatIdCustomerInformation $customerInformation)
+    {
+        $validator = new DummyVatIdValidator();
+        $result = $validator->check($customerInformation);
+
+        return $result;
+    }
+
+    /**
+     * Helper function to check a VAT Id with an API Validator (Bff or Mias, simple or extended)
+     * @param VatIdCustomerInformation $customerInformation
+     * @param VatIdInformation $shopInformation
+     * @return VatIdValidatorResult
+     */
+    private function validateWithApiValidator(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
+    {
+        if ($customerInformation->getVatId() === '') {
+            return new VatIdValidatorResult(VatIdValidationStatus::VALID);
+        }
+
+        $validator = $this->createValidator($customerInformation->getCountryCode(), $shopInformation->getCountryCode());
+        $result = $validator->check($customerInformation, $shopInformation);
+
+        return $result;
     }
 
     /**
@@ -254,33 +214,59 @@ abstract class ValidationPoint implements SubscriberInterface
     }
 
     /**
-     * Helper method to save the VatIdCheck in the database and optionally remove the VatId from users billing
-     * @param Billing $billing
-     * @param int $status
-     * @param bool $removeBillingVatId
-     * @internal param string $vatId
+     * Helper function to evaluate the validator result
+     * @param $billingId
+     * @param VatIdCustomerInformation $customerInformation
+     * @param VatIdValidatorResult $result
      */
-
-    protected function saveVatIdCheck(Billing $billing, $status = 0, $removeBillingVatId = true)
+    private function evaluateValidatorResult($billingId, VatIdCustomerInformation $customerInformation, VatIdValidatorResult $result)
     {
-        $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByBillingId($billing->getId());
+        $this->removeVatIdFromBilling($billingId);
+        $this->sendShopOwnerEmail($customerInformation, $result);
+    }
 
-        if (!$vatIdCheck) {
-            $vatIdCheck = new VatIdCheck();
-            $vatIdCheck->setBillingAddress($billing);
+    /**
+     * Helper function to remove the customer billing address
+     * @param $billingId
+     */
+    private function removeVatIdFromBilling($billingId)
+    {
+        if (empty($billingId)) {
+            return;
         }
 
-        $vatIdCheck->setVatId($billing->getVatId());
-        $vatIdCheck->setStatus($status);
+        /** @var Billing $billing */
+        $billing = $this->getBillingRepository()->findOneById($billingId);
+        $billing->setVatId('');
 
-        Shopware()->Models()->persist($vatIdCheck);
+        Shopware()->Models()->persist($billing);
         Shopware()->Models()->flush();
+    }
 
-        if ($removeBillingVatId) {
-            $billing->setVatId('');
+    /**
+     * Helper function to send an email to the shop owner, informing him about an invalid Vat Id
+     * @param VatIdCustomerInformation $customerInformation
+     * @param VatIdValidatorResult $result
+     */
+    private function sendShopOwnerEmail(VatIdCustomerInformation $customerInformation, VatIdValidatorResult $result)
+    {
+        $email = $this->config->get('shopEmailNotification');
 
-            Shopware()->Models()->persist($billing);
-            Shopware()->Models()->flush();
+        if (empty($email)) {
+            return;
         }
+
+        $context = array(
+            'sVatId' => $customerInformation->getVatId(),
+            'sCompany' => $customerInformation->getCompany(),
+            'sStreet' => $customerInformation->getStreet(),
+            'sZipCode' => $customerInformation->getZipCode(),
+            'sCity' => $customerInformation->getCity(),
+            'sError' => implode("\n", $result->getErrors())
+        );
+
+        $mail = Shopware()->TemplateMail()->createMail('sSWAGVATIDVALIDATION_VALIDATIONERROR', $context);
+        $mail->addTo($email);
+        $mail->send();
     }
 }

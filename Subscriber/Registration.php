@@ -24,35 +24,27 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
-
-use Shopware\Models\Customer\Billing;
-
 /**
  * This example is going to show how to test your methods without global shopware state
  *
  * Class Account
  * @package Shopware\Plugins\SwagScdExample\Subscriber
  */
-class Register extends ValidationPoint
+class Registration extends TemplateExtension
 {
     public static function getSubscribedEvents()
     {
-        if (parent::$action !== 'saveRegister') {
-            return array();
-        }
-
         return array(
-            'Shopware_Modules_Admin_ValidateStep2_FilterResult' => 'onValidateStep2FilterResult',
-            'Shopware_Modules_Admin_SaveRegisterBillingAttributes_FilterSql' => 'onSaveRegisterBillingAttributes'
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Register' => 'onPostDispatchFrontendRegister'
         );
-    }//todo: Registrierung färbt falsche Felder noch nicht ein
-
-    public function onSaveRegisterBillingAttributes(\Enlight_Event_EventArgs $arguments)
-    {
-        $return = $arguments->getReturn();
-
-        return $return;
     }
 
+    /**
+     * Listener to FrontendAccount (index and billing), shows the vatId and an info, if the validator was not available
+     * @param \Enlight_Event_EventArgs $arguments
+     */
+    public function onPostDispatchFrontendRegister(\Enlight_Event_EventArgs $arguments)
+    {
+        $this->postDispatchFrontendController($arguments->getSubject(), array('index'));
+    }
 }

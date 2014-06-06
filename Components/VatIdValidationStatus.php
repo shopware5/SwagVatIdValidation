@@ -29,12 +29,11 @@ class VatIdValidationStatus
     protected $status;
 
     //Flags
-    const CHECKED = 1;
-    const VAT_ID_OK = 2;
-    const COMPANY_OK = 4;
-    const STREET_OK = 8;
-    const ZIP_CODE_OK = 16;
-    const CITY_OK = 32;
+    const VAT_ID_OK = 1;
+    const COMPANY_OK = 2;
+    const STREET_OK = 4;
+    const ZIP_CODE_OK = 8;
+    const CITY_OK = 16;
 
     //States
 
@@ -44,38 +43,19 @@ class VatIdValidationStatus
      * - the check is still not executed
      */
     const UNAVAILABLE = 0;
-    const UNCHECKED = 0;
-
-    /** Status 1 happens when
-     * - the check was executed, but nothing was valid
-     * - the dummy validator found an error
-     */
-    const INVALID = 1;
-    const DUMMY_INVALID = 1;
+    const INVALID = 0;
 
     /**
-     * Status 2 happens when
-     * - the dummy validator check was successful
-     */
-    const DUMMY_VALID = 2;
-
-    /**
-     * Status 3 can be used for
-     * - setting the VatId was checked and is valid
-     */
-    const VAT_ID_VALID = 3;
-
-    /**
-     * Status 60 can be used for
+     * Status 30 can be used for
      * - setting all address relevant flags valid
      */
-    const ADDRESS_VALID = 60;
+    const ADDRESS_VALID = 30;
 
     /**
-     * Status 63 happens when
+     * Status 31 happens when
      * - the check was executed and each was valid
      */
-    const VALID = 63;
+    const VALID = 31;
 
 
     public function __construct($status = 0)
@@ -108,15 +88,6 @@ class VatIdValidationStatus
     }
 
     /**
-     * Is true when the requested validation service was unavailable but the dummy validator check was successful
-     * @return bool
-     */
-    public function isDummyValid()
-    {
-        return ($this->status === $this::DUMMY_VALID);
-    }
-
-    /**
      * @return bool
      */
     public function serviceNotAvailable()
@@ -129,7 +100,7 @@ class VatIdValidationStatus
      */
     public function isVatIdValid()
     {
-        return (($this->status & $this::CHECKED) && ($this->status & $this::VAT_ID_OK));
+        return ($this->status & $this::VAT_ID_OK);
     }
 
     /**

@@ -97,11 +97,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
     private function createSimpleValidatorResult($response)
     {
         if ($response['ErrorCode'] === '200') {
-            return new VatIdValidatorResult(VatIdValidationStatus::VAT_ID_VALID);
-        }
-
-        if (in_array($response['ErrorCode'], array(205, 208, 999))) {
-            return new VatIdValidatorResult();
+            return new VatIdValidatorResult(VatIdValidationStatus::VAT_ID_OK);
         }
 
         $error = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/bffValidator')->get(

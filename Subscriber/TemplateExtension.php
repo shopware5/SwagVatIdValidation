@@ -42,28 +42,10 @@ abstract class TemplateExtension implements SubscriberInterface
     /** @var  string */
     private $path;
 
-    /** @var \Shopware\CustomModels\SwagVatIdValidation\Repository */
-    private $vatIdCheckRepository;
-
     public function __construct($config, $path)
     {
         $this->config = $config;
         $this->path = $path;
-    }
-
-    /**
-     * Helper function to get the VatIdCheckRepository
-     * @return \Shopware\CustomModels\SwagVatIdValidation\Repository
-     */
-    protected function getVatIdCheckRepository()
-    {
-        if (!$this->vatIdCheckRepository) {
-            $this->vatIdCheckRepository = Shopware()->Models()->getRepository(
-                '\Shopware\CustomModels\SwagVatIdValidation\VatIdCheck'
-            );
-        }
-
-        return $this->vatIdCheckRepository;
     }
 
     /**
@@ -75,9 +57,6 @@ abstract class TemplateExtension implements SubscriberInterface
         /** @var $request \Zend_Controller_Request_Http */
         $request = $controller->Request();
 
-        /** @var $response \Zend_Controller_Response_Http */
-        $response = $controller->Response();
-
         /**
          * @var $view \Enlight_View_Default
          */
@@ -88,29 +67,27 @@ abstract class TemplateExtension implements SubscriberInterface
             return;
         }
 
-        $vatIdCheck = $this->getVatIdCheckRepository()->getVatIdCheckByCustomerId(Shopware()->Session()->sUserId);
-
-        if (!$vatIdCheck) {
-            return;
-        }
-
-        //Add our plugin template directory to load our slogan extension.
         $view->addTemplateDir($this->path . 'Views/');
         $view->extendsTemplate('frontend/plugins/swag_vat_id_validation/index.tpl');
 
-        $status = new VatIdValidationStatus($vatIdCheck->getStatus());
-        $errors = $this->getErrors($status);
-        $view->assign('vatIdCheck', array(
-                'vatId' => $vatIdCheck->getVatId(),
-                'errors' => $errors,
-                'success' => $status->isVatIdValid()
-            )
+
+        $errors = array(
+            'messages' => array(),
+            'flags' => array()
         );
 
-        if ($status->isValid()) {
-            Shopware()->Models()->remove($vatIdCheck);
-            Shopware()->Models()->flush($vatIdCheck);
+        $session = Shopware()->Session();
+
+        if($session->offsetExists('vatIdValidationStatus')) {
+            $status = new VatIdValidationStatus($session->offsetGet('vatIdValidationStatus'));
+            $session->offsetUnset('vatIdValidationStatus');
+            $errors = $this->getErrors($status);
         }
+
+        $view->assign('vatIdCheck', array(
+                'errors' => $errors,
+            )
+        );
     }
 
     /**
@@ -130,16 +107,6 @@ abstract class TemplateExtension implements SubscriberInterface
         }
 
         $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
-
-        if ($status->serviceNotAvailable()) {
-            $errors['messages'][] = $snippets->get('messages/checkNotAvailable');
-
-            if ($this->config->get('customerEmailNotification')) {
-                $errors['messages'][] = $snippets->get('messages/emailNotification');
-            }
-
-            return $errors;
-        }
 
         if (!$status->isVatIdValid()) {
             $errors['messages'][] = $snippets->get('validator/error/vatId');

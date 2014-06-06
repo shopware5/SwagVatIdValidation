@@ -116,7 +116,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     public function install()
     {
-        $this->createDatabaseTables();
         $this->createMailTemplates();
         $this->createConfiguration();
         $this->registerEvents();
@@ -128,8 +127,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     {
         $this->secureUninstall();
 
-        $this->removeDatabaseTables();
-
         return true;
     }
 
@@ -140,48 +137,16 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         return true;
     }
 
-    private function createDatabaseTables()
-    {
-        $this->registerCustomModels();
-
-        $em = $this->Application()->Models();
-        $tool = new \Doctrine\ORM\Tools\SchemaTool($em);
-
-        $classes = array(
-            $em->getClassMetadata('Shopware\CustomModels\SwagVatIdValidation\VatIdCheck')
-        );
-
-        try {
-            $tool->createSchema($classes);
-        } catch (\Doctrine\ORM\Tools\ToolsException $e) {
-            // ignore
-        }
-    }
-
-    public function removeDatabaseTables()
-    {
-        $this->registerCustomModels();
-
-        $em = $this->Application()->Models();
-        $tool = new \Doctrine\ORM\Tools\SchemaTool($em);
-
-        $classes = array(
-            $em->getClassMetadata('Shopware\CustomModels\SwagVatIdValidation\VatIdCheck')
-        );
-
-        $tool->dropSchema($classes);
-    }
-
     public function createMailTemplates()
     {
         //Template
-        $content = "Hallo,\n\nes gab einen Fehler bei der Prüfung der USt-IdNr. {\$sVatId}:\n\n{\$sError}\n\n{config name=shopName}";
+        $content = "Hallo,\n\nbei der Überprüfung der USt-IdNr. {\$sVatId} der Firma\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nist ein Fehler aufgetreten:\n\n{\$sError}\n\n{config name=shopName}";
 
         $mail = new Mail();
         $mail->setName('sSWAGVATIDVALIDATION_VALIDATIONERROR');
         $mail->setFromMail('');
         $mail->setFromName('');
-        $mail->setSubject('Die Ust-IdNr. eines Bestandskunden ist abgelaufen');
+        $mail->setSubject("Bei der Überprüfung der Ust-IdNr. {\$sVatId} ist ein Fehler aufgetreten");
         $mail->setContent($content);
         $mail->setMailtype(Mail::MAILTYPE_SYSTEM);
 
@@ -199,13 +164,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         Shopware()->Models()->persist($translation);
         Shopware()->Models()->flush();
-    }
-
-    private function sendMailByTemplate($name, $to, $context)
-    {
-        $mail = Shopware()->TemplateMail()->createMail('sSWAGVATIDVALIDATION_' . $name, $context);
-        $mail->addTo($to);
-        $mail->send();
     }
 
     private function removeMailTemplate($name)
@@ -353,6 +311,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $subscribers = array(
             new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Account($config, $path),
             new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Checkout($config, $path),
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Registration($config, $path),
             new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Login($config, $action),
             new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Register($config, $action),
             new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Update($config, $action)
