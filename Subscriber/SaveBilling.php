@@ -24,25 +24,51 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
-use Shopware\Models\Customer\Billing;
-
 /**
- * This example is going to show how to test your methods without global shopware state
- *
- * Class Account
- * @package Shopware\Plugins\SwagScdExample\Subscriber
+ * Class SaveBilling
+ * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
 class SaveBilling extends ValidationPoint
 {
     public static function getSubscribedEvents()
     {
         return array(
+            'Shopware_Modules_Admin_ValidateStep2_FilterStart' => 'onValidateStep2FilterStart',
             'Shopware_Modules_Admin_ValidateStep2_FilterResult' => 'onValidateStep2FilterResult'
         );
     }
 
     /**
+     * Listener to check if the VAT Id is required or not.
+     * @param \Enlight_Event_EventArgs $arguments
+     * @return array|mixed
+     */
+    public function onValidateStep2FilterStart(\Enlight_Event_EventArgs $arguments)
+    {
+        $post = $arguments->getPost();
+        $errors = $arguments->getReturn();
+
+        if ($post['customer_type'] !== 'business') {
+            return $errors;
+        }
+
+        if ($post['register']['billing']['company'] === '') {
+            return $errors;
+        }
+
+        if (!$this->config->get('vatIdRequired')) {
+            return $errors;
+        }
+
+        if ($post['register']['billing']['ustid'] === '') {
+            $errors[1]['ustid'] = true;
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Listener to validate the VAT Id
      * @param \Enlight_Event_EventArgs $arguments
      * @return array|mixed
      */

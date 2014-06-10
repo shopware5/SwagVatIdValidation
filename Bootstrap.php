@@ -22,21 +22,8 @@
  * our trademarks remain entirely with us.
  */
 
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\VatIdValidatorInterface;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\DummyVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleBffVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedBffVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleMiasVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedMiasVatIdValidator;
-
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-
-use Shopware\CustomModels\SwagVatIdValidation\VatIdCheck;
-use Shopware\Models\Customer\Billing;
 use Shopware\Models\Mail\Mail;
+use Shopware\Models\Translation\Translation;
 
 /**
  * @category   Shopware
@@ -49,6 +36,12 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     /** @var  \Shopware\Models\Mail\Mail */
     private $mailRepository;
 
+    /** @var  \Shopware\Models\Shop\Locale */
+    private $localeRepository;
+
+    /** @var  \Shopware\Models\Translation\Translation */
+    private $translationRepository;
+
     /**
      * Helper function to get the MailRepository
      * @return \Shopware\Models\Mail\Repository
@@ -60,6 +53,32 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         }
 
         return $this->mailRepository;
+    }
+
+    /**
+     * Helper function to get the LocaleRepository
+     * @return \Shopware\Models\Shop\Locale
+     */
+    private function getLocaleRepository()
+    {
+        if (!$this->localeRepository) {
+            $this->localeRepository = Shopware()->Models()->getRepository('\Shopware\Models\Shop\Locale');
+        }
+
+        return $this->localeRepository;
+    }
+
+    /**
+     * Helper function to get the TranslationRepository
+     * @return \Shopware\Models\Translation\Translation
+     */
+    private function getTranslationRepository()
+    {
+        if (!$this->translationRepository) {
+            $this->translationRepository = Shopware()->Models()->getRepository('\Shopware\Models\Translation\Translation');
+        }
+
+        return $this->translationRepository;
     }
 
     /**
@@ -116,29 +135,36 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     public function install()
     {
-        $this->createMailTemplates();
+        $this->createMailTemplate();
         $this->createConfiguration();
         $this->registerEvents();
 
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function uninstall()
     {
-        $this->secureUninstall();
+        //do NOT remove the mail template on secureUninstall
+        $this->removeMailTemplate();
 
         return true;
     }
 
-    public function secureUninstall()
+    /**
+     * Helper function to create the mail template
+     */
+    private function createMailTemplate()
     {
-        $this->removeMailTemplate('VALIDATIONERROR');
+        //check, if mail template already exists (because secureUninstall)
+        $mail = $this->getMailRepository()->findOneByName('sSWAGVATIDVALIDATION_VALIDATIONERROR');
 
-        return true;
-    }
+        if ($mail) {
+            return;
+        }
 
-    public function createMailTemplates()
-    {
         //Template
         $content = "Hallo,\n\nbei der Überprüfung der USt-IdNr. {\$sVatId} der Firma\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nist ein Fehler aufgetreten:\n\n{\$sError}\n\n{config name=shopName}";
 
@@ -154,10 +180,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         Shopware()->Models()->flush();
 
         //Translation
-        $localeRepository = Shopware()->Models()->getRepository('\Shopware\Models\Shop\Locale');
-
-        $translation = new \Shopware\Models\Translation\Translation();
-        $translation->setLocale($localeRepository->findOneByLocale('en_GB'));
+        $translation = new Translation();
+        $translation->setLocale($this->getLocaleRepository()->findOneByLocale('en_GB'));
         $translation->setType('config_mails');
         $translation->setKey($mail->getId());
         $translation->setData(serialize(array('subject' => "", 'content' => "")));
@@ -166,10 +190,10 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         Shopware()->Models()->flush();
     }
 
-    private function removeMailTemplate($name)
+    private function removeMailTemplate()
     {
         /** @var Mail $mail */
-        $mail = $this->getMailRepository()->findOneByName('sSWAGVATIDVALIDATION_' . $name);
+        $mail = $this->getMailRepository()->findOneByName('sSWAGVATIDVALIDATION_VALIDATIONERROR');
 
         $this->removeMailTranslations($mail->getId());
 
@@ -179,10 +203,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     private function removeMailTranslations($mailTemplateId)
     {
-        $translationRepository = Shopware()->Models()->getRepository('\Shopware\Models\Translation\Translation');
-        $translations = $translationRepository->findByKey($mailTemplateId);
+        $translations = $this->getTranslationRepository()->findByKey($mailTemplateId);
 
-        /** @var \Shopware\Models\Translation\Translation $translation */
+        /** @var Translation $translation */
         foreach($translations as $translation) {
             if ($translation->getType() !== 'config_mails') {
                 continue;
@@ -265,7 +288,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                     ),
                     'vatIdRequired' => array(
                         'label' => 'VAT ID is required',
-                        'description' => 'VAT ID is required'
+                        'description' => 'If enabled, the input of a VAT ID is required for business customers.'
                     ),
                     'extendedCheck' => array(
                         'label' => 'Extended checks',
@@ -299,21 +322,28 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     /**
      * This callback function is triggered at the very beginning of the dispatch process and allows
      * us to register additional events on the fly. This way you won't ever need to reinstall you
-     * plugin for new events - any event and hook can simply be registerend in the event subscribers
+     * plugin for new events - any event and hook can simply be registered in the event subscribers
      */
     public function onStartDispatch(Enlight_Event_EventArgs $args)
     {
+        $module = $args->getRequest()->getParam('module');
+
+        if (!in_array($module, array('', 'frontend'))) {
+            return;
+        }
+
         $config = $this->Config();
         $path = $this->Path();
-        $action = $args->getRequest()->getParam('action');
-
+        $snippets = Shopware()->Snippets();
+        $models = Shopware()->Models();
+        $mailer = Shopware()->TemplateMail();
+        $session = Shopware()->Session();
+        $action = $args->getRequest()->getActionName();
 
         $subscribers = array(
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Account($config, $path),
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Checkout($config, $path),
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Register($config, $path),
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Login($config, $action),
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\SaveBilling($config)
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\TemplateExtension($config, $path, $session, $snippets),
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Login($config, $snippets, $models, $mailer, $session, $action),
+            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\SaveBilling($config, $snippets)
         );
 
         foreach ($subscribers as $subscriber) {

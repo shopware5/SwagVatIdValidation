@@ -24,31 +24,41 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
-
-use Shopware\Models\Customer\Billing;
+use Shopware\Components\Model\ModelManager;
 
 /**
- * This example is going to show how to test your methods without global shopware state
- *
- * Class Account
- * @package Shopware\Plugins\SwagScdExample\Subscriber
+ * Class Login
+ * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
 class Login extends ValidationPoint
 {
+    /** @var  string */
     private static $action;
 
-    public function __construct($config, $action)
+    /** @var \Enlight_Components_Session_Namespace  */
+    private $session;
+
+    /**
+     * @param \Enlight_Config $config
+     * @param \Shopware_Components_Snippet_Manager $snippetManager
+     * @param ModelManager $modelManager
+     * @param \Shopware_Components_TemplateMail $templateMail
+     * @param \Enlight_Components_Session_Namespace $session
+     * @param string $action
+     */
+    public function __construct(\Enlight_Config $config, \Shopware_Components_Snippet_Manager $snippetManager, ModelManager $modelManager = null, \Shopware_Components_TemplateMail $templateMail = null, \Enlight_Components_Session_Namespace $session, $action)
     {
-        parent::__construct($config);
+        parent::__construct($config, $snippetManager, $modelManager, $templateMail);
+        $this->session = $session;
         self::$action = $action;
     }
 
-
+    /**
+     * @return array
+     */
     public static function getSubscribedEvents()
     {
+        //After successfully registration, this would be a second validation. The first on save, the second on login.
         if (self::$action === 'saveRegister') {
             return array();
         }
@@ -58,6 +68,9 @@ class Login extends ValidationPoint
         );
     }
 
+    /**
+     * @param \Enlight_Event_EventArgs $arguments
+     */
     public function onLoginSuccessful(\Enlight_Event_EventArgs $arguments)
     {
         $user = $arguments->getUser();
@@ -86,7 +99,6 @@ class Login extends ValidationPoint
             $billing[0]['id']
         );
 
-        $session = Shopware()->Session();
-        $session->offsetSet('vatIdValidationStatus', $result->serialize());
+        $this->session->offsetSet('vatIdValidationStatus', $result->serialize());
     }
 }

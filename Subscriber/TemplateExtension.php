@@ -24,18 +24,14 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
-
 use Enlight\Event\SubscriberInterface;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 /**
- * This example is going to show how to test your methods without global shopware state
- *
- * Class Account
- * @package Shopware\Plugins\SwagScdExample\Subscriber
+ * Class TemplateExtension
+ * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
-abstract class TemplateExtension implements SubscriberInterface
+class TemplateExtension implements SubscriberInterface
 {
     /** @var  \Enlight_Config */
     private $config;
@@ -43,10 +39,64 @@ abstract class TemplateExtension implements SubscriberInterface
     /** @var  string */
     private $path;
 
-    public function __construct($config, $path)
+    /** @var  \Enlight_Components_Session_Namespace */
+    private $session;
+
+    /** @var  \Shopware_Components_Snippet_Manager */
+    private $snippetManager;
+
+    /**
+     * @param \Enlight_Config $config
+     * @param string $path
+     * @param \Enlight_Components_Session_Namespace $session
+     * @param \Shopware_Components_Snippet_Manager $snippetManager
+     */
+    public function __construct(\Enlight_Config $config, $path, \Enlight_Components_Session_Namespace $session, \Shopware_Components_Snippet_Manager $snippetManager)
     {
         $this->config = $config;
         $this->path = $path;
+        $this->session = $session;
+        $this->snippetManager = $snippetManager;
+    }
+
+    public static function getSubscribedEvents()
+    {
+        return array(
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Account' => 'onPostDispatchFrontendAccount',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onPostDispatchFrontendCheckout',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Register' => 'onPostDispatchFrontendRegister'
+        );
+    }
+
+    /**
+     * Listener to FrontendAccount (index and billing)
+     * On Account Index, a short info message will be shown if the validator was not available
+     * On Account Billing, the Vat Id input field can be set required
+     * @param \Enlight_Event_EventArgs $arguments
+     */
+    public function onPostDispatchFrontendAccount(\Enlight_Event_EventArgs $arguments)
+    {
+        $this->postDispatchFrontendController($arguments->getSubject(), array('index', 'billing'));
+    }
+
+    /**
+     * Listener to FrontendCheckout (confirm),
+     * Shows a short info message if the validator was not available
+     * @param \Enlight_Event_EventArgs $arguments
+     */
+    public function onPostDispatchFrontendCheckout(\Enlight_Event_EventArgs $arguments)
+    {
+        $this->postDispatchFrontendController($arguments->getSubject(), array('confirm'));
+    }
+
+    /**
+     * Listener to FrontendRegister (index)
+     * The Vat Id input field can be set required
+     * @param \Enlight_Event_EventArgs $arguments
+     */
+    public function onPostDispatchFrontendRegister(\Enlight_Event_EventArgs $arguments)
+    {
+        $this->postDispatchFrontendController($arguments->getSubject(), array('index'));
     }
 
     /**
@@ -58,9 +108,7 @@ abstract class TemplateExtension implements SubscriberInterface
         /** @var $request \Zend_Controller_Request_Http */
         $request = $controller->Request();
 
-        /**
-         * @var $view \Enlight_View_Default
-         */
+        /** @var $view \Enlight_View_Default */
         $view = $controller->View();
 
         //Check if there is a template and if an exception has occurred
@@ -71,75 +119,24 @@ abstract class TemplateExtension implements SubscriberInterface
         $view->addTemplateDir($this->path . 'Views/');
         $view->extendsTemplate('frontend/plugins/swag_vat_id_validation/index.tpl');
 
+        $errorMessages = array();
 
-        $errors = array(
-            'messages' => array(),
-            'flags' => array()
-        );
+        if($this->session->offsetExists('vatIdValidationStatus')) {
+            $serialized = $this->session->offsetGet('vatIdValidationStatus');
 
-        $session = Shopware()->Session();
-
-        if($session->offsetExists('vatIdValidationStatus')) {
-            $serialized = $session->offsetGet('vatIdValidationStatus');
-
-            $result = new VatIdValidatorResult();
+            $result = new VatIdValidatorResult($this->snippetManager);
             $result->unserialize($serialized);
-            $session->offsetUnset('vatIdValidationStatus');
+            $this->session->offsetUnset('vatIdValidationStatus');
 
-            $errors['messages'] = $result->getErrorMessages();
+            $errorMessages = $result->getErrorMessages();
         }
+
+        $required = $this->config->get('vatIdRequired');
 
         $view->assign('vatIdCheck', array(
-                'errors' => $errors,
+                'errorMessages' => $errorMessages,
+                'required' => $required
             )
         );
-    }
-
-    /**
-     * Helper function sets the ErrorMessages and ErrorFlags by the VatIdValidationStatus
-     * @param VatIdValidationStatus $status
-     * @return array
-     */
-    private function getErrors(VatIdValidationStatus $status)
-    {
-        $errors = array(
-            'messages' => array(),
-            'flags' => array()
-        );
-
-        if ($status->isValid()) {
-            return $errors;
-        }
-
-        $snippets = Shopware()->Snippets()->getNamespace('frontend/swag_vat_id_validation/main');
-
-        if (!$status->isVatIdValid()) {
-            $errors['messages'][] = $snippets->get('validator/error/vatId');
-            $errors['flags']['ustid'] = true;
-            return $errors;
-        }
-
-        if (!$status->isCompanyValid()) {
-            $errors['messages'][] = $snippets->get('validator/extended/error/company');
-            $errors['flags']['company'] = true;
-        }
-
-        if (!$status->isStreetValid()) {
-            $errors['messages'][] = $snippets->get('validator/extended/error/street');
-            $errors['flags']['street'] = true;
-            $errors['flags']['streetnumber'] = true;
-        }
-
-        if (!$status->isZipCodeValid()) {
-            $errors['messages'][] = $snippets->get('validator/extended/error/zipCode');
-            $errors['flags']['zipcode'] = true;
-        }
-
-        if (!$status->isCityValid()) {
-            $errors['messages'][] = $snippets->get('validator/extended/error/city');
-            $errors['flags']['city'] = true;
-        }
-
-        return $errors;
     }
 }

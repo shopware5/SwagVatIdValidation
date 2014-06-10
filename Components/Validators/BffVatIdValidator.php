@@ -47,13 +47,25 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
     /**
      * @param bool $confirmation
      */
-    public function __construct($confirmation = false)
+    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, $confirmation = false)
     {
-        $this->result = new VatIdValidatorResult('bffValidator');
+        $this->result = new VatIdValidatorResult($snippetManager, 'bffValidator');
         $this->confirmation = $confirmation;
     }
 
+    /**
+     * Helper function that returns an array in the format the validator needs it
+     * @param VatIdCustomerInformation $customerInformation
+     * @param VatIdInformation $shopInformation
+     * @return mixed
+     */
     abstract protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
+
+    /**
+     * Helper function to set the address data results of a qualified confirmation request
+     * @param $response
+     * @return mixed
+     */
     abstract protected function addExtendedResults($response);
 
     /**
@@ -72,7 +84,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
                 'method' => 'GET',
                 'header' => 'Content-Type: text/html; charset=utf-8',
                 'timeout' => 5,
-                'user_agent' => 'Shopware/' . Shopware()->Config()->get('sVERSION')
+                'user_agent' => 'Shopware'
             )));
         $response = @file_get_contents($apiRequest, false, $context);
 
@@ -93,6 +105,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
     }
 
     /**
+     * Helper function to set the VAT Id result of a confirmation request
      * @param array $response
      */
     private function createSimpleValidatorResult($response)

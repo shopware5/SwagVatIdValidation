@@ -43,17 +43,12 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
     /** @var  VatIdValidatorResult */
     protected $result;
 
-    public function exception_handler($exception) {
-        echo "Nicht aufgefangene Exception: " , $exception->getMessage(), "\n";
-    }
-
     /**
      * Constructor sets the snippet namespace
      */
-    public function __construct()
+    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager)
     {
-        $this->result = new VatIdValidatorResult('miasValidator');
-        set_exception_handler('exception_handler');
+        $this->result = new VatIdValidatorResult($snippetManager, 'miasValidator');
     }
 
     /**
