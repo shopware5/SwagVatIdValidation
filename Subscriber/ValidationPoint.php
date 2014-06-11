@@ -62,6 +62,7 @@ abstract class ValidationPoint implements SubscriberInterface
     private $billingRepository;
 
     /**
+     * Constructor sets all properties
      * @param \Enlight_Config $config
      * @param \Shopware_Components_Snippet_Manager $snippetManager
      * @param \Enlight_Components_Session_Namespace $session
@@ -103,23 +104,72 @@ abstract class ValidationPoint implements SubscriberInterface
      */
     public function validate($vatId, $company, $street, $zipCode, $city, $billingId = null)
     {
-        //Dummy validation
+        /**
+         * Step 1: Dummy validation
+         * The dummy validator checks if the VAT Id COULD be valide. Empty VAT Ids are also okay.
+         * The validator fails when:
+         * - VAT Id is shorter than 7 or longer than 14 signs
+         * - Country Code includes non-alphabetical chars
+         * - VAT Number includes non-alphanumerical chars
+         */
         $customerInformation = new VatIdCustomerInformation($vatId, $company, $street, $zipCode, $city);
         $result = $this->validateWithDummyValidator($customerInformation);
 
+        /**
+         * If the VAT Id can't be valide, the API validation can be skipped. If the VAT Id belongs to a billing address,
+         * the VAT Id will be removed from it and an email will optionally be sent to the shop owner.
+         */
         if (!$result->isValid()) {
             $this->removeVatIdFromBilling($billingId, $customerInformation, $result);
             return $result;
         }
 
-        //API validation
+        /**
+         * Step 2: API validation
+         * There are two API validators, both with two validation methods:
+         *
+         * Simple Bff-Validator:
+         * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is disabled
+         * - checks only the VAT-ID
+         * - returns a detailed error message, if the VAT-Id is invalid
+         *
+         * Extended Bff-Validator:
+         * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is enabled
+         * - checks the VAT-ID and additionally company, steet and steetnumber, zipcode and city
+         * - returns a detailed error message, if the VAT-Id is invalid
+         * - the API itself checks the address data
+         * - furthermore an official mail confirmation can be ordered
+         *
+         * Simple Mias-Validator:
+         * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is disabled.
+         * - checks only the VAT-ID
+         * - returns an error message, if the VAT-Id is invalid
+         *
+         * Extended Mias-Validator:
+         * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is enabled.
+         * - checks the VAT-ID and additionally company, steet and steetnumber, zipcode and city
+         * - returns an error message, if the VAT-Id is invalid
+         * - the API itself doesn't check the address data, the validator class does it manually
+         * - an official mail confirmation can't be ordered
+         *
+         *
+         * Each validator connects to an extern API. If the API is not available, the result will be false.
+         * The customer VAT Id has not to be empty. Otherwise the result will also be false!
+         */
         $shopInformation = new VatIdInformation($this->config->get('vatId'));
         $result = $this->validateWithApiValidator($customerInformation, $shopInformation);
 
+        /**
+         * If the VAT Id is invalid or the API service is not available and if the VAT Id belongs to a billing address,
+         * the VAT Id will be removed from it and an email will optionally be sent to the shop owner.
+         */
         if (!$result->isValid()) {
             $this->removeVatIdFromBilling($billingId, $customerInformation, $result);
         }
 
+        /**
+         * The returned result includes a status code, the error messages and error flags
+         */
         return $result;
     }
 
@@ -144,6 +194,7 @@ abstract class ValidationPoint implements SubscriberInterface
      */
     private function validateWithApiValidator(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
+        //an empty Vat Id will occur an error, so the api validation should be skipped
         if ($customerInformation->getVatId() === '') {
             return new VatIdValidatorResult();
         }
@@ -155,7 +206,7 @@ abstract class ValidationPoint implements SubscriberInterface
     }
 
     /**
-     * Helper function to get the correct validator
+     * Helper function to get the correct simple validator
      * @param string $customerCountryCode
      * @param string $shopCountryCode
      * @return VatIdValidatorInterface

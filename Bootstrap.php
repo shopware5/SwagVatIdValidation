@@ -143,6 +143,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     }
 
     /**
+     * (Unsecure) uninstall method, removes also the user-defined data (like the maybe changed mail template)
      * @return bool
      */
     public function uninstall()
@@ -190,6 +191,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         Shopware()->Models()->flush();
     }
 
+    /**
+     * Helper function to remove the mail template
+     */
     private function removeMailTemplate()
     {
         /** @var Mail $mail */
@@ -201,6 +205,10 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         Shopware()->Models()->flush($mail);
     }
 
+    /**
+     * Helper function to remove the translations of the mail template
+     * @param $mailTemplateId
+     */
     private function removeMailTranslations($mailTemplateId)
     {
         $translations = $this->getTranslationRepository()->findByKey($mailTemplateId);
@@ -218,7 +226,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Creates the configuration fields.
-     * Selects first a row of the s_articles_attributes to get all possible article attributes.
      */
     private function createConfiguration()
     {
@@ -303,6 +310,10 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         );
     }
 
+    /**
+     * Helper function to register an early event for our event subscribers
+     * @throws RuntimeException
+     */
     private function registerEvents()
     {
         // The SubscriberInterface is available in SW 4.1.4 and later
@@ -326,6 +337,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     public function onStartDispatch(Enlight_Event_EventArgs $args)
     {
+        //Only subscribe when we are in the frontend
         $module = $args->getRequest()->getParam('module');
 
         if (!in_array($module, array('', 'frontend'))) {

@@ -46,6 +46,7 @@ class TemplateExtension implements SubscriberInterface
     private $snippetManager;
 
     /**
+     * Constructor sets all properties
      * @param \Enlight_Config $config
      * @param string $path
      * @param \Enlight_Components_Session_Namespace $session
@@ -59,6 +60,10 @@ class TemplateExtension implements SubscriberInterface
         $this->snippetManager = $snippetManager;
     }
 
+    /**
+     * Returns the events we need to subscribe to
+     * @return array
+     */
     public static function getSubscribedEvents()
     {
         return array(
@@ -100,6 +105,7 @@ class TemplateExtension implements SubscriberInterface
     }
 
     /**
+     * Helper function to assign the plugin data to the template
      * @param \Enlight_Controller_Action $controller
      * @param array $actions
      */

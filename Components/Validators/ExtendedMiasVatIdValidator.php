@@ -28,9 +28,21 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
+/**
+ * Extended Mias-Validator:
+ * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is enabled.
+ * - checks the VAT-ID and additionally company, steet and steetnumber, zipcode and city
+ * - returns an error message, if the VAT-Id is invalid
+ * - the API itself doesn't check the address data, the validator class does it manually
+ * - an official mail confirmation can't be ordered
+ *
+ * Class ExtendedMiasVatIdValidator
+ * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
+ */
 class ExtendedMiasVatIdValidator extends MiasVatIdValidator
 {
     /**
+     * Puts the customer and shop informations into the format the API needs it.
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdInformation $shopInformation
      * @return array
@@ -50,6 +62,9 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
     }
 
     /**
+     * Evaluates the returned address data of a validation request
+     * Because the Mias service doesn't compare the address data itself, but rather return the deposited address data
+     * (if approved), this validator class has to compare the returned address with the inputted address itself.
      * @param array $response
      * @param VatIdCustomerInformation $customerInformation
      */
@@ -115,7 +130,7 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
     }
 
     /**
-     * Helper function to check the similarity of two strings. On default, there have to be a minimum accordance of 80%.
+     * Helper function to check the similarity of two strings. On default, there have to be a minimum accordance of 75%.
      * @param $string1
      * @param $string2
      * @param int $minPercentage

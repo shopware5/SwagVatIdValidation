@@ -30,6 +30,10 @@ namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
  */
 class SaveBilling extends ValidationPoint
 {
+    /**
+     * Returns the events we need to subscribe to
+     * @return array
+     */
     public static function getSubscribedEvents()
     {
         return array(

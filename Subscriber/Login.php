@@ -39,6 +39,7 @@ class Login extends ValidationPoint
     private $session;
 
     /**
+     * Constructor sets all properties
      * @param \Enlight_Config $config
      * @param \Shopware_Components_Snippet_Manager $snippetManager
      * @param ModelManager $modelManager
@@ -54,6 +55,7 @@ class Login extends ValidationPoint
     }
 
     /**
+     * Returns the events we need to subscribe to
      * @return array
      */
     public static function getSubscribedEvents()

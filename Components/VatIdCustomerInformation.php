@@ -24,13 +24,32 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Components;
 
+/**
+ * Class VatIdCustomerInformation
+ * @package Shopware\Plugins\SwagVatIdValidation\Components
+ */
 class VatIdCustomerInformation extends VatIdInformation
 {
+    /** @var  string */
     protected $company;
+
+    /** @var  string */
     protected $street;
+
+    /** @var  string */
     protected $zipCode;
+
+    /** @var  string */
     protected $city;
 
+    /**
+     * Constructor sets all properties
+     * @param string $vatId
+     * @param string $company
+     * @param string $street
+     * @param string $zipCode
+     * @param string $city
+     */
     public function __construct($vatId, $company, $street, $zipCode, $city)
     {
         parent::__construct($vatId);
@@ -41,21 +60,37 @@ class VatIdCustomerInformation extends VatIdInformation
         $this->city = $city;
     }
 
+    /**
+     * Returns the company
+     * @return string
+     */
     public function getCompany()
     {
         return $this->company;
     }
 
+    /**
+     * Returns the street
+     * @return string
+     */
     public function getStreet()
     {
         return $this->street;
     }
 
+    /**
+     * Returns the zipcode
+     * @return string
+     */
     public function getZipCode()
     {
         return $this->zipCode;
     }
 
+    /**
+     * Returns the city
+     * @return string
+     */
     public function getCity()
     {
         return $this->city;

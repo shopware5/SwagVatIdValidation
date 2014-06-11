@@ -26,9 +26,12 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
+/**
+ * Class BffVatIdValidator
+ * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
+ */
 abstract class BffVatIdValidator implements VatIdValidatorInterface
 {
     /**
@@ -45,6 +48,8 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
     protected $confirmation;
 
     /**
+     * Constructor sets the snippet namespace
+     * @param \Shopware_Components_Snippet_Manager $snippetManager
      * @param bool $confirmation
      */
     public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, $confirmation = false)
@@ -54,21 +59,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
     }
 
     /**
-     * Helper function that returns an array in the format the validator needs it
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation $shopInformation
-     * @return mixed
-     */
-    abstract protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
-
-    /**
-     * Helper function to set the address data results of a qualified confirmation request
-     * @param $response
-     * @return mixed
-     */
-    abstract protected function addExtendedResults($response);
-
-    /**
+     * Check process of a validator
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdInformation $shopInformation
      * @return VatIdValidatorResult
@@ -116,4 +107,18 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
 
         $this->result->setVatIdInvalid($response['ErrorCode']);
     }
+
+    /**
+     * Helper function that returns an array in the format the validator needs it
+     * @param VatIdCustomerInformation $customerInformation
+     * @param VatIdInformation $shopInformation
+     * @return array
+     */
+    abstract protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
+
+    /**
+     * Helper function to set the address data results of a qualified confirmation request
+     * @param array $response
+     */
+    abstract protected function addExtendedResults($response);
 }

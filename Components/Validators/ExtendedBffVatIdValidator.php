@@ -26,12 +26,23 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidationStatus;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
+/**
+ * Extended Bff-Validator:
+ * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is enabled
+ * - checks the VAT-ID and additionally company, steet and steetnumber, zipcode and city
+ * - returns a detailed error message, if the VAT-Id is invalid
+ * - the API itself checks the address data
+ * - furthermore an official mail confirmation can be ordered
+ *
+ * Class ExtendedBffVatIdValidator
+ * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
+ */
 class ExtendedBffVatIdValidator extends BffVatIdValidator
 {
     /**
+     * Puts the customer and shop informations into the format the API needs it.
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdInformation $shopInformation
      * @return array
@@ -50,6 +61,9 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
     }
 
     /**
+     * Evaluates the returned address data of a validation request
+     * The Bff validator checks the committed address data itself, so it returns the result of each comparison
+     * (A = valid, B = invalid, C = not requested, D = state does not approve)
      * @param VatIdValidatorResult $result
      * @param array $response
      * @return VatIdValidatorResult

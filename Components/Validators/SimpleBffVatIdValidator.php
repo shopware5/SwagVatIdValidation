@@ -27,9 +27,19 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
 
+/**
+ * Simple Bff-Validator:
+ * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is disabled
+ * - checks only the VAT-ID
+ * - returns a detailed error message, if the VAT-Id is invalid
+ *
+ * Class SimpleBffVatIdValidator
+ * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
+ */
 class SimpleBffVatIdValidator extends BffVatIdValidator
 {
     /**
+     * Puts the customer and shop informations into the format the API needs it.
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdInformation $shopInformation
      * @return array
@@ -48,6 +58,7 @@ class SimpleBffVatIdValidator extends BffVatIdValidator
     }
 
     /**
+     * Only useful in extended validators
      * @param array $response
      */
     protected function addExtendedResults($response)

@@ -28,18 +28,25 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
+/**
+ * Dummy validation
+ * The dummy validator checks if the VAT Id COULD be valide. Empty VAT Ids are also okay.
+ * The validator fails when:
+ * - VAT Id is shorter than 7 or longer than 14 signs
+ * - Country Code includes non-alphabetical chars
+ * - VAT Number includes non-alphanumerical chars
+ *
+ * Class DummyVatIdValidator
+ * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
+ */
 class DummyVatIdValidator implements VatIdValidatorInterface
 {
-    /**
-     * The dummy Validator checks whether the Vat Ids can be valid or not.
-     * Vat Ids, that have an invalid format, have not to be written in the database for later checks.
-     */
-
     /** @var  VatIdValidatorResult */
     private $result;
 
     /**
      * Constructor sets the snippet namespace
+     * @param \Shopware_Components_Snippet_Manager $snippetManager
      */
     public function __construct(\Shopware_Components_Snippet_Manager $snippetManager)
     {
@@ -47,6 +54,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
     }
 
     /**
+     * Check process of a validator
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdInformation $shopInformation
      * @return VatIdValidatorResult

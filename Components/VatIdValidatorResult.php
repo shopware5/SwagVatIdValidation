@@ -24,6 +24,10 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Components;
 
+/**
+ * Class VatIdValidatorResult
+ * @package Shopware\Plugins\SwagVatIdValidation\Components
+ */
 class VatIdValidatorResult implements \Serializable
 {
     //Flags
@@ -193,6 +197,7 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
+     * Returns the error messages
      * @return array
      */
     public function getErrorMessages()
@@ -201,6 +206,7 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
+     * Returns the error flags
      * @return array
      */
     public function getErrorFlags()
@@ -209,6 +215,7 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
+     * Returns if the VAT Id and its address data is valid or not
      * @return bool
      */
     public function isValid()
@@ -217,10 +224,10 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
-     * (PHP 5 &gt;= 5.1.0)<br/>
      * String representation of object
+     *
      * @link http://php.net/manual/en/serializable.serialize.php
-     * @return string the string representation of the object or null
+     * @return string
      */
     public function serialize()
     {
@@ -233,13 +240,10 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
-     * (PHP 5 &gt;= 5.1.0)<br/>
      * Constructs the object
+     *
      * @link http://php.net/manual/en/serializable.unserialize.php
-     * @param string $serialized <p>
-     * The string representation of the object.
-     * </p>
-     * @return void
+     * @param string $serialized
      */
     public function unserialize($serialized)
     {
@@ -253,6 +257,10 @@ class VatIdValidatorResult implements \Serializable
         }
     }
 
+    /**
+     * Helper function to add an error by its error code
+     * @param string $errorCode
+     */
     private function addError($errorCode)
     {
         if(!$this->snippetManager) {
