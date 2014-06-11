@@ -1,21 +1,18 @@
 {extends file='frontend/account/index.tpl'}
 
-{block name='frontend_index_content' prepend}
-    {if $vatIdCheck}
-        {foreach $vatIdCheck.errorMessages as $message}
-            {$sErrorMessages[] = $message}
-        {/foreach}
+{block name='frontend_account_index_error_messages'}
+    {if $sErrorMessages || $vatIdCheck.errorMessages|count > 0}
+        <div class="grid_16 error_msg">
+            {if $sErrorMessages}
+                {include file="frontend/register/error_message.tpl" error_messages=$sErrorMessages}
+            {/if}
+            {include file="frontend/plugins/swag_vat_id_validation/error_message.tpl"}
+        </div>
     {/if}
 {/block}
 
 {block name='frontend_checkout_confirm_error_messages' append}
-    {if $vatIdCheck.errors.messages|count > 0}
-        <div class="error center bold">
-            <p>{se namespace="frontend/swag_vat_id_validation/main" name="messages/notUsedForOrder"}{/se}</p>
-            <p>{$vatIdCheck.errors.messages|implode:'<br>'}</p>
-            {se namespace="frontend/swag_vat_id_validation/main" name="messages/editYourBilling"}{/se}
-        </div>
-    {/if}
+    {include file="frontend/plugins/swag_vat_id_validation/error_message.tpl"}
 {/block}
 
 {* UST Id *}

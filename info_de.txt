@@ -6,18 +6,21 @@
     <ul>
         <li>1. Bei Registrierung eines Neukunden</li>
         <li>2. Bei Änderung der Rechnungsadresse</li>
-        <li>3. Im Bestellvorgang nach Angabe der Rechnungsadresse (optional)</li>
+        <li>3. Bei jedem Kundenlogin</li>
     </ul>
     <br>
-    <p>Wird eine Ust.-Id. als ungültig erkannt, wird der Benutzer zur Korrektur der Daten angewiesen.</p>
-    <p>Solange eine Ust.-Id. nicht überprüft werden konnte, kann der Kunde auch nicht mit ihr bestellen.</p>
+    <p>Wird eine Ust-IdNr. als ungültig erkannt, wird sie aus den Benutzerdaten gelöscht.</p>
+    <p>Gleiches geschieht, wenn die Ust-IdNr. nicht geprüft werden kann.</p>
+    <p>Sollte bei einem Bestandskunden eine Prüfung fehlschlagen, können Sie sich per E-Mail darüber informieren lassen, die Prüfung manuell wiederholen und die Ust-IdNr. ggf. wieder in die Kundendaten eintragen.</p>
+    <p>Die Eingabe der Ust-IdNr. kann für Firmenkunden vorgeschrieben werden.</p>
     <br>
     <p>Mit diesem Plugin kann sowohl eine einfache als auch eine qualifizierte Bestätigungsabfrage gestellt werden.</p>
     <p>Bei der qualifizierten Bestätigungsabfrage kann zudem eine amtliche Bestätigungsmitteilung angefordert werden, die Ihnen als Nachweis der Überprüfungspflicht dient.<br>
     Bedingung hierfür ist jedoch, dass Sie über eine deutsche und Ihr Kunde über eine ausländische Ust.-Id. verfügen.</p>
     <br>
-    <p>Für alle anderen Fälle kann keine "richtige" qualifizierte Bestätigungsabfrage durchgeführt werden, da nicht alle Länder Angaben zur hinterlegten Adresse zur Abfrage bereit stellen. Wird die Adresse jedoch zurückgegeben, wird diese mit den Angaben des Kunden durch das Plugin manuell verglichen.</p>
-    <p>In jedem Fall kann jedoch bei Bestellabschluss eine E-Mail mit exakter Angabe vom Anfragezeitpunkt, Ergebnis der Anfrage und ggf. auch einer eindeutigen Abfragenummer an Sie verschickt werden.</p>
+    <p>In jedem anderen Fall ist keine "richtige" qualifizierte Bestätigungsabfrage möglich.</p>
+    <p>Gibt der angefragte EU-Mitgliedsstaat die hinterlegte Adresse zur Ust-IdNr. zurück, wird diese mit den Angaben des Kunden durch das Plugin verglichen.<br>
+    <b>Achtung: Nicht jeder Mitgliedsstaat gibt die Adresse zurück! (z.B. Deutschland) In diesen Fällen wird immer eine einfache Prüfung durchgeführt!</b></p>
     <br>
     <p>Weitere Informationen zu dem Thema erhalten Sie unter folgenden Links:</p>
     <br>

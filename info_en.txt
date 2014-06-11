@@ -1,28 +1,30 @@
 <div style="padding-bottom:12px;color:999;">
-    <p>Dieses Plugin überprüft die Umsatzsteuer-Identifikationsnummer des Kunden auf ihre Richtigkeit.</p>
+    <p>This plugin validates the VAT-Id of business customers</p>
     <br>
-    <p>Geprüft wird an folgenden Stellen:</p>
+    <p>The validations are:</p>
     <br>
     <ul>
-        <li>1. Bei Registrierung eines Neukunden</li>
-        <li>2. Bei Änderung der Rechnungsadresse</li>
-        <li>3. Im Bestellvorgang nach Angabe der Rechnungsadresse (optional)</li>
+        <li>1. on the registration of a new customer</li>
+        <li>2. on changing the billing address</li>
+        <li>3. on each login</li>
     </ul>
     <br>
-    <p>Wird eine Ust.-Id. als ungültig erkannt, wird der Benutzer zur Korrektur der Daten angewiesen.</p>
-    <p>Solange eine Ust.-Id. nicht überprüft werden konnte, kann der Kunde auch nicht mit ihr bestellen.</p>
+    <p>If a VAT-Id is invalid, it will be removed from customers billing address.</p>
+    <p>The same happens, when the validation service is not available.</p>
+    <p>If the validation of a VAT-Id of an existing customer fails, you can get informed by an email, validate the Vat-Id manually and as the circumstances require re-enter it to the customer data.</p>
+    <p>The validation of the VAT-Id can be set required for business customers.</p>
     <br>
-    <p>Mit diesem Plugin kann sowohl eine einfache als auch eine qualifizierte Bestätigungsabfrage gestellt werden.</p>
-    <p>Bei der qualifizierten Bestätigungsabfrage kann zudem eine amtliche Bestätigungsmitteilung angefordert werden, die Ihnen als Nachweis der Überprüfungspflicht dient.<br>
-    Bedingung hierfür ist jedoch, dass Sie über eine deutsche und Ihr Kunde über eine ausländische Ust.-Id. verfügen.</p>
+    <p>With this Plugin you can put a simple as well as a qualified confirmation request.</p>
+    <p>You also can order an official mail confirmation, if you have a german Vat-Id and customers VAT-Id is foreign.</p>
     <br>
-    <p>Für alle anderen Fälle kann keine "richtige" qualifizierte Bestätigungsabfrage durchgeführt werden, da nicht alle Länder Angaben zur hinterlegten Adresse zur Abfrage bereit stellen. Wird die Adresse jedoch zurückgegeben, wird diese mit den Angaben des Kunden durch das Plugin manuell verglichen.</p>
-    <p>In jedem Fall kann jedoch bei Bestellabschluss eine E-Mail mit exakter Angabe vom Anfragezeitpunkt, Ergebnis der Anfrage und ggf. auch einer eindeutigen Abfragenummer an Sie verschickt werden.</p>
+    <p>In each other case, a "really" qualified confirmation request isn't possible.</p>
+    <p>If the requested EU member state returns the address data for a VAT Id, it will be compared by the plugin with customers inputted address data.<br>
+    <b>Attention: Not every member state returns the address data (p.e. Germany)! In this cases there will also be a simple validation!</b></p>
     <br>
-    <p>Weitere Informationen zu dem Thema erhalten Sie unter folgenden Links:</p>
+    <p>You can get further information about this following this links:</p>
     <br>
     <ul>
-        <li>- <a target="_blank" href="http://www.bzst.de/DE/Steuern_International/USt_Identifikationsnummer/Bestaetigung/Bestaetigung_node.html">Bundeszentralamt für Steuern</a>
-        <li>- <a target="_blank" href="http://ec.europa.eu/taxation_customs/vies/faq.html">Europäische Kommission</a>
+        <li>- <a target="_blank" href="http://www.bzst.de/DE/Steuern_International/USt_Identifikationsnummer/Bestaetigung/Bestaetigung_node.html">Federal Central Tax Office</a>
+        <li>- <a target="_blank" href="http://ec.europa.eu/taxation_customs/vies/faq.html">European Commission</a>
     </ul>
 </div>
