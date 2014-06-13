@@ -28,10 +28,10 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
 
 /**
- * Simple Mias-Validator:
- * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is disabled.
- * - checks only the VAT-ID
- * - returns an error message, if the VAT-Id is invalid
+ * Simple Mias Validator:
+ * - will be used when shop VAT ID is foreign or customer VAT ID is german. Extended check is disabled.
+ * - checks only the VAT ID
+ * - returns an error message, if the VAT ID is invalid
  *
  * Class SimpleMiasVatIdValidator
  * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
@@ -39,7 +39,7 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
 class SimpleMiasVatIdValidator extends MiasVatIdValidator
 {
     /**
-     * Puts the customer and shop informations into the format the API needs it.
+     * Puts the customer and shop information into the format the API needs it.
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdInformation $shopInformation
      * @return array

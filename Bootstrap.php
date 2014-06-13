@@ -185,7 +185,10 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $translation->setLocale($this->getLocaleRepository()->findOneByLocale('en_GB'));
         $translation->setType('config_mails');
         $translation->setKey($mail->getId());
-        $translation->setData(serialize(array('subject' => "", 'content' => "")));
+        $translation->setData(serialize(array(
+            'subject' => "An error occurred when validating VAT ID {\$sVatId}.",
+            'content' => "Hello,\n\nAn error occurred during the validation of VAT ID {\$sVatId} associated with the following company:\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nThe following errors were detected:\n\n{\$sError}\n\n{config name=shopName}"
+        )));
 
         Shopware()->Models()->persist($translation);
         Shopware()->Models()->flush();

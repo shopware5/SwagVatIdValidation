@@ -79,7 +79,7 @@ class VatIdCustomerInformation extends VatIdInformation
     }
 
     /**
-     * Returns the zipcode
+     * Returns the zip code
      * @return string
      */
     public function getZipCode()

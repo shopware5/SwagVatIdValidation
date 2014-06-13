@@ -65,11 +65,15 @@ abstract class ValidationPoint implements SubscriberInterface
      * Constructor sets all properties
      * @param \Enlight_Config $config
      * @param \Shopware_Components_Snippet_Manager $snippetManager
-     * @param \Enlight_Components_Session_Namespace $session
      * @param ModelManager $modelManager
      * @param \Shopware_Components_TemplateMail $templateMail
      */
-    public function __construct(\Enlight_Config $config, \Shopware_Components_Snippet_Manager $snippetManager, ModelManager $modelManager = null, \Shopware_Components_TemplateMail $templateMail = null)
+    public function __construct(
+        \Enlight_Config $config,
+        \Shopware_Components_Snippet_Manager $snippetManager,
+        ModelManager $modelManager = null,
+        \Shopware_Components_TemplateMail $templateMail = null
+    )
     {
         $this->config = $config;
         $this->snippetManager = $snippetManager;
@@ -128,32 +132,32 @@ abstract class ValidationPoint implements SubscriberInterface
          * Step 2: API validation
          * There are two API validators, both with two validation methods:
          *
-         * Simple Bff-Validator:
+         * Simple Bff Validator:
          * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is disabled
          * - checks only the VAT-ID
          * - returns a detailed error message, if the VAT-Id is invalid
          *
-         * Extended Bff-Validator:
+         * Extended Bff Validator:
          * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is enabled
          * - checks the VAT-ID and additionally company, steet and steetnumber, zipcode and city
          * - returns a detailed error message, if the VAT-Id is invalid
          * - the API itself checks the address data
          * - furthermore an official mail confirmation can be ordered
          *
-         * Simple Mias-Validator:
+         * Simple Mias Validator:
          * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is disabled.
          * - checks only the VAT-ID
          * - returns an error message, if the VAT-Id is invalid
          *
-         * Extended Mias-Validator:
+         * Extended Mias Validator:
          * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is enabled.
-         * - checks the VAT-ID and additionally company, steet and steetnumber, zipcode and city
+         * - checks the VAT-ID and additionally company, street and street number, zip code and city
          * - returns an error message, if the VAT-Id is invalid
          * - the API itself doesn't check the address data, the validator class does it manually
          * - an official mail confirmation can't be ordered
          *
          *
-         * Each validator connects to an extern API. If the API is not available, the result will be false.
+         * Each validator connects to an external API. If the API is not available, the result will be false.
          * The customer VAT Id has not to be empty. Otherwise the result will also be false!
          */
         $shopInformation = new VatIdInformation($this->config->get('vatId'));

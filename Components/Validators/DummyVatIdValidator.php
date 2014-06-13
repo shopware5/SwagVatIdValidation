@@ -30,9 +30,9 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 /**
  * Dummy validation
- * The dummy validator checks if the VAT Id COULD be valide. Empty VAT Ids are also okay.
+ * The dummy validator checks if the VAT ID could be valid. Empty VAT IDs are also okay.
  * The validator fails when:
- * - VAT Id is shorter than 7 or longer than 14 signs
+ * - VAT ID is shorter than 7 or longer than 14 chars
  * - Country Code includes non-alphabetical chars
  * - VAT Number includes non-alphanumerical chars
  *
@@ -65,19 +65,19 @@ class DummyVatIdValidator implements VatIdValidatorInterface
             return $this->result;
         }
 
-        //All Vat-IDs have a length of 7 to 14 chars
+        //All VAT IDs have a length of 7 to 14 chars
         if (strlen($customerInformation->getVatId()) < 7) {
             $this->result->setVatIdInvalid('1');
         } elseif (strlen($customerInformation->getVatId()) > 14) {
             $this->result->setVatIdInvalid('2');
         }
 
-        //The CountyCode always only consists of letters
+        //The county code always only consists of letters
         if (!ctype_alpha($customerInformation->getCountryCode())) {
             $this->result->setVatIdInvalid('3');
         }
 
-        //The VatNumber always only consists of alphanumerical chars
+        //The VAT number always only consists of alphanumerical chars
         if (!ctype_alnum($customerInformation->getVatNumber())) {
             $this->result->setVatIdInvalid('4');
         }

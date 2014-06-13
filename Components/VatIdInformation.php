@@ -51,7 +51,7 @@ class VatIdInformation
     }
 
     /**
-     * Returns the VAT Id
+     * Returns the VAT ID
      * @return string
      */
     public function getVatId()

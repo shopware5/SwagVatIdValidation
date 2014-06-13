@@ -72,7 +72,7 @@ class SaveBilling extends ValidationPoint
     }
 
     /**
-     * Listener to validate the VAT Id
+     * Listener to validate the VAT ID
      * @param \Enlight_Event_EventArgs $arguments
      * @return array|mixed
      */
