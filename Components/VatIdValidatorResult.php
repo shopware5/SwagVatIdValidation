@@ -154,7 +154,7 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
-     * Sets the street and streetnumber to invalid
+     * Sets the street / streetnumber combination to invalid
      */
     public function setStreetInvalid()
     {
@@ -165,7 +165,6 @@ class VatIdValidatorResult implements \Serializable
         $this->status &= ~($this::STREET_OK);
         $this->errors['street'] = $this->pluginSnippets->get('validator/extended/error/street');
         $this->flags['street'] = true;
-        $this->flags['streetnumber'] = true;
     }
 
     /**

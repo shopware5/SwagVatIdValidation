@@ -83,7 +83,6 @@ class Login extends ValidationPoint
                 'billing.vatId',
                 'billing.company',
                 'billing.street',
-                'billing.streetNumber',
                 'billing.zipCode',
                 'billing.city'
             )
@@ -95,7 +94,7 @@ class Login extends ValidationPoint
         $result = $this->validate(
             $billing[0]['vatId'],
             $billing[0]['company'],
-            $billing[0]['street'] . ' ' . $billing[0]['streetNumber'],
+            $billing[0]['street'],
             $billing[0]['zipCode'],
             $billing[0]['city'],
             $billing[0]['id']
