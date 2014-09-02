@@ -72,7 +72,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
             $this->result->setVatIdInvalid('2');
         }
 
-        //The county code always only consists of letters
+        //The country code always only consists of letters
         if (!ctype_alpha($customerInformation->getCountryCode())) {
             $this->result->setVatIdInvalid('3');
         }
