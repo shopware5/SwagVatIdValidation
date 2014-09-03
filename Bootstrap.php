@@ -107,11 +107,18 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     /**
      * Returns the current version of the plugin.
      * @return string
+	 * @throws Exception
      */
     public function getVersion()
     {
-        return "1.0.0";
-    }
+		$info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'plugin.json'), true);
+
+		if($info) {
+			return $info['currentVersion'];
+		} else {
+			throw new Exception('The plugin has an invalid version file.');
+        }
+	}
 
     /**
      * Returns an array with some information about the plugin.
@@ -319,9 +326,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     private function registerEvents()
     {
-        // The SubscriberInterface is available in SW 4.1.4 and later
-        if (!$this->assertVersionGreaterThen('4.1.4')) {
-            throw new \RuntimeException('At least Shopware 4.1.4 is required');
+        // The SubscriberInterface is available in SW 4.2.2 and later
+        if (!$this->assertVersionGreaterThen('4.2.2')) {
+            throw new \RuntimeException('At least Shopware 4.2.2 is required');
         }
 
         // Register an early event for our event subscribers
