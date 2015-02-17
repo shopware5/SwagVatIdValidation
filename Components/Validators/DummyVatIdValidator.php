@@ -82,6 +82,11 @@ class DummyVatIdValidator implements VatIdValidatorInterface
             $this->result->setVatIdInvalid('4');
         }
 
+        //If vat number only consists alphas its invalid
+        if(ctype_alpha($customerInformation->getVatNumber())) {
+            $this->result->setVatIdInvalid('5');
+        }
+
         return $this->result;
     }
 }
