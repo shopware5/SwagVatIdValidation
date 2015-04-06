@@ -1,0 +1,3 @@
+<div class="register--ustid">
+    <input autocomplete="section-billing billing organization-vat-id" name="register[billing][ustid]" type="text" {if $vatIdCheck.required}required="required" aria-required="true"{/if} placeholder="{s namespace="frontend/register/billing_fieldset" name='RegisterLabelTaxId'}{/s}{if $vatIdCheck.required}*{/if}" id="register_billing_ustid" value="{$form_data.ustid|escape}" class="register--field{if $error_flags.ustid} has--error{/if}{if $vatIdCheck.required} is--required{/if}" />
+</div>
