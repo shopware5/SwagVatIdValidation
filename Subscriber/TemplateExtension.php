@@ -45,6 +45,9 @@ class TemplateExtension implements SubscriberInterface
     /** @var  \Shopware_Components_Snippet_Manager */
     private $snippetManager;
 
+    /** @var  \Shopware\Models\Shop\Shop */
+    private $shop;
+
     /**
      * Constructor sets all properties
      * @param \Enlight_Config $config
@@ -52,12 +55,13 @@ class TemplateExtension implements SubscriberInterface
      * @param \Enlight_Components_Session_Namespace $session
      * @param \Shopware_Components_Snippet_Manager $snippetManager
      */
-    public function __construct(\Enlight_Config $config, $path, \Enlight_Components_Session_Namespace $session, \Shopware_Components_Snippet_Manager $snippetManager)
+    public function __construct(\Enlight_Config $config, $path, \Enlight_Components_Session_Namespace $session, \Shopware_Components_Snippet_Manager $snippetManager, \Shopware\Models\Shop\Shop $shop)
     {
         $this->config = $config;
         $this->path = $path;
         $this->session = $session;
         $this->snippetManager = $snippetManager;
+        $this->shop = $shop;
     }
 
     /**
@@ -122,8 +126,7 @@ class TemplateExtension implements SubscriberInterface
             return;
         }
 
-        $view->addTemplateDir($this->path . 'Views/');
-        $view->extendsTemplate('frontend/plugins/swag_vat_id_validation/index.tpl');
+        $this->extendsTemplate($view, 'frontend/plugins/swag_vat_id_validation/index.tpl');
 
         $errorMessages = array();
 
@@ -140,9 +143,21 @@ class TemplateExtension implements SubscriberInterface
         $required = $this->config->get('vatIdRequired');
 
         $view->assign('vatIdCheck', array(
-                'errorMessages' => $errorMessages,
+                'errorMessages' => array_values($errorMessages),
                 'required' => $required
             )
         );
+    }
+
+    private function extendsTemplate(\Enlight_View_Default $view, $templatePath)
+    {
+        $version = $this->shop->getTemplate()->getVersion();
+        if ($version >= 3) {
+            $view->sErrorMessages = array_values($view->sErrorMessages);
+            $view->addTemplateDir($this->path . 'Views/responsive/');
+        } else {
+            $view->addTemplateDir($this->path . 'Views/emotion/');
+            $view->extendsTemplate($templatePath);
+        }
     }
 }
