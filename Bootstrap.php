@@ -189,7 +189,14 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         //Translation
         $translation = new Translation();
-        $translation->setLocale($this->getLocaleRepository()->findOneByLocale('en_GB'));
+
+        if($this->assertMinimumVersion("5.1.0")) {
+            $translation->setShop($this->getShopByLocale("en_GB"));
+        }
+        else {
+            $translation->setLocale($this->getLocaleRepository()->findOneByLocale('en_GB'));
+        }
+
         $translation->setType('config_mails');
         $translation->setKey($mail->getId());
         $translation->setData(serialize(array(
@@ -199,6 +206,17 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         Shopware()->Models()->persist($translation);
         Shopware()->Models()->flush();
+    }
+
+    /**
+     * Helper method that returns the correct shop for the specified locale.
+     * @deprecated for shopware 5.2+
+     * @param string $locale
+     * @return Shopware\Models\Shop\Shop $result
+     */
+    private function getShopByLocale($locale)
+    {
+        return Shopware()->Models()->getRepository('Shopware\Models\Shop\Shop')->findOneByLocale($this->getLocaleRepository()->findOneByLocale($locale));
     }
 
     /**
