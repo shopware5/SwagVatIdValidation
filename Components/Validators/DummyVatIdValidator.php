@@ -62,6 +62,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation = null)
     {
         if ($customerInformation->getVatId() === '') {
+            $this->result->setVatIdInvalid(4);
             return $this->result;
         }
 
