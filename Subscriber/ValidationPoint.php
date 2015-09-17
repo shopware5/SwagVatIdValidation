@@ -128,40 +128,43 @@ abstract class ValidationPoint implements SubscriberInterface
             return $result;
         }
 
-        /**
-         * Step 2: API validation
-         * There are two API validators, both with two validation methods:
-         *
-         * Simple Bff Validator:
-         * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is disabled
-         * - checks only the VAT-ID
-         * - returns a detailed error message, if the VAT-Id is invalid
-         *
-         * Extended Bff Validator:
-         * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is enabled
-         * - checks the VAT-ID and additionally company, steet and steetnumber, zipcode and city
-         * - returns a detailed error message, if the VAT-Id is invalid
-         * - the API itself checks the address data
-         * - furthermore an official mail confirmation can be ordered
-         *
-         * Simple Mias Validator:
-         * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is disabled.
-         * - checks only the VAT-ID
-         * - returns an error message, if the VAT-Id is invalid
-         *
-         * Extended Mias Validator:
-         * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is enabled.
-         * - checks the VAT-ID and additionally company, street and street number, zip code and city
-         * - returns an error message, if the VAT-Id is invalid
-         * - the API itself doesn't check the address data, the validator class does it manually
-         * - an official mail confirmation can't be ordered
-         *
-         *
-         * Each validator connects to an external API. If the API is not available, the result will be false.
-         * The customer VAT Id has not to be empty. Otherwise the result will also be false!
-         */
-        $shopInformation = new VatIdInformation($this->config->get('vatId'));
-        $result = $this->validateWithApiValidator($customerInformation, $shopInformation);
+        if($this->config->get("extendedCheck")) {
+            /**
+             * Step 2: API validation
+             * There are two API validators, both with two validation methods:
+             *
+             * Simple Bff Validator:
+             * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is disabled
+             * - checks only the VAT-ID
+             * - returns a detailed error message, if the VAT-Id is invalid
+             *
+             * Extended Bff Validator:
+             * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is enabled
+             * - checks the VAT-ID and additionally company, steet and steetnumber, zipcode and city
+             * - returns a detailed error message, if the VAT-Id is invalid
+             * - the API itself checks the address data
+             * - furthermore an official mail confirmation can be ordered
+             *
+             * Simple Mias Validator:
+             * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is disabled.
+             * - checks only the VAT-ID
+             * - returns an error message, if the VAT-Id is invalid
+             *
+             * Extended Mias Validator:
+             * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is enabled.
+             * - checks the VAT-ID and additionally company, street and street number, zip code and city
+             * - returns an error message, if the VAT-Id is invalid
+             * - the API itself doesn't check the address data, the validator class does it manually
+             * - an official mail confirmation can't be ordered
+             *
+             *
+             * Each validator connects to an external API. If the API is not available, the result will be false.
+             * The customer VAT Id has not to be empty. Otherwise the result will also be false!
+             */
+            $shopInformation = new VatIdInformation($this->config->get('vatId'));
+            $result = $this->validateWithApiValidator($customerInformation, $shopInformation);
+
+        }
 
         /**
          * If the VAT Id is invalid or the API service is not available and if the VAT Id belongs to a billing address,
