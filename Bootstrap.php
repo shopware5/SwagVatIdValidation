@@ -107,18 +107,18 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     /**
      * Returns the current version of the plugin.
      * @return string
-	 * @throws Exception
+     * @throws Exception
      */
     public function getVersion()
     {
-		$info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'plugin.json'), true);
+        $info = json_decode(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'plugin.json'), true);
 
-		if($info) {
-			return $info['currentVersion'];
-		} else {
-			throw new Exception('The plugin has an invalid version file.');
+        if ($info) {
+            return $info['currentVersion'];
+        } else {
+            throw new Exception('The plugin has an invalid version file.');
         }
-	}
+    }
 
     /**
      * Returns an array with some information about the plugin.
@@ -129,7 +129,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         return array(
             'version' => $this->getVersion(),
             'label' => $this->getLabel(),
-            'description' => file_get_contents($this->Path() . 'info_de.txt').file_get_contents($this->Path() . 'info_en.txt'),
+            'description' => file_get_contents($this->Path() . 'info_de.txt') . file_get_contents($this->Path() . 'info_en.txt'),
         );
     }
 
@@ -146,6 +146,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $this->createConfiguration();
         $this->registerEvents();
 
+        $this->registerController('frontend', "SwagVatIdValidation");
         return true;
     }
 
@@ -190,10 +191,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         //Translation
         $translation = new Translation();
 
-        if($this->assertMinimumVersion("5.1.0")) {
+        if ($this->assertMinimumVersion("5.1.0")) {
             $translation->setShop($this->getShopByLocale("en_GB"));
-        }
-        else {
+        } else {
             $translation->setLocale($this->getLocaleRepository()->findOneByLocale('en_GB'));
         }
 
@@ -242,7 +242,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $translations = $this->getTranslationRepository()->findByKey($mailTemplateId);
 
         /** @var Translation $translation */
-        foreach($translations as $translation) {
+        foreach ($translations as $translation) {
             if ($translation->getType() !== 'config_mails') {
                 continue;
             }
@@ -259,83 +259,81 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     {
         $form = $this->Form();
 
-        $form->setElement(
-            'text',
-            'vatId',
-            array(
-                'label' => 'Eigene USt-IdNr.',
-                'value' => Shopware()->Config()->get('sTAXNUMBER'),
-                'description' => 'Eigene USt-IdNr., die zur Prüfung verwendet werden soll.',
-                'required' => true
-            )
-        );
+        $form->setElement('text', 'vatId', array(
+            'label' => 'Eigene USt-IdNr.',
+            'value' => Shopware()->Config()->get('sTAXNUMBER'),
+            'description' => 'Eigene USt-IdNr., die zur Prüfung verwendet werden soll.',
+            'required' => true
+        ));
 
-        $form->setElement(
-            'text',
-            'shopEmailNotification',
-            array(
-                'label' => 'E-Mail-Benachrichtigung',
-                'value' => Shopware()->Config()->get('sMAIL'),
-                'description' => 'An diese E-Mail-Adresse erhalten Sie eine Mitteilungen, wenn die Ust-IdNr. eines Bestandskunden abgelaufen ist. Wenn leer, erhalten Sie keine E-Mail.'
-            )
-        );
+        $form->setElement('text', 'shopEmailNotification', array(
+            'label' => 'E-Mail-Benachrichtigung',
+            'value' => Shopware()->Config()->get('sMAIL'),
+            'description' => 'An diese E-Mail-Adresse erhalten Sie eine Mitteilungen, wenn die Ust-IdNr. eines Bestandskunden abgelaufen ist. Wenn leer, erhalten Sie keine E-Mail.'
+        ));
 
-        $form->setElement(
-            'checkbox',
-            'vatIdRequired',
-            array(
-                'label' => 'Ust-IdNr.-Angabe ist Pflicht',
-                'value' => false,
-                'description' => 'Wandelt das Feld für die Ust-IdNr. in ein Pflichtfeld um.'
-            )
-        );
+        $form->setElement('checkbox', 'vatIdRequired', array(
+            'label' => 'Ust-IdNr.-Angabe ist Pflicht',
+            'value' => false,
+            'description' => 'Wandelt das Feld für die Ust-IdNr. in ein Pflichtfeld um.'
+        ));
 
-        $form->setElement(
-            'checkbox',
-            'extendedCheck',
-            array(
-                'label' => 'Erweiterte Prüfung durchführen',
-                'value' => false,
-                'description' => 'Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden. Sofern der angefragte EU-Mitgliedsstaat die Adressdaten bereit stellt, werden diese anderenfalls manuell durch das Plugin verglichen.'
-            )
-        );
+        $form->setElement('checkbox', 'extendedCheck', array(
+            'label' => 'Erweiterte Prüfung durchführen',
+            'value' => false,
+            'description' => 'Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden. Sofern der angefragte EU-Mitgliedsstaat die Adressdaten bereit stellt, werden diese anderenfalls manuell durch das Plugin verglichen.'
+        ));
 
-        $form->setElement(
-            'checkbox',
-            'confirmation',
-            array(
-                'label' => 'Amtliche Bestätigungsmitteilung',
-                'value' => false,
-                'description' => 'Amtliche Bestätigungsmitteilung bei qualifizierten Bestätigungsanfragen anfordern. Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden.'
-            )
-        );
+        $form->setElement('checkbox', 'confirmation', array(
+            'label' => 'Amtliche Bestätigungsmitteilung',
+            'value' => false,
+            'description' => 'Amtliche Bestätigungsmitteilung bei qualifizierten Bestätigungsanfragen anfordern. Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden.'
+        ));
 
-        $this->addFormTranslations(
-            array(
-                'en_GB' => array(
-                    'vatId' => array(
-                        'label' => 'Own VAT ID',
-                        'description' => 'Your own VAT ID number which is required for validation. During the validation process, your VAT ID is never given to your customers.'
-                    ),
-                    'shopEmailNotification' => array(
-                        'label' => 'Own email notifications',
-                        'description' => 'If provided, you will receive an email when a VAT ID validation error occurs.'
-                    ),
-                    'vatIdRequired' => array(
-                        'label' => 'VAT ID is required',
-                        'description' => 'If enabled, the input of a VAT ID is required for business customers.'
-                    ),
-                    'extendedCheck' => array(
-                        'label' => 'Extended checks',
-                        'description' => 'If enabled, this plugin will compare the address provided by the customer with the data available in the remote VAT ID validation service. Note: depending on the market of both you and your customer, the completeness of the available information for comparison may be limited.'
-                    ),
-                    'confirmation' => array(
-                        'label' => 'Official mail confirmation',
-                        'description' => 'Only available for German-based shops. Requests an official mail confirmation for qualified checks of foreign VAT IDs.'
-                    )
+        $form->setElement('text', 'disabledCountryISOs', array(
+            'label' => 'Diese Länder ausschließen',
+            'value' => '',
+            'description' => 'Hier können Sie Länder ISO codes eintragen, bei denen keine Überprüfung stattfinden soll. z.B GB oder AT'
+        ));
+
+        $form->setElement('checkbox', 'disableOutsideEU', array(
+            'label' => 'Länder außerhalb der EU ausschließen',
+            'value' => false,
+            'description' => 'Ist dieses Feld aktiv werden Länder außerhalb der EU nicht überprüft.'
+        ));
+
+        $this->addFormTranslations(array(
+            'en_GB' => array(
+                'vatId' => array(
+                    'label' => 'Own VAT ID',
+                    'description' => 'Your own VAT ID number which is required for validation. During the validation process, your VAT ID is never given to your customers.'
+                ),
+                'shopEmailNotification' => array(
+                    'label' => 'Own email notifications',
+                    'description' => 'If provided, you will receive an email when a VAT ID validation error occurs.'
+                ),
+                'vatIdRequired' => array(
+                    'label' => 'VAT ID is required',
+                    'description' => 'If enabled, the input of a VAT ID is required for business customers.'
+                ),
+                'extendedCheck' => array(
+                    'label' => 'Extended checks',
+                    'description' => 'If enabled, this plugin will compare the address provided by the customer with the data available in the remote VAT ID validation service. Note: depending on the market of both you and your customer, the completeness of the available information for comparison may be limited.'
+                ),
+                'confirmation' => array(
+                    'label' => 'Official mail confirmation',
+                    'description' => 'Only available for German-based shops. Requests an official mail confirmation for qualified checks of foreign VAT IDs.'
+                ),
+                'disabledCountryISOs' => array(
+                    'label' => 'Exclude these countries',
+                    'description' => 'The country ISO codes you enter here will be excluded from the VAT id validation process. e.g GB or AT'
+                ),
+                'disableOutsideEU' => array(
+                    'label' => 'Disable for countries outside the EU',
+                    'description' => 'Is this field active, the VAT id validation will not be performed for countries outside the EU'
                 )
             )
-        );
+        ));
     }
 
     /**
@@ -350,10 +348,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         }
 
         // Register an early event for our event subscribers
-        $this->subscribeEvent(
-            'Enlight_Controller_Front_DispatchLoopStartup',
-            'onStartDispatch'
-        );
+        $this->subscribeEvent('Enlight_Controller_Front_DispatchLoopStartup', 'onStartDispatch');
 
         return;
     }
@@ -397,9 +392,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     public function afterInit()
     {
-        $this->Application()->Loader()->registerNamespace(
-            'Shopware\Plugins\SwagVatIdValidation',
-            $this->Path()
-        );
+        $this->Application()->Loader()->registerNamespace('Shopware\Plugins\SwagVatIdValidation', $this->Path());
     }
 }

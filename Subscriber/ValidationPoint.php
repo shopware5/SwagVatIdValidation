@@ -61,6 +61,38 @@ abstract class ValidationPoint implements SubscriberInterface
     /** @var  \Shopware\Models\Customer\BillingRepository */
     private $billingRepository;
 
+    /** @var array */
+    private $EUCountries = array(
+        'BE', //Kingdom of Belgium
+        'BG', //Republic of Bulgaria
+        'CZ', //Czech Republic
+        'DK', //Kingdom of Denmark
+        'DE', //Federal Republic of Germany
+        'EE', //Republic of Estonia
+        'IE', //Ireland
+        'EL', //Hellenic Republic (Greece)
+        'ES', //Kingdom of Spain
+        'FR', //French Republic
+        'HR', //Republic of Croatia
+        'IT', //Italian Republic
+        'CY', //Republic of Cyprus
+        'LV', //Republic of Latvia
+        'LT', //Republic of Lithuania
+        'LU', //Grand Duchy of Luxembourg
+        'HU', //Hungary
+        'MT', //Republic of Malta
+        'NL', //Kingdom of the Netherlands
+        'AT', //Republic of Austria
+        'PL', //Republic of Poland
+        'PT', //Portuguese Republic
+        'RO', //Romania
+        'SI', //Republic of Slovenia
+        'SK', //Slovak Republic
+        'FI', //Republic of Finland
+        'SE', //Kingdom of Sweden
+        'UK', //United Kingdom of Great Britain and Northern Ireland
+    );
+
     /**
      * Constructor sets all properties
      * @param \Enlight_Config $config
@@ -73,8 +105,7 @@ abstract class ValidationPoint implements SubscriberInterface
         \Shopware_Components_Snippet_Manager $snippetManager,
         ModelManager $modelManager = null,
         \Shopware_Components_TemplateMail $templateMail = null
-    )
-    {
+    ) {
         $this->config = $config;
         $this->snippetManager = $snippetManager;
         $this->modelManager = $modelManager;
@@ -103,11 +134,28 @@ abstract class ValidationPoint implements SubscriberInterface
      * @param string $street
      * @param string $zipCode
      * @param string $city
+     * @param string $countryIso
      * @param integer|null $billingId
      * @return VatIdValidatorResult
      */
-    public function validate($vatId, $company, $street, $zipCode, $city, $billingId = null)
+    public function validate($vatId, $company, $street, $zipCode, $city, $countryIso, $billingId = null)
     {
+        $result = new VatIdValidatorResult();
+
+        //check if the iso has been disabled manually
+        $disabledCountries = explode(',', str_replace(' ', '', $this->config->disabledCountryISOs));
+
+        if (!$this->config->vatIdRequired || in_array($countryIso, $disabledCountries)) {
+            $result->setVatIdValid();
+            return $result;
+        }
+
+        if ($this->config->get('disableOutsideEU') && !array_key_exists($countryIso, $this->EUCountries)) {
+
+            $result->setVatIdValid();
+            return $result; //valid because the country is outside the EU
+        }
+
         /**
          * Step 1: Dummy validation
          * The dummy validator checks if the VAT Id COULD be valide. Empty VAT Ids are also okay.
@@ -128,7 +176,7 @@ abstract class ValidationPoint implements SubscriberInterface
             return $result;
         }
 
-        if($this->config->get("extendedCheck")) {
+        if ($this->config->get("extendedCheck")) {
             /**
              * Step 2: API validation
              * There are two API validators, both with two validation methods:
@@ -163,7 +211,6 @@ abstract class ValidationPoint implements SubscriberInterface
              */
             $shopInformation = new VatIdInformation($this->config->get('vatId'));
             $result = $this->validateWithApiValidator($customerInformation, $shopInformation);
-
         }
 
         /**
@@ -199,8 +246,10 @@ abstract class ValidationPoint implements SubscriberInterface
      * @param VatIdInformation $shopInformation
      * @return VatIdValidatorResult
      */
-    private function validateWithApiValidator(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
-    {
+    private function validateWithApiValidator(
+        VatIdCustomerInformation $customerInformation,
+        VatIdInformation $shopInformation
+    ) {
         //an empty Vat Id will occur an error, so the api validation should be skipped
         if ($customerInformation->getVatId() === '') {
             return new VatIdValidatorResult();
@@ -260,8 +309,11 @@ abstract class ValidationPoint implements SubscriberInterface
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdValidatorResult $result
      */
-    private function removeVatIdFromBilling($billingId, VatIdCustomerInformation $customerInformation, VatIdValidatorResult $result)
-    {
+    private function removeVatIdFromBilling(
+        $billingId,
+        VatIdCustomerInformation $customerInformation,
+        VatIdValidatorResult $result
+    ) {
         if (empty($billingId)) {
             return;
         }
