@@ -37,38 +37,8 @@ class SaveBilling extends ValidationPoint
     public static function getSubscribedEvents()
     {
         return array(
-            'Shopware_Modules_Admin_ValidateStep2_FilterStart' => 'onValidateStep2FilterStart',
             'Shopware_Modules_Admin_ValidateStep2_FilterResult' => 'onValidateStep2FilterResult'
         );
-    }
-
-    /**
-     * Listener to check if the VAT Id is required or not.
-     * @param \Enlight_Event_EventArgs $arguments
-     * @return array|mixed
-     */
-    public function onValidateStep2FilterStart(\Enlight_Event_EventArgs $arguments)
-    {
-        $post = $arguments->getPost();
-        $errors = $arguments->getReturn();
-
-        if ($post['customer_type'] !== 'business') {
-            return $errors;
-        }
-
-        if ($post['register']['billing']['company'] === '') {
-            return $errors;
-        }
-
-        if (!$this->config->get('vatIdRequired')) {
-            return $errors;
-        }
-
-        if ($post['register']['billing']['ustid'] === '') {
-            $errors[1]['ustid'] = true;
-        }
-
-        return $errors;
     }
 
     /**
@@ -81,13 +51,12 @@ class SaveBilling extends ValidationPoint
         $post = $arguments->getPost();
         $errors = $arguments->getReturn();
 
-        $result = $this->validate(
-            $post['register']['billing']['ustid'],
-            $post['register']['billing']['company'],
-            $post['register']['billing']['street'],
-            $post['register']['billing']['zipcode'],
-            $post['register']['billing']['city']
-        );
+        $countryId = $post['register']['billing']['country'];
+        $countryISO = Shopware()->Models()->getRepository('Shopware\Models\Country\Country')->findOneBy(array('id' => $countryId))->getIso();
+
+        $result = $this->validate($post['register']['billing']['ustid'], $post['register']['billing']['company'],
+            $post['register']['billing']['street'], $post['register']['billing']['zipcode'],
+            $post['register']['billing']['city'], $countryISO);
 
         $errors = array(
             array_merge($result->getErrorMessages(), $errors[0]),

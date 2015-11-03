@@ -24,6 +24,7 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
+use Doctrine\DBAL\Connection;
 use Enlight\Event\SubscriberInterface;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
@@ -158,6 +159,17 @@ class TemplateExtension implements SubscriberInterface
         } else {
             $view->addTemplateDir($this->path . 'Views/emotion/');
             $view->extendsTemplate($templatePath);
+        }
+
+        $disabledCountryISOs = array_filter(explode(',', $this->config->get('disabledCountryISOs')));
+        $disabledOutsideEU =  $this->config->get('disableOutsideEU');
+
+        if(!empty($disabledCountryISOs) || $disabledOutsideEU) {
+
+            $view->assign('displayMessage', true);
+        }
+        else {
+            $view->assign('displayMessage', false);
         }
     }
 }

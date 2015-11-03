@@ -37,7 +37,6 @@ class VatIdValidatorResult implements \Serializable
     const ZIP_CODE_OK = 8;
     const CITY_OK = 16;
 
-
     //States
 
     /**
@@ -116,7 +115,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setVatIdInvalid($errorCode)
     {
-        if(!$this->snippetManager) {
+        if (!$this->snippetManager) {
             return;
         }
 
@@ -126,11 +125,21 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
+     * Sets the VatId valid.
+     */
+    public function setVatIdValid()
+    {
+        $this->status = $this::VALID;
+        $this->errors = array();
+        $this->flags = array();
+    }
+
+    /**
      * Sets the result to the api service was not available
      */
     public function setServiceUnavailable()
     {
-        if(!$this->snippetManager) {
+        if (!$this->snippetManager) {
             return;
         }
 
@@ -144,7 +153,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setCompanyInvalid()
     {
-        if(!$this->snippetManager) {
+        if (!$this->snippetManager) {
             return;
         }
 
@@ -158,7 +167,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setStreetInvalid()
     {
-        if(!$this->snippetManager) {
+        if (!$this->snippetManager) {
             return;
         }
 
@@ -172,7 +181,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setZipCodeInvalid()
     {
-        if(!$this->snippetManager) {
+        if (!$this->snippetManager) {
             return;
         }
 
@@ -186,7 +195,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setCityInvalid()
     {
-        if(!$this->snippetManager) {
+        if (!$this->snippetManager) {
             return;
         }
 
@@ -250,8 +259,7 @@ class VatIdValidatorResult implements \Serializable
 
         $this->init($serializeArray['namespace']);
 
-        foreach($serializeArray['keys'] as $errorCode)
-        {
+        foreach ($serializeArray['keys'] as $errorCode) {
             $this->addError($errorCode);
         }
     }
@@ -262,31 +270,31 @@ class VatIdValidatorResult implements \Serializable
      */
     private function addError($errorCode)
     {
-        if(!$this->snippetManager) {
+        if (!$this->snippetManager) {
             return;
         }
 
-        if($errorCode === 'unavailable') {
+        if ($errorCode === 'unavailable') {
             $this->setServiceUnavailable();
             return;
         }
 
-        if($errorCode === 'company') {
+        if ($errorCode === 'company') {
             $this->setCompanyInvalid();
             return;
         }
 
-        if($errorCode === 'street') {
+        if ($errorCode === 'street') {
             $this->setStreetInvalid();
             return;
         }
 
-        if($errorCode === 'zipCode') {
+        if ($errorCode === 'zipCode') {
             $this->setZipCodeInvalid();
             return;
         }
 
-        if($errorCode === 'city') {
+        if ($errorCode === 'city') {
             $this->setCityInvalid();
             return;
         }
