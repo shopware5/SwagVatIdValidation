@@ -35,7 +35,7 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 abstract class MiasVatIdValidator implements VatIdValidatorInterface
 {
     /**
-     * The Mias validator (http://evatr.bff-online.de) will be used in each case, the bff validator will not be used.
+     * The Mias validator (http://ec.europa.eu/taxation_customs/vies/vatRequest.html) will be used in each case, the bff validator will not be used.
      * When you request an extended confirmation request, it returns in some cases the address data of the requested Vat ID.
      * Some countries (like Germany) do not return the address data, so there will only be a simple request.
      * If the address data was returned the extended validation checks the similarity to users inputted address data

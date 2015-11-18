@@ -35,7 +35,7 @@ class Login extends ValidationPoint
     /** @var  string */
     private static $action;
 
-    /** @var \Enlight_Components_Session_Namespace  */
+    /** @var \Enlight_Components_Session_Namespace */
     private $session;
 
     /**
@@ -84,20 +84,29 @@ class Login extends ValidationPoint
                 'billing.company',
                 'billing.street',
                 'billing.zipCode',
-                'billing.city'
+                'billing.city',
+                'billing.countryId'
             )
             ->where('billing.customerId = :customerId')
             ->setParameter('customerId', $user['id'])
             ->setMaxResults(1)
-            ->getQuery()->getArrayResult();
+            ->getQuery()->getOneOrNullResult();
+
+        if (!$billing) {
+            return;
+        }
+
+        $countryId = $billing['countryId'];
+        $countryISO = $this->getCountryRepository()->findOneById($countryId)->getIso();
 
         $result = $this->validate(
-            $billing[0]['vatId'],
-            $billing[0]['company'],
-            $billing[0]['street'],
-            $billing[0]['zipCode'],
-            $billing[0]['city'],
-            $billing[0]['id']
+            $billing['vatId'],
+            $billing['company'],
+            $billing['street'],
+            $billing['zipCode'],
+            $billing['city'],
+            $countryISO,
+            $billing['id']
         );
 
         $this->session->offsetSet('vatIdValidationStatus', $result->serialize());
