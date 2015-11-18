@@ -23,6 +23,7 @@
  */
 
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
+use Shopware\Plugins\SwagVatIdValidation\Components\EUStates;
 
 /**
  * Class SaveBilling
@@ -30,6 +31,8 @@ namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
  */
 class SaveBilling extends ValidationPoint
 {
+    private $countryIso;
+
     /**
      * Returns the events we need to subscribe to
      * @return array
@@ -37,8 +40,63 @@ class SaveBilling extends ValidationPoint
     public static function getSubscribedEvents()
     {
         return array(
+            'Shopware_Modules_Admin_ValidateStep2_FilterStart' => 'onValidateStep2FilterStart',
             'Shopware_Modules_Admin_ValidateStep2_FilterResult' => 'onValidateStep2FilterResult'
         );
+    }
+
+    /**
+     * Listener to check if the VAT Id is required or not.
+     * @param \Enlight_Event_EventArgs $arguments
+     * @return array|mixed
+     */
+    public function onValidateStep2FilterStart(\Enlight_Event_EventArgs $arguments)
+    {
+        $post = $arguments->getPost();
+        $errors = $arguments->getReturn();
+
+        /**
+         * There is no VAT Id required, if...
+         * ... the Vat Id is not required in the config,
+         */
+        if (!$this->config->get('vatIdRequired')) {
+            return $errors;
+        }
+
+        /**
+         * ... the customer is not a company,
+         */
+        if($this->customerIsNoCompany($post['customer_type'], $post['register']['billing']['company'])) {
+            return $errors;
+        }
+
+        /**
+         * ... the billing country is a non-EU-country
+         */
+        $countryId = $post['register']['billing']['country'];
+        $this->countryIso = $countryISO = $this->getCountryRepository()->findOneById($countryId)->getIso();
+
+        if(!EUStates::isEUCountry($countryISO)) {
+            return $errors;
+        }
+
+        /**
+         * ... or the check is disabled for the billing country.
+         */
+        $disabledCountries = explode(',', str_replace(' ', '', $this->config->get('disabledCountryISOs')));
+
+        if (in_array($countryISO, $disabledCountries)) {
+            return $errors;
+        }
+
+        /**
+         * Otherwise if the VAT Id is still empty, set the error flag
+         */
+        if ($post['register']['billing']['ustid'] === '') {
+            $errors[1]['ustid'] = true;
+        }
+
+        return $errors;
     }
 
     /**
@@ -51,12 +109,18 @@ class SaveBilling extends ValidationPoint
         $post = $arguments->getPost();
         $errors = $arguments->getReturn();
 
-        $countryId = $post['register']['billing']['country'];
-        $countryISO = Shopware()->Models()->getRepository('Shopware\Models\Country\Country')->findOneBy(array('id' => $countryId))->getIso();
+        if($this->customerIsNoCompany($post['customer_type'], $post['register']['billing']['company'])) {
+            return $errors;
+        }
 
-        $result = $this->validate($post['register']['billing']['ustid'], $post['register']['billing']['company'],
-            $post['register']['billing']['street'], $post['register']['billing']['zipcode'],
-            $post['register']['billing']['city'], $countryISO);
+        $result = $this->validate(
+            $post['register']['billing']['ustid'],
+            $post['register']['billing']['company'],
+            $post['register']['billing']['street'],
+            $post['register']['billing']['zipcode'],
+            $post['register']['billing']['city'],
+            $this->countryIso
+        );
 
         $errors = array(
             array_merge($result->getErrorMessages(), $errors[0]),
@@ -64,5 +128,16 @@ class SaveBilling extends ValidationPoint
         );
 
         return $errors;
+    }
+
+    /**
+     * Helper method, returns true if customer type is not "business" or the company is not set
+     * @param string $customerType
+     * @param string $company
+     * @return bool
+     */
+    private function customerIsNoCompany($customerType, $company)
+    {
+        return (($customerType !== 'business') || (!$company));
     }
 }

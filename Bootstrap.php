@@ -24,6 +24,8 @@
 
 use Shopware\Models\Mail\Mail;
 use Shopware\Models\Translation\Translation;
+use Shopware\Plugins\SwagVatIdValidation\Components\APIValidationType;
+use Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
 /**
  * @category   Shopware
@@ -275,14 +277,26 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $form->setElement('checkbox', 'vatIdRequired', array(
             'label' => 'Ust-IdNr.-Angabe ist Pflicht',
             'value' => false,
-            'description' => 'Wandelt das Feld für die Ust-IdNr. in ein Pflichtfeld um.'
+            'description' => 'Wandelt das Feld für die Ust-IdNr. für EU-Länder in ein Pflichtfeld um. Ausnahmen können unten angegeben werden.'
         ));
 
-        $form->setElement('checkbox', 'extendedCheck', array(
-            'label' => 'Erweiterte Prüfung durchführen',
-            'value' => false,
-            'description' => 'Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden. Sofern der angefragte EU-Mitgliedsstaat die Adressdaten bereit stellt, werden diese anderenfalls manuell durch das Plugin verglichen.'
-        ));
+        $form->setElement(
+            'combo',
+            'apiValidationType',
+            array(
+                'label' => 'Art der API-Überprüfung',
+                'value' => APIValidationType::SIMPLE,
+                'store' => array(
+                    array(APIValidationType::NONE, "Keine (None)"),
+                    array(APIValidationType::SIMPLE, 'Einfach (Simple)'),
+                    array(APIValidationType::EXTENDED, 'Erweitert (Extended)')
+                ),
+                'description' => '1. <u>Keine</u>: Es wird keine API-Überprüfung durchgeführt.<br>
+                                  2. <u>Einfach</u>: Es wird überprüft, ob diese Ust-IdNr. existiert.<br>
+                                  3. <u>Erweitert</u>: Es wird überprüft, ob diese Ust-IdNr. existiert und zur Adresse passt.
+                                     <u>Hinweis:</u> Erweiterte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden. Sofern der angefragte EU-Mitgliedsstaat die Adressdaten bereit stellt, werden diese anderenfalls manuell durch das Plugin verglichen.'
+            )
+        );
 
         $form->setElement('checkbox', 'confirmation', array(
             'label' => 'Amtliche Bestätigungsmitteilung',
@@ -291,15 +305,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         ));
 
         $form->setElement('text', 'disabledCountryISOs', array(
-            'label' => 'Diese Länder ausschließen',
+            'label' => 'Ausnahmen der Pflichtangabe der Ust-IdNr.',
             'value' => '',
-            'description' => 'Hier können Sie Länder ISO codes eintragen, bei denen keine Überprüfung stattfinden soll. z.B GB oder AT'
-        ));
-
-        $form->setElement('checkbox', 'disableOutsideEU', array(
-            'label' => 'Länder außerhalb der EU ausschließen',
-            'value' => false,
-            'description' => 'Ist dieses Feld aktiv werden Länder außerhalb der EU nicht überprüft.'
+            'description' => 'Hier können Sie ISO Codes von EU-Ländern eintragen, die eine Ausnahme in Bezug auf die Einstellung "Ust-IdNr.-Angabe ist Pflicht" bilden. Beispiele sind z.B. DE, GB oder AT, Angabe mehrer Länder mit Komma getrennt möglich.'
         ));
 
         $this->addFormTranslations(array(
@@ -314,24 +322,23 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 ),
                 'vatIdRequired' => array(
                     'label' => 'VAT ID is required',
-                    'description' => 'If enabled, the input of a VAT ID is required for business customers.'
+                    'description' => 'If enabled, the input of a VAT ID is required for EU countries. Below you can define exceptions for that.'
                 ),
-                'extendedCheck' => array(
-                    'label' => 'Extended checks',
-                    'description' => 'If enabled, this plugin will compare the address provided by the customer with the data available in the remote VAT ID validation service. Note: depending on the market of both you and your customer, the completeness of the available information for comparison may be limited.'
+                'apiValidationType' => array(
+                        'label' => 'Type of API validation',
+                        'description' => '1. <u>None</u>: No API validation process will be executed.<br>
+                                          2. <u>Simple</u>: It will be checked if the VAT ID exists in general.<br>
+                                          3. <u>Extended</u>: It will be checked, if the VAT ID exists in general and if it matches the customers address.
+                                             <u>Information:</u> The extended check will compare the address provided by the customer with the data available in the remote VAT ID validation service. Note: depending on the market of both you and your customer, the completeness of the available information for comparison may be limited.'
                 ),
                 'confirmation' => array(
                     'label' => 'Official mail confirmation',
                     'description' => 'Only available for German-based shops. Requests an official mail confirmation for qualified checks of foreign VAT IDs.'
                 ),
                 'disabledCountryISOs' => array(
-                    'label' => 'Exclude these countries',
-                    'description' => 'The country ISO codes you enter here will be excluded from the VAT id validation process. e.g GB or AT'
+                    'label' => 'Exceptions for the requirement of the VAT ID',
+                    'description' => 'The country ISO codes you enter here will be excluded from the VAT id requirement if enabled above. Examples are DE, GB or AT. Multiple countries are possible separated by comma'
                 ),
-                'disableOutsideEU' => array(
-                    'label' => 'Disable for countries outside the EU',
-                    'description' => 'Is this field active, the VAT id validation will not be performed for countries outside the EU'
-                )
             )
         ));
     }
@@ -377,9 +384,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $shop = Shopware()->Shop();
 
         $subscribers = array(
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\TemplateExtension($config, $path, $session, $snippets, $shop),
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\Login($config, $snippets, $models, $mailer, $session, $action),
-            new \Shopware\Plugins\SwagVatIdValidation\Subscriber\SaveBilling($config, $snippets)
+            new Subscriber\TemplateExtension($config, $path, $session, $snippets, $shop),
+            new Subscriber\Login($config, $snippets, $models, $mailer, $session, $action),
+            new Subscriber\SaveBilling($config, $snippets, $models, $mailer)
         );
 
         foreach ($subscribers as $subscriber) {

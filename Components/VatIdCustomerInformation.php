@@ -42,6 +42,9 @@ class VatIdCustomerInformation extends VatIdInformation
     /** @var  string */
     protected $city;
 
+    /** @var  string */
+    protected $billingCountryIso;
+
     /**
      * Constructor sets all properties
      * @param string $vatId
@@ -50,7 +53,7 @@ class VatIdCustomerInformation extends VatIdInformation
      * @param string $zipCode
      * @param string $city
      */
-    public function __construct($vatId, $company, $street, $zipCode, $city)
+    public function __construct($vatId, $company, $street, $zipCode, $city, $billingCountryIso)
     {
         parent::__construct($vatId);
 
@@ -58,6 +61,7 @@ class VatIdCustomerInformation extends VatIdInformation
         $this->street = $street;
         $this->zipCode = $zipCode;
         $this->city = $city;
+        $this->billingCountryIso = $billingCountryIso;
     }
 
     /**
@@ -94,5 +98,14 @@ class VatIdCustomerInformation extends VatIdInformation
     public function getCity()
     {
         return $this->city;
+    }
+
+    /**
+     * Returns the iso code of the billing country
+     * @return string
+     */
+    public function getBillingCountryIso()
+    {
+        return $this->billingCountryIso;
     }
 }

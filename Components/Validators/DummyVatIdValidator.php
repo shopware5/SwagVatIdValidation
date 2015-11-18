@@ -24,6 +24,7 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 
+use Shopware\Plugins\SwagVatIdValidation\Components\EUStates;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
@@ -32,9 +33,10 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
  * Dummy validation
  * The dummy validator checks if the VAT ID could be valid. Empty VAT IDs are also okay.
  * The validator fails when:
- * - VAT ID is shorter than 7 or longer than 14 chars
+ * - VAT ID is shorter than 4 or longer than 14 chars
  * - Country Code includes non-alphabetical chars
  * - VAT Number includes non-alphanumerical chars
+ * - VAT Number only has alphabetical chars
  *
  * Class DummyVatIdValidator
  * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
@@ -61,21 +63,31 @@ class DummyVatIdValidator implements VatIdValidatorInterface
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation = null)
     {
+        //An empty VAT Id can be valid
         if ($customerInformation->getVatId() === '') {
-            $this->result->setVatIdInvalid(4);
             return $this->result;
         }
 
-        //All VAT IDs have a length of 7 to 14 chars
-        if (strlen($customerInformation->getVatId()) < 7) {
+        //If there is a VAT Id for a Non-EU-countries, its invalid
+        if (!EUStates::isEUCountry($customerInformation->getBillingCountryIso())) {
+            $this->result->setVatIdInvalid('5');
+            $this->result->setCountryInvalid();
+            return $this->result;
+        }
+
+        //All VAT IDs have a length of 4 to 14 chars (romania has a min. length of 4 characters)
+        if (strlen($customerInformation->getVatId()) < 4) {
             $this->result->setVatIdInvalid('1');
         } elseif (strlen($customerInformation->getVatId()) > 14) {
             $this->result->setVatIdInvalid('2');
         }
 
-        //The country code always only consists of letters
-        if (!ctype_alpha($customerInformation->getCountryCode())) {
+        //The country code has to be an EU prefix and has to match the billing country
+        if (!EUStates::isEUCountry($customerInformation->getCountryCode())) {
             $this->result->setVatIdInvalid('3');
+        } elseif ($customerInformation->getCountryCode() !== $customerInformation->getBillingCountryIso()) {
+            $this->result->setVatIdInvalid('6');
+            $this->result->setCountryInvalid();
         }
 
         //The VAT number always only consists of alphanumerical chars
@@ -83,9 +95,9 @@ class DummyVatIdValidator implements VatIdValidatorInterface
             $this->result->setVatIdInvalid('4');
         }
 
-        //If vat number only consists alphas its invalid
+        //If the VAT number only consists alphas its invalid
         if(ctype_alpha($customerInformation->getVatNumber())) {
-            $this->result->setVatIdInvalid('5');
+            $this->result->setVatIdInvalid('4');
         }
 
         return $this->result;

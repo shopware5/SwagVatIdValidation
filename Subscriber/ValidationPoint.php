@@ -32,6 +32,7 @@ use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedBffVatIdV
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleMiasVatIdValidator;
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedMiasVatIdValidator;
 
+use Shopware\Plugins\SwagVatIdValidation\Components\APIValidationType;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
@@ -61,37 +62,8 @@ abstract class ValidationPoint implements SubscriberInterface
     /** @var  \Shopware\Models\Customer\BillingRepository */
     private $billingRepository;
 
-    /** @var array */
-    private $EUCountries = array(
-        'BE', //Kingdom of Belgium
-        'BG', //Republic of Bulgaria
-        'CZ', //Czech Republic
-        'DK', //Kingdom of Denmark
-        'DE', //Federal Republic of Germany
-        'EE', //Republic of Estonia
-        'IE', //Ireland
-        'EL', //Hellenic Republic (Greece)
-        'ES', //Kingdom of Spain
-        'FR', //French Republic
-        'HR', //Republic of Croatia
-        'IT', //Italian Republic
-        'CY', //Republic of Cyprus
-        'LV', //Republic of Latvia
-        'LT', //Republic of Lithuania
-        'LU', //Grand Duchy of Luxembourg
-        'HU', //Hungary
-        'MT', //Republic of Malta
-        'NL', //Kingdom of the Netherlands
-        'AT', //Republic of Austria
-        'PL', //Republic of Poland
-        'PT', //Portuguese Republic
-        'RO', //Romania
-        'SI', //Republic of Slovenia
-        'SK', //Slovak Republic
-        'FI', //Republic of Finland
-        'SE', //Kingdom of Sweden
-        'UK', //United Kingdom of Great Britain and Northern Ireland
-    );
+    /** @var  \Shopware\Models\Country\Repository */
+    private $countryRepository;
 
     /**
      * Constructor sets all properties
@@ -100,17 +72,14 @@ abstract class ValidationPoint implements SubscriberInterface
      * @param ModelManager $modelManager
      * @param \Shopware_Components_TemplateMail $templateMail
      */
-    public function __construct(
-        \Enlight_Config $config,
-        \Shopware_Components_Snippet_Manager $snippetManager,
-        ModelManager $modelManager = null,
-        \Shopware_Components_TemplateMail $templateMail = null
-    ) {
+    public function __construct(\Enlight_Config $config, \Shopware_Components_Snippet_Manager $snippetManager, ModelManager $modelManager = null, \Shopware_Components_TemplateMail $templateMail = null)
+    {
         $this->config = $config;
         $this->snippetManager = $snippetManager;
         $this->modelManager = $modelManager;
         $this->templateMail = $templateMail;
         $this->billingRepository = null;
+        $this->countryRepository = null;
     }
 
     /**
@@ -127,6 +96,19 @@ abstract class ValidationPoint implements SubscriberInterface
     }
 
     /**
+     * Helper function to get the CountryRepository
+     * @return \Shopware\Models\Country\Repository
+     */
+    protected function getCountryRepository()
+    {
+        if (!$this->countryRepository) {
+            $this->countryRepository = $this->modelManager->getRepository('\Shopware\Models\Country\Country');
+        }
+
+        return $this->countryRepository;
+    }
+
+    /**
      * Helper function for the whole validation process
      * If billing Id is set, the matching customer billing address will be removed if validation result is invalid
      * @param string $vatId
@@ -140,35 +122,20 @@ abstract class ValidationPoint implements SubscriberInterface
      */
     public function validate($vatId, $company, $street, $zipCode, $city, $countryIso, $billingId = null)
     {
-        $result = new VatIdValidatorResult();
-
-        //check if the iso has been disabled manually
-        $disabledCountries = explode(',', str_replace(' ', '', $this->config->disabledCountryISOs));
-
-        if (!$this->config->vatIdRequired || in_array($countryIso, $disabledCountries)) {
-            $result->setVatIdValid();
-            return $result;
-        }
-
-        if ($this->config->get('disableOutsideEU') && !array_key_exists($countryIso, $this->EUCountries)) {
-
-            $result->setVatIdValid();
-            return $result; //valid because the country is outside the EU
-        }
-
         /**
          * Step 1: Dummy validation
-         * The dummy validator checks if the VAT Id COULD be valide. Empty VAT Ids are also okay.
+         * The dummy validator checks if the VAT Id COULD be valid. Empty VAT Ids are also okay.
          * The validator fails when:
-         * - VAT Id is shorter than 7 or longer than 14 signs
+         * - VAT ID is shorter than 4 or longer than 14 chars
          * - Country Code includes non-alphabetical chars
          * - VAT Number includes non-alphanumerical chars
+         * - VAT Number only has alphabetical chars
          */
-        $customerInformation = new VatIdCustomerInformation($vatId, $company, $street, $zipCode, $city);
+        $customerInformation = new VatIdCustomerInformation($vatId, $company, $street, $zipCode, $city, $countryIso);
         $result = $this->validateWithDummyValidator($customerInformation);
 
         /**
-         * If the VAT Id can't be valide, the API validation can be skipped. If the VAT Id belongs to a billing address,
+         * If the VAT Id can't be valid, the API validation can be skipped. If the VAT Id belongs to a billing address,
          * the VAT Id will be removed from it and an email will optionally be sent to the shop owner.
          */
         if (!$result->isValid()) {
@@ -176,49 +143,67 @@ abstract class ValidationPoint implements SubscriberInterface
             return $result;
         }
 
-        if ($this->config->get("extendedCheck")) {
-            /**
-             * Step 2: API validation
-             * There are two API validators, both with two validation methods:
-             *
-             * Simple Bff Validator:
-             * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is disabled
-             * - checks only the VAT-ID
-             * - returns a detailed error message, if the VAT-Id is invalid
-             *
-             * Extended Bff Validator:
-             * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is enabled
-             * - checks the VAT-ID and additionally company, steet and steetnumber, zipcode and city
-             * - returns a detailed error message, if the VAT-Id is invalid
-             * - the API itself checks the address data
-             * - furthermore an official mail confirmation can be ordered
-             *
-             * Simple Mias Validator:
-             * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is disabled.
-             * - checks only the VAT-ID
-             * - returns an error message, if the VAT-Id is invalid
-             *
-             * Extended Mias Validator:
-             * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is enabled.
-             * - checks the VAT-ID and additionally company, street and street number, zip code and city
-             * - returns an error message, if the VAT-Id is invalid
-             * - the API itself doesn't check the address data, the validator class does it manually
-             * - an official mail confirmation can't be ordered
-             *
-             *
-             * Each validator connects to an external API. If the API is not available, the result will be false.
-             * The customer VAT Id has not to be empty. Otherwise the result will also be false!
-             */
-            $shopInformation = new VatIdInformation($this->config->get('vatId'));
-            $result = $this->validateWithApiValidator($customerInformation, $shopInformation);
+        $apiValidationType = $this->config->get('apiValidationType');
+
+        if($apiValidationType === APIValidationType::NONE) {
+            return $result;
         }
 
         /**
-         * If the VAT Id is invalid or the API service is not available and if the VAT Id belongs to a billing address,
-         * the VAT Id will be removed from it and an email will optionally be sent to the shop owner.
+         * Step 2: API validation
+         * There are two API validators, both with two validation methods:
+         *
+         * Simple Bff Validator:
+         * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is disabled
+         * - checks only the VAT-ID
+         * - returns a detailed error message, if the VAT-Id is invalid
+         *
+         * Extended Bff Validator:
+         * - will be used when shop VAT-ID is german, customer VAT-ID is foreign and extended check is enabled
+         * - checks the VAT-ID and additionally company, steet and steetnumber, zipcode and city
+         * - returns a detailed error message, if the VAT-Id is invalid
+         * - the API itself checks the address data
+         * - furthermore an official mail confirmation can be ordered
+         *
+         * Simple Mias Validator:
+         * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is disabled.
+         * - checks only the VAT-ID
+         * - returns an error message, if the VAT-Id is invalid
+         *
+         * Extended Mias Validator:
+         * - will be used when shop VAT-ID is foreign or customer VAT-ID is german. Extended check is enabled.
+         * - checks the VAT-ID and additionally company, street and street number, zip code and city
+         * - returns an error message, if the VAT-Id is invalid
+         * - the API itself doesn't check the address data, the validator class does it manually
+         * - an official mail confirmation can't be ordered
+         *
+         *
+         * Each validator connects to an external API. If the API is not available, the result will be false.
+         * The customer VAT Id has not to be empty. Otherwise the result will also be false!
+         */
+        $shopInformation = new VatIdInformation($this->config->get('vatId'));
+        $result = $this->validateWithApiValidator($customerInformation, $shopInformation, $apiValidationType);
+
+        /**
+         * If the VAT Id or the billing address is invalid or the API service is not available ...
          */
         if (!$result->isValid()) {
-            $this->removeVatIdFromBilling($billingId, $customerInformation, $result);
+            /**
+             * ... send a mail to the shop owner
+             */
+            $this->sendShopOwnerEmail($customerInformation, $result);
+
+            /**
+             * ... if the api was unavailable return the result, ...
+             */
+            if ($result->isApiUnavailable()) {
+                return $result;
+            }
+
+            /**
+             * ... otherwise also the VAT Id has to be removed from the billing address.
+             */
+            $this->removeVatIdFromBilling($billingId);
         }
 
         /**
@@ -244,18 +229,17 @@ abstract class ValidationPoint implements SubscriberInterface
      * Helper function to check a VAT Id with an API Validator (Bff or Mias, simple or extended)
      * @param VatIdCustomerInformation $customerInformation
      * @param VatIdInformation $shopInformation
+     * @param int $validationType
      * @return VatIdValidatorResult
      */
-    private function validateWithApiValidator(
-        VatIdCustomerInformation $customerInformation,
-        VatIdInformation $shopInformation
-    ) {
+    private function validateWithApiValidator(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation, $validationType)
+    {
         //an empty Vat Id will occur an error, so the api validation should be skipped
         if ($customerInformation->getVatId() === '') {
             return new VatIdValidatorResult();
         }
 
-        $validator = $this->createValidator($customerInformation->getCountryCode(), $shopInformation->getCountryCode());
+        $validator = $this->createValidator($customerInformation->getCountryCode(), $shopInformation->getCountryCode(), $validationType);
         $result = $validator->check($customerInformation, $shopInformation);
 
         return $result;
@@ -265,11 +249,12 @@ abstract class ValidationPoint implements SubscriberInterface
      * Helper function to get the correct simple validator
      * @param string $customerCountryCode
      * @param string $shopCountryCode
+     * @param int $validationType
      * @return VatIdValidatorInterface
      */
-    private function createValidator($customerCountryCode, $shopCountryCode)
+    private function createValidator($customerCountryCode, $shopCountryCode, $validationType)
     {
-        if ($this->config->get('extendedCheck')) {
+        if ($validationType === APIValidationType::EXTENDED) {
             return $this->createExtendedValidator($customerCountryCode, $shopCountryCode);
         }
 
@@ -306,14 +291,9 @@ abstract class ValidationPoint implements SubscriberInterface
     /**
      * Helper function to remove the VAT Id from the customer billing address
      * @param integer $billingId
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdValidatorResult $result
      */
-    private function removeVatIdFromBilling(
-        $billingId,
-        VatIdCustomerInformation $customerInformation,
-        VatIdValidatorResult $result
-    ) {
+    private function removeVatIdFromBilling($billingId)
+    {
         if (empty($billingId)) {
             return;
         }
@@ -324,8 +304,6 @@ abstract class ValidationPoint implements SubscriberInterface
 
         $this->modelManager->persist($billing);
         $this->modelManager->flush();
-
-        $this->sendShopOwnerEmail($customerInformation, $result);
     }
 
     /**
@@ -342,13 +320,19 @@ abstract class ValidationPoint implements SubscriberInterface
             return;
         }
 
+        if($result->isApiUnavailable()) {
+            $error = $result->getErrorMessage('messages/checkNotAvailable');
+        } else {
+            $error = implode("\n", $result->getErrorMessages());
+        }
+
         $context = array(
             'sVatId' => $customerInformation->getVatId(),
             'sCompany' => $customerInformation->getCompany(),
             'sStreet' => $customerInformation->getStreet(),
             'sZipCode' => $customerInformation->getZipCode(),
             'sCity' => $customerInformation->getCity(),
-            'sError' => implode("\n", $result->getErrorMessages())
+            'sError' => $error
         );
 
         $mail = $this->templateMail->createMail('sSWAGVATIDVALIDATION_VALIDATIONERROR', $context);

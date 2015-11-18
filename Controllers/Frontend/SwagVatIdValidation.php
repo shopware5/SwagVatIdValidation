@@ -27,6 +27,7 @@
  * @copyright  Copyright (c) 2013, shopware AG (http://www.shopware.de)
  */
 use Doctrine\DBAL\Connection;
+
 class Shopware_Controllers_Frontend_SwagVatIdValidation extends Enlight_Controller_Action
 {
     /**
@@ -53,7 +54,7 @@ class Shopware_Controllers_Frontend_SwagVatIdValidation extends Enlight_Controll
      */
     public function getModalAction()
     {
-        $this->View()->loadTemplate('responsive/swag_vat_id_validation/modal_info_content.tpl');
+        $this->loadTemplate();
 
         $ISOs = $this->config->get('disabledCountryISOs');
         $ISOs = explode(',', $ISOs);
@@ -68,6 +69,15 @@ class Shopware_Controllers_Frontend_SwagVatIdValidation extends Enlight_Controll
 
         $countries = array_column($countryNameArray, 'countryname');
         $this->View()->assign('disabledCountries', $countries);
-        $this->View()->assign('disabledOutsideEU', $this->config->get("disableOutsideEU"));
+    }
+
+    private function loadTemplate()
+    {
+        $version = Shopware()->Shop()->getTemplate()->getVersion();
+        if ($version >= 3) {
+            $this->View()->loadTemplate('responsive/swag_vat_id_validation/modal_info_content.tpl');
+        } else {
+            $this->View()->loadTemplate('emotion/frontend/plugins/swag_vat_id_validation/modal_info_content.tpl');
+        }
     }
 }

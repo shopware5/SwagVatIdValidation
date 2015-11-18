@@ -17,15 +17,18 @@
 
 {* UST Id *}
 {block name='frontend_register_billing_fieldset_input_ustid'}
-	<div class="notice bold center">
-		{s namespace="frontend/swag_vat_id_validation/main" name="messages/disabledOutsideEU"}This field is not required for countries outside the bounds of the EU{/s}
-	</div>
+	{if $displayMessage}
+		<div class="notice bold center modal_open">
+			{block name="frontend_register_vatid_message_content"}
+				{s namespace="frontend/swag_vat_id_validation/main" name="messages/disabledGeneral"}For some countries, this field is not required.{/s}
+				<a href="{url controller=SwagVatIdValidation action=getModal module=frontend}">
+					{s namespace="frontend/swag_vat_id_validation/main" name="messages/disabled/moreInfo"}More information{/s}
+				</a>
+			{/block}
+		</div>
+	{/if}
 	<div>
-		<label for="register_billing_ustid"
-			   class="normal">{s namespace='frontend/register/billing_fieldset' name='RegisterLabelTaxId'}{/s}{if $vatIdCheck.required}*{/if}
-			:
-		</label>
-		<input name="register[billing][ustid]" type="text" id="register_billing_ustid" value="{$form_data.ustid|escape}"
-			   class="text{if $error_flags.ustid} instyle_error{/if}"/>
+		<label for="register_billing_ustid" class="normal">{s namespace='frontend/register/billing_fieldset' name='RegisterLabelTaxId'}{/s}{if $vatIdCheck.required}*{/if}:</label>
+		<input name="register[billing][ustid]" type="text" id="register_billing_ustid" value="{$form_data.ustid|escape}" class="text{if $error_flags.ustid} instyle_error{/if}"/>
 	</div>
 {/block}

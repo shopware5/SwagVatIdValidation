@@ -40,11 +40,15 @@ class VatIdValidatorResult implements \Serializable
     //States
 
     /**
-     * Status 0 happens when
+     * Status -1 happens when
      * - validation service was unavailable
-     * - the check is still not executed
      */
-    const UNAVAILABLE = 0;
+    const UNAVAILABLE = -1;
+
+    /**
+     * Status 0 happens when
+     * - the VAT Id is invalid
+     */
     const INVALID = 0;
 
     /**
@@ -125,27 +129,11 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
-     * Sets the VatId valid.
-     */
-    public function setVatIdValid()
-    {
-        $this->status = $this::VALID;
-        $this->errors = array();
-        $this->flags = array();
-    }
-
-    /**
      * Sets the result to the api service was not available
      */
     public function setServiceUnavailable()
     {
-        if (!$this->snippetManager) {
-            return;
-        }
-
         $this->status = $this::UNAVAILABLE;
-        $this->errors['unavailable'] = $this->pluginSnippets->get('messages/checkNotAvailable');
-        $this->flags['ustid'] = true;
     }
 
     /**
@@ -205,6 +193,28 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
+     * Sets the country to invalid
+     */
+    public function setCountryInvalid()
+    {
+        $this->flags['country'] = true;
+    }
+
+    /**
+     * Returns an error snippet
+     * @param string $key
+     * @return string|null
+     */
+    public function getErrorMessage($key)
+    {
+        if (!$this->snippetManager) {
+            return null;
+        }
+
+        return $this->pluginSnippets->get($key);
+    }
+
+    /**
      * Returns the error messages
      * @return array
      */
@@ -223,12 +233,21 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
-     * Returns if the VAT Id and its address data is valid or not
+     * Returns true if the VAT Id and its address data are valid
      * @return bool
      */
     public function isValid()
     {
         return ($this->status === $this::VALID);
+    }
+
+    /**
+     * Returns true if the validation api was not available
+     * @return bool
+     */
+    public function isApiUnavailable()
+    {
+        return ($this->status === $this::UNAVAILABLE);
     }
 
     /**

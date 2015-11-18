@@ -24,7 +24,6 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
-use Doctrine\DBAL\Connection;
 use Enlight\Event\SubscriberInterface;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
@@ -142,14 +141,21 @@ class TemplateExtension implements SubscriberInterface
         }
 
         $required = $this->config->get('vatIdRequired');
+        $disabledCountryISOs = trim($this->config->get('disabledCountryISOs'));
 
-        $view->assign('vatIdCheck', array(
+        $view->assign(array(
+            'displayMessage' => (bool) $disabledCountryISOs,
+            'vatIdCheck' => array(
                 'errorMessages' => array_values($errorMessages),
                 'required' => $required
             )
-        );
+        ));
     }
 
+    /**
+     * @param \Enlight_View_Default $view
+     * @param string $templatePath
+     */
     private function extendsTemplate(\Enlight_View_Default $view, $templatePath)
     {
         $version = $this->shop->getTemplate()->getVersion();
@@ -159,17 +165,6 @@ class TemplateExtension implements SubscriberInterface
         } else {
             $view->addTemplateDir($this->path . 'Views/emotion/');
             $view->extendsTemplate($templatePath);
-        }
-
-        $disabledCountryISOs = array_filter(explode(',', $this->config->get('disabledCountryISOs')));
-        $disabledOutsideEU =  $this->config->get('disableOutsideEU');
-
-        if(!empty($disabledCountryISOs) || $disabledOutsideEU) {
-
-            $view->assign('displayMessage', true);
-        }
-        else {
-            $view->assign('displayMessage', false);
         }
     }
 }
