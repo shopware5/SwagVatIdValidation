@@ -74,7 +74,7 @@ class CheckoutFinish extends ValidationPoint
         $required = $this->isVatIdRequired('business', $billing['company'], $billing['countryID']);
 
         if (($required) && (!$billing['ustid'])) {
-            return $subject->forward('confirm', 'checkout', null, ['vatIdRequiredButEmpty' => true]);
+            return $subject->forward('confirm', 'checkout', null, array('vatIdRequiredButEmpty' => true));
         }
     }
 

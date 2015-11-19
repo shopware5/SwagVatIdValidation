@@ -8,14 +8,16 @@
     "link": "http://store.shopware.com",
     "author": "Shopware AG",
 
-    "currentVersion": "1.0.1",
+    "currentVersion": "1.0.5",
 
     "changelog": {
         "de": {
+            "1.0.5": "PT-3158 - Bugfix: Pflichtfeld mit Leerzeichen; PT-3714, PT-4155 - Bugfix: Problem mit erweiterter Validierung; PT-3890 - Bugfix: Validierung nur für Länder innerhalb der EU; PT-4021 - Feature: Verhindere Checkout, wenn USt-IdNr. benötigt, aber nicht vorhanden ist; PT-4438 - Feature: Länderauswahl als Multiselect Box;",
             "1.0.1": "PT-2746 - Fix: SW5 Kompatiblität",
             "1.0.0": "Erstveröffentlichung"
         },
         "en": {
+            "1.0.5": "PT-3158 - Bugfix: Required field with space character; PT-3714, PT-4155 - Bugfix: Problem with extended validation; PT-3890 - Bugfix: Validation only for countries within the EU; PT-4021 - Feature: Prevent checkout when VAT ID is required but empty; PT-4438 - Feature: Country selection as multiselect box;",
             "1.0.1": "PT-2746 - Fix: SW5 compatibility",
             "1.0.0": "Initial version"
         }
@@ -28,4 +30,3 @@
         ]
     }
 }
-
