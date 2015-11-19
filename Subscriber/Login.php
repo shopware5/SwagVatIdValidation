@@ -96,8 +96,20 @@ class Login extends ValidationPoint
             return;
         }
 
-        $countryId = $billing['countryId'];
-        $countryISO = $this->getCountryRepository()->findOneById($countryId)->getIso();
+        /**
+         * If the VAT ID is required, but empty, set the requirement error
+         */
+        $required = $this->isVatIdRequired(
+            'business',
+            $billing['company'],
+            $billing['countryId']);
+
+        if (($required) && (!trim($billing['vatId']))) {
+            $result = $this->getRequirementErrorResult();
+            $this->session->offsetSet('vatIdValidationStatus', $result->serialize());
+
+            return;
+        }
 
         $result = $this->validate(
             $billing['vatId'],
@@ -105,7 +117,7 @@ class Login extends ValidationPoint
             $billing['street'],
             $billing['zipCode'],
             $billing['city'],
-            $countryISO,
+            $this->getCountryIso($billing['countryId']),
             $billing['id']
         );
 

@@ -386,7 +386,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $subscribers = array(
             new Subscriber\TemplateExtension($config, $path, $session, $snippets, $shop),
             new Subscriber\Login($config, $snippets, $models, $mailer, $session, $action),
-            new Subscriber\SaveBilling($config, $snippets, $models, $mailer)
+            new Subscriber\SaveBilling($config, $snippets, $models, $mailer),
+            new Subscriber\CheckoutFinish($config, $snippets, $models)
         );
 
         foreach ($subscribers as $subscriber) {

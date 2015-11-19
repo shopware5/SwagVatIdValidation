@@ -129,6 +129,7 @@ class TemplateExtension implements SubscriberInterface
         $this->extendsTemplate($view, 'frontend/plugins/swag_vat_id_validation/index.tpl');
 
         $errorMessages = array();
+        $requiredButEmpty = false;
 
         if($this->session->offsetExists('vatIdValidationStatus')) {
             $serialized = $this->session->offsetGet('vatIdValidationStatus');
@@ -140,6 +141,11 @@ class TemplateExtension implements SubscriberInterface
             $errorMessages = $result->getErrorMessages();
         }
 
+        if($errorMessages) {
+            $requiredButEmpty = array_key_exists('required', $errorMessages);
+            unset($errorMessages['required']);
+        }
+
         $required = $this->config->get('vatIdRequired');
         $disabledCountryISOs = trim($this->config->get('disabledCountryISOs'));
 
@@ -147,7 +153,8 @@ class TemplateExtension implements SubscriberInterface
             'displayMessage' => (bool) $disabledCountryISOs,
             'vatIdCheck' => array(
                 'errorMessages' => array_values($errorMessages),
-                'required' => $required
+                'required' => $required,
+                'requiredButEmpty' => $requiredButEmpty
             )
         ));
     }

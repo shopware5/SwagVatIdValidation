@@ -40,6 +40,12 @@ class VatIdValidatorResult implements \Serializable
     //States
 
     /**
+     * Status -2 happens when
+     * - the VAT ID is required, but empty (not set by a validator, but the login subscriber)
+     */
+    const REQUIRED = -2;
+
+    /**
      * Status -1 happens when
      * - validation service was unavailable
      */
@@ -114,7 +120,7 @@ class VatIdValidatorResult implements \Serializable
     }
 
     /**
-     * Sets the VatId to 'invalid' and sets the validator error message by $errorCode
+     * Sets the VAT ID to 'invalid' and sets the validator error message by $errorCode
      * @param string $errorCode
      */
     public function setVatIdInvalid($errorCode)
@@ -126,6 +132,19 @@ class VatIdValidatorResult implements \Serializable
         $this->status = $this::INVALID;
         $this->errors[$errorCode] = $this->validatorSnippets->get('error' . $errorCode);
         $this->flags['ustid'] = true;
+    }
+
+    /**
+     * Sets the VAT ID required
+     */
+    public function setVatIdRequired()
+    {
+        if (!$this->snippetManager) {
+            return;
+        }
+
+        $this->status = $this::REQUIRED;
+        $this->errors['required'] = $this->pluginSnippets->get('messages/vatIdRequired');
     }
 
     /**
@@ -290,6 +309,11 @@ class VatIdValidatorResult implements \Serializable
     private function addError($errorCode)
     {
         if (!$this->snippetManager) {
+            return;
+        }
+
+        if ($errorCode === 'required') {
+            $this->setVatIdRequired();
             return;
         }
 
