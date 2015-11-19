@@ -56,8 +56,7 @@ class Shopware_Controllers_Frontend_SwagVatIdValidation extends Enlight_Controll
     {
         $this->loadTemplate();
 
-        $ISOs = $this->config->get('disabledCountryISOs');
-        $ISOs = explode(',', $ISOs);
+        $ISOs = $this->config->get('disabledCountryISOs')->toArray();
 
         $builder = $this->connection->createQueryBuilder();
 
