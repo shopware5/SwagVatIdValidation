@@ -337,10 +337,41 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         );
 
         $form->setElement(
-            'text',
+            'select',
             'disabledCountryISOs',
             array(
                 'label' => 'Ausnahmen der Pflichtangabe der Ust-IdNr.',
+                'store' => array(
+                    array('AT', array('de_DE' => 'Österreich', 'en_GB' => 'Austria')), //Republic of Austria
+                    array('BE', array('de_DE' => 'Belgien', 'en_GB' => 'Belgium')), //Kingdom of Belgium
+                    array('BG', array('de_DE' => 'Bulgarien', 'en_GB' => 'Bulgaria')), //Republic of Bulgaria
+                    array('CY', array('de_DE' => 'Zypern', 'en_GB' => 'Cyprus')), //Republic of Cyprus
+                    array('CZ', array('de_DE' => 'Tschechien', 'en_GB' => 'Czechia')), //Czech Republic
+                    array('DE', array('de_DE' => 'Deutschland', 'en_GB' => 'Germany')), //Federal Republic of Germany
+                    array('DK', array('de_DE' => 'Dänemark', 'en_GB' => 'Denmark')), //Kingdom of Denmark
+                    array('EE', array('de_DE' => 'Estland', 'en_GB' => 'Estonia')), //Republic of Estonia
+                    array('EL', array('de_DE' => 'Griechenland', 'en_GB' => 'Greece')), //Hellenic Republic (Greece)
+                    array('ES', array('de_DE' => 'Spanien', 'en_GB' => 'Spain')), //Kingdom of Spain
+                    array('FI', array('de_DE' => 'Finnland', 'en_GB' => 'Spain')), //Republic of Finland
+                    array('FR', array('de_DE' => 'Frankreich', 'en_GB' => 'France')), //French Republic
+                    array('GB', array('de_DE' => 'Großbritannien', 'en_GB' => 'Great Britain')), //United Kingdom of Great Britain and Northern Ireland
+                    array('HR', array('de_DE' => 'Kroatien', 'en_GB' => 'Croatia')), //Republic of Croatia
+                    array('HU', array('de_DE' => 'Ungarn', 'en_GB' => 'Hungary')), //Hungary
+                    array('IE', array('de_DE' => 'Irland', 'en_GB' => 'Ireland')), //Ireland
+                    array('IT', array('de_DE' => 'Italien', 'en_GB' => 'Italy')), //Italian Republic
+                    array('LT', array('de_DE' => 'Litauen', 'en_GB' => 'Lithuania')), //Republic of Lithuania
+                    array('LU', array('de_DE' => 'Luxemburg', 'en_GB' => 'Luxembourg')), //Grand Duchy of Luxembourg
+                    array('LV', array('de_DE' => 'Lettland', 'en_GB' => 'Latvia')), //Republic of Latvia
+                    array('MT', array('de_DE' => 'Malta', 'en_GB' => 'Malta')), //Republic of Malta
+                    array('NL', array('de_DE' => 'Niederlande', 'en_GB' => 'Netherlands')), //Kingdom of the Netherlands
+                    array('PL', array('de_DE' => 'Polen', 'en_GB' => 'Poland')), //Republic of Poland
+                    array('PT', array('de_DE' => 'Portugal', 'en_GB' => 'Portugal')), //Portuguese Republic
+                    array('RO', array('de_DE' => 'Rumänien', 'en_GB' => 'Romania')), //Romania
+                    array('SE', array('de_DE' => 'Schweden', 'en_GB' => 'Sweden')), //Kingdom of Sweden
+                    array('SI', array('de_DE' => 'Slowenien', 'en_GB' => 'Slovenia')), //Republic of Slovenia
+                    array('SK', array('de_DE' => 'Slowakei', 'en_GB' => 'Slovakia')), //Slovak Republic
+                ),
+                'multiSelect' => true,
                 'value' => '',
                 'description' => 'Hier können Sie ISO Codes von EU-Ländern eintragen, die eine Ausnahme in Bezug auf die Einstellung "Ust-IdNr.-Angabe ist Pflicht" bilden. Beispiele sind z.B. DE, GB oder AT, Angabe mehrer Länder mit Komma getrennt möglich.'
             )
