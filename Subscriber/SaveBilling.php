@@ -26,12 +26,14 @@ namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
 /**
  * Class SaveBilling
+ *
  * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
 class SaveBilling extends ValidationPoint
 {
     /**
      * Returns the events we need to subscribe to
+     *
      * @return array
      */
     public static function getSubscribedEvents()
@@ -44,6 +46,7 @@ class SaveBilling extends ValidationPoint
 
     /**
      * Listener to check if the VAT Id is required or not.
+     *
      * @param \Enlight_Event_EventArgs $arguments
      * @return array|mixed
      */
@@ -58,7 +61,8 @@ class SaveBilling extends ValidationPoint
         $required = $this->isVatIdRequired(
             $post['customer_type'],
             $post['register']['billing']['company'],
-            $post['register']['billing']['country']);
+            $post['register']['billing']['country']
+        );
 
         if (($required) && (!trim($post['register']['billing']['ustid']))) {
             $errors[1]['ustid'] = true;
@@ -69,6 +73,7 @@ class SaveBilling extends ValidationPoint
 
     /**
      * Listener to validate the VAT ID
+     *
      * @param \Enlight_Event_EventArgs $arguments
      * @return array|mixed
      */

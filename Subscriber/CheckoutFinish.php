@@ -26,12 +26,14 @@ namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
 /**
  * Class CheckoutFinish
+ *
  * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
 class CheckoutFinish extends ValidationPoint
 {
     /**
      * Returns the events we need to subscribe to
+     *
      * @return array
      */
     public static function getSubscribedEvents()
@@ -44,6 +46,7 @@ class CheckoutFinish extends ValidationPoint
 
     /**
      * Listener to check on checkout finish, whether the VAT ID is stated when required
+     *
      * @param \Enlight_Event_EventArgs $arguments
      */
     public function onPreDispatchFrontend(\Enlight_Event_EventArgs $arguments)
@@ -57,10 +60,8 @@ class CheckoutFinish extends ValidationPoint
         /** @var \Enlight_Controller_Response_ResponseHttp $response */
         $response = $subject->Response();
 
-        if(!$request->isDispatched()
+        if (!$request->isDispatched()
             || $response->isException()
-            || $request->getModuleName() != 'frontend'
-            || $request->getControllerName() != 'checkout'
             || $request->getActionName() != 'finish'
             || !$subject->View()->hasTemplate()
         ) {
@@ -79,6 +80,7 @@ class CheckoutFinish extends ValidationPoint
 
     /**
      * Listener to show the requirement error message
+     *
      * @param \Enlight_Event_EventArgs $arguments
      */
     public function onPostDispatchFrontend(\Enlight_Event_EventArgs $arguments)
@@ -89,14 +91,11 @@ class CheckoutFinish extends ValidationPoint
         /** @var \Enlight_Controller_Request_RequestHttp $request */
         $request = $subject->Request();
 
-        if($request->getModuleName() != 'frontend'
-            || $request->getControllerName() != 'checkout'
-            || $request->getActionName() != 'confirm'
-        ) {
+        if ($request->getActionName() != 'confirm') {
             return;
         }
 
-        if($request->getParam('vatIdRequiredButEmpty')) {
+        if ($request->getParam('vatIdRequiredButEmpty')) {
             $result = $this->getRequirementErrorResult();
             $subject->View()->sBasketInfo = current($result->getErrorMessages());
         }

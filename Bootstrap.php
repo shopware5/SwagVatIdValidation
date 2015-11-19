@@ -46,6 +46,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Helper function to get the MailRepository
+     *
      * @return \Shopware\Models\Mail\Repository
      */
     private function getMailRepository()
@@ -59,6 +60,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Helper function to get the LocaleRepository
+     *
      * @return \Shopware\Models\Shop\Locale
      */
     private function getLocaleRepository()
@@ -72,6 +74,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Helper function to get the TranslationRepository
+     *
      * @return \Shopware\Models\Translation\Translation
      */
     private function getTranslationRepository()
@@ -85,6 +88,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Returns an array with the capabilities of the plugin.
+     *
      * @return array
      */
     public function getCapabilities()
@@ -99,6 +103,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Returns the name of the plugin.
+     *
      * @return string
      */
     public function getLabel()
@@ -108,6 +113,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Returns the current version of the plugin.
+     *
      * @return string
      * @throws Exception
      */
@@ -124,6 +130,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Returns an array with some information about the plugin.
+     *
      * @return array
      */
     public function getInfo()
@@ -149,11 +156,13 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $this->registerEvents();
 
         $this->registerController('frontend', "SwagVatIdValidation");
+
         return true;
     }
 
     /**
-     * (Unsecure) uninstall method, removes also the user-defined data (like the maybe changed mail template)
+     * (Insecure) uninstall method, removes also the user-defined data (like the maybe changed mail template)
+     *
      * @return bool
      */
     public function uninstall()
@@ -201,10 +210,14 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         $translation->setType('config_mails');
         $translation->setKey($mail->getId());
-        $translation->setData(serialize(array(
-            'subject' => "An error occurred when validating VAT ID {\$sVatId}.",
-            'content' => "Hello,\n\nAn error occurred during the validation of VAT ID {\$sVatId} associated with the following company:\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nThe following errors were detected:\n\n{\$sError}\n\n{config name=shopName}"
-        )));
+        $translation->setData(
+            serialize(
+                array(
+                    'subject' => "An error occurred when validating VAT ID {\$sVatId}.",
+                    'content' => "Hello,\n\nAn error occurred during the validation of VAT ID {\$sVatId} associated with the following company:\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nThe following errors were detected:\n\n{\$sError}\n\n{config name=shopName}"
+                )
+            )
+        );
 
         Shopware()->Models()->persist($translation);
         Shopware()->Models()->flush();
@@ -212,13 +225,15 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Helper method that returns the correct shop for the specified locale.
+     *
      * @deprecated for shopware 5.2+
      * @param string $locale
      * @return Shopware\Models\Shop\Shop $result
      */
     private function getShopByLocale($locale)
     {
-        return Shopware()->Models()->getRepository('Shopware\Models\Shop\Shop')->findOneByLocale($this->getLocaleRepository()->findOneByLocale($locale));
+        return Shopware()->Models()->getRepository('Shopware\Models\Shop\Shop')
+            ->findOneByLocale($this->getLocaleRepository()->findOneByLocale($locale));
     }
 
     /**
@@ -237,6 +252,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
     /**
      * Helper function to remove the translations of the mail template
+     *
      * @param $mailTemplateId
      */
     private function removeMailTranslations($mailTemplateId)
@@ -261,24 +277,36 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     {
         $form = $this->Form();
 
-        $form->setElement('text', 'vatId', array(
-            'label' => 'Eigene USt-IdNr.',
-            'value' => Shopware()->Config()->get('sTAXNUMBER'),
-            'description' => 'Eigene USt-IdNr., die zur Prüfung verwendet werden soll.',
-            'required' => true
-        ));
+        $form->setElement(
+            'text',
+            'vatId',
+            array(
+                'label' => 'Eigene USt-IdNr.',
+                'value' => Shopware()->Config()->get('sTAXNUMBER'),
+                'description' => 'Eigene USt-IdNr., die zur Prüfung verwendet werden soll.',
+                'required' => true
+            )
+        );
 
-        $form->setElement('text', 'shopEmailNotification', array(
-            'label' => 'E-Mail-Benachrichtigung',
-            'value' => Shopware()->Config()->get('sMAIL'),
-            'description' => 'An diese E-Mail-Adresse erhalten Sie eine Mitteilungen, wenn die Ust-IdNr. eines Bestandskunden abgelaufen ist. Wenn leer, erhalten Sie keine E-Mail.'
-        ));
+        $form->setElement(
+            'text',
+            'shopEmailNotification',
+            array(
+                'label' => 'E-Mail-Benachrichtigung',
+                'value' => Shopware()->Config()->get('sMAIL'),
+                'description' => 'An diese E-Mail-Adresse erhalten Sie eine Mitteilungen, wenn die Ust-IdNr. eines Bestandskunden abgelaufen ist. Wenn leer, erhalten Sie keine E-Mail.'
+            )
+        );
 
-        $form->setElement('checkbox', 'vatIdRequired', array(
-            'label' => 'Ust-IdNr.-Angabe ist Pflicht',
-            'value' => false,
-            'description' => 'Wandelt das Feld für die Ust-IdNr. für EU-Länder in ein Pflichtfeld um. Ausnahmen können unten angegeben werden.'
-        ));
+        $form->setElement(
+            'checkbox',
+            'vatIdRequired',
+            array(
+                'label' => 'Ust-IdNr.-Angabe ist Pflicht',
+                'value' => false,
+                'description' => 'Wandelt das Feld für die Ust-IdNr. für EU-Länder in ein Pflichtfeld um. Ausnahmen können unten angegeben werden.'
+            )
+        );
 
         $form->setElement(
             'combo',
@@ -298,53 +326,64 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             )
         );
 
-        $form->setElement('checkbox', 'confirmation', array(
-            'label' => 'Amtliche Bestätigungsmitteilung',
-            'value' => false,
-            'description' => 'Amtliche Bestätigungsmitteilung bei qualifizierten Bestätigungsanfragen anfordern. Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden.'
-        ));
+        $form->setElement(
+            'checkbox',
+            'confirmation',
+            array(
+                'label' => 'Amtliche Bestätigungsmitteilung',
+                'value' => false,
+                'description' => 'Amtliche Bestätigungsmitteilung bei qualifizierten Bestätigungsanfragen anfordern. Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden.'
+            )
+        );
 
-        $form->setElement('text', 'disabledCountryISOs', array(
-            'label' => 'Ausnahmen der Pflichtangabe der Ust-IdNr.',
-            'value' => '',
-            'description' => 'Hier können Sie ISO Codes von EU-Ländern eintragen, die eine Ausnahme in Bezug auf die Einstellung "Ust-IdNr.-Angabe ist Pflicht" bilden. Beispiele sind z.B. DE, GB oder AT, Angabe mehrer Länder mit Komma getrennt möglich.'
-        ));
+        $form->setElement(
+            'text',
+            'disabledCountryISOs',
+            array(
+                'label' => 'Ausnahmen der Pflichtangabe der Ust-IdNr.',
+                'value' => '',
+                'description' => 'Hier können Sie ISO Codes von EU-Ländern eintragen, die eine Ausnahme in Bezug auf die Einstellung "Ust-IdNr.-Angabe ist Pflicht" bilden. Beispiele sind z.B. DE, GB oder AT, Angabe mehrer Länder mit Komma getrennt möglich.'
+            )
+        );
 
-        $this->addFormTranslations(array(
-            'en_GB' => array(
-                'vatId' => array(
-                    'label' => 'Own VAT ID',
-                    'description' => 'Your own VAT ID number which is required for validation. During the validation process, your VAT ID is never given to your customers.'
-                ),
-                'shopEmailNotification' => array(
-                    'label' => 'Own email notifications',
-                    'description' => 'If provided, you will receive an email when a VAT ID validation error occurs.'
-                ),
-                'vatIdRequired' => array(
-                    'label' => 'VAT ID is required',
-                    'description' => 'If enabled, the input of a VAT ID is required for EU countries. Below you can define exceptions for that.'
-                ),
-                'apiValidationType' => array(
+        $this->addFormTranslations(
+            array(
+                'en_GB' => array(
+                    'vatId' => array(
+                        'label' => 'Own VAT ID',
+                        'description' => 'Your own VAT ID number which is required for validation. During the validation process, your VAT ID is never given to your customers.'
+                    ),
+                    'shopEmailNotification' => array(
+                        'label' => 'Own email notifications',
+                        'description' => 'If provided, you will receive an email when a VAT ID validation error occurs.'
+                    ),
+                    'vatIdRequired' => array(
+                        'label' => 'VAT ID is required',
+                        'description' => 'If enabled, the input of a VAT ID is required for EU countries. Below you can define exceptions for that.'
+                    ),
+                    'apiValidationType' => array(
                         'label' => 'Type of API validation',
                         'description' => '1. <u>None</u>: No API validation process will be executed.<br>
                                           2. <u>Simple</u>: It will be checked if the VAT ID exists in general.<br>
                                           3. <u>Extended</u>: It will be checked, if the VAT ID exists in general and if it matches the customers address.
                                              <u>Information:</u> The extended check will compare the address provided by the customer with the data available in the remote VAT ID validation service. Note: depending on the market of both you and your customer, the completeness of the available information for comparison may be limited.'
-                ),
-                'confirmation' => array(
-                    'label' => 'Official mail confirmation',
-                    'description' => 'Only available for German-based shops. Requests an official mail confirmation for qualified checks of foreign VAT IDs.'
-                ),
-                'disabledCountryISOs' => array(
-                    'label' => 'Exceptions for the requirement of the VAT ID',
-                    'description' => 'The country ISO codes you enter here will be excluded from the VAT id requirement if enabled above. Examples are DE, GB or AT. Multiple countries are possible separated by comma'
-                ),
+                    ),
+                    'confirmation' => array(
+                        'label' => 'Official mail confirmation',
+                        'description' => 'Only available for German-based shops. Requests an official mail confirmation for qualified checks of foreign VAT IDs.'
+                    ),
+                    'disabledCountryISOs' => array(
+                        'label' => 'Exceptions for the requirement of the VAT ID',
+                        'description' => 'The country ISO codes you enter here will be excluded from the VAT id requirement if enabled above. Examples are DE, GB or AT. Multiple countries are possible separated by comma'
+                    ),
+                )
             )
-        ));
+        );
     }
 
     /**
      * Helper function to register an early event for our event subscribers
+     *
      * @throws RuntimeException
      */
     private function registerEvents()
@@ -364,6 +403,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      * This callback function is triggered at the very beginning of the dispatch process and allows
      * us to register additional events on the fly. This way you won't ever need to reinstall you
      * plugin for new events - any event and hook can simply be registered in the event subscribers
+     *
+     * @param Enlight_Event_EventArgs $args
      */
     public function onStartDispatch(Enlight_Event_EventArgs $args)
     {
@@ -385,7 +426,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         $subscribers = array(
             new Subscriber\TemplateExtension($config, $path, $session, $snippets, $shop),
-            new Subscriber\Login($config, $snippets, $models, $mailer, $session, $action),
+            new Subscriber\Login($action, $config, $snippets, $session, $models, $mailer),
             new Subscriber\SaveBilling($config, $snippets, $models, $mailer),
             new Subscriber\CheckoutFinish($config, $snippets, $models)
         );

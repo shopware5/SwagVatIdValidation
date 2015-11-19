@@ -25,10 +25,12 @@
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
+use Shopware\Models\Shop\Shop;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 /**
  * Class TemplateExtension
+ *
  * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
 class TemplateExtension implements SubscriberInterface
@@ -45,18 +47,25 @@ class TemplateExtension implements SubscriberInterface
     /** @var  \Shopware_Components_Snippet_Manager */
     private $snippetManager;
 
-    /** @var  \Shopware\Models\Shop\Shop */
+    /** @var  Shop */
     private $shop;
 
     /**
      * Constructor sets all properties
+     *
      * @param \Enlight_Config $config
      * @param string $path
      * @param \Enlight_Components_Session_Namespace $session
      * @param \Shopware_Components_Snippet_Manager $snippetManager
+     * @param Shop $shop
      */
-    public function __construct(\Enlight_Config $config, $path, \Enlight_Components_Session_Namespace $session, \Shopware_Components_Snippet_Manager $snippetManager, \Shopware\Models\Shop\Shop $shop)
-    {
+    public function __construct(
+        \Enlight_Config $config,
+        $path,
+        \Enlight_Components_Session_Namespace $session,
+        \Shopware_Components_Snippet_Manager $snippetManager,
+        Shop $shop
+    ) {
         $this->config = $config;
         $this->path = $path;
         $this->session = $session;
@@ -66,6 +75,7 @@ class TemplateExtension implements SubscriberInterface
 
     /**
      * Returns the events we need to subscribe to
+     *
      * @return array
      */
     public static function getSubscribedEvents()
@@ -81,6 +91,7 @@ class TemplateExtension implements SubscriberInterface
      * Listener to FrontendAccount (index and billing)
      * On Account Index, a short info message will be shown if the validator was not available
      * On Account Billing, the Vat Id input field can be set required
+     *
      * @param \Enlight_Event_EventArgs $arguments
      */
     public function onPostDispatchFrontendAccount(\Enlight_Event_EventArgs $arguments)
@@ -91,6 +102,7 @@ class TemplateExtension implements SubscriberInterface
     /**
      * Listener to FrontendCheckout (confirm),
      * Shows a short info message if the validator was not available
+     *
      * @param \Enlight_Event_EventArgs $arguments
      */
     public function onPostDispatchFrontendCheckout(\Enlight_Event_EventArgs $arguments)
@@ -101,6 +113,7 @@ class TemplateExtension implements SubscriberInterface
     /**
      * Listener to FrontendRegister (index)
      * The Vat Id input field can be set required
+     *
      * @param \Enlight_Event_EventArgs $arguments
      */
     public function onPostDispatchFrontendRegister(\Enlight_Event_EventArgs $arguments)
@@ -110,6 +123,7 @@ class TemplateExtension implements SubscriberInterface
 
     /**
      * Helper function to assign the plugin data to the template
+     *
      * @param \Enlight_Controller_Action $controller
      * @param array $actions
      */
@@ -131,7 +145,7 @@ class TemplateExtension implements SubscriberInterface
         $errorMessages = array();
         $requiredButEmpty = false;
 
-        if($this->session->offsetExists('vatIdValidationStatus')) {
+        if ($this->session->offsetExists('vatIdValidationStatus')) {
             $serialized = $this->session->offsetGet('vatIdValidationStatus');
 
             $result = new VatIdValidatorResult($this->snippetManager);
@@ -141,7 +155,7 @@ class TemplateExtension implements SubscriberInterface
             $errorMessages = $result->getErrorMessages();
         }
 
-        if($errorMessages) {
+        if ($errorMessages) {
             $requiredButEmpty = array_key_exists('required', $errorMessages);
             unset($errorMessages['required']);
         }
@@ -149,14 +163,16 @@ class TemplateExtension implements SubscriberInterface
         $required = $this->config->get('vatIdRequired');
         $disabledCountryISOs = trim($this->config->get('disabledCountryISOs'));
 
-        $view->assign(array(
-            'displayMessage' => (bool) $disabledCountryISOs,
-            'vatIdCheck' => array(
-                'errorMessages' => array_values($errorMessages),
-                'required' => $required,
-                'requiredButEmpty' => $requiredButEmpty
+        $view->assign(
+            array(
+                'displayMessage' => (bool) $disabledCountryISOs,
+                'vatIdCheck' => array(
+                    'errorMessages' => array_values($errorMessages),
+                    'required' => $required,
+                    'requiredButEmpty' => $requiredButEmpty
+                )
             )
-        ));
+        );
     }
 
     /**
