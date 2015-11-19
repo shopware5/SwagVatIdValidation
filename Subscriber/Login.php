@@ -28,6 +28,7 @@ use Shopware\Components\Model\ModelManager;
 
 /**
  * Class Login
+ *
  * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
 class Login extends ValidationPoint
@@ -40,15 +41,22 @@ class Login extends ValidationPoint
 
     /**
      * Constructor sets all properties
+     *
+     * @param string $action
      * @param \Enlight_Config $config
      * @param \Shopware_Components_Snippet_Manager $snippetManager
+     * @param \Enlight_Components_Session_Namespace $session
      * @param ModelManager $modelManager
      * @param \Shopware_Components_TemplateMail $templateMail
-     * @param \Enlight_Components_Session_Namespace $session
-     * @param string $action
      */
-    public function __construct(\Enlight_Config $config, \Shopware_Components_Snippet_Manager $snippetManager, ModelManager $modelManager = null, \Shopware_Components_TemplateMail $templateMail = null, \Enlight_Components_Session_Namespace $session, $action)
-    {
+    public function __construct(
+        $action,
+        \Enlight_Config $config,
+        \Shopware_Components_Snippet_Manager $snippetManager,
+        \Enlight_Components_Session_Namespace $session,
+        ModelManager $modelManager = null,
+        \Shopware_Components_TemplateMail $templateMail = null
+    ) {
         parent::__construct($config, $snippetManager, $modelManager, $templateMail);
         $this->session = $session;
         self::$action = $action;
@@ -56,6 +64,7 @@ class Login extends ValidationPoint
 
     /**
      * Returns the events we need to subscribe to
+     *
      * @return array
      */
     public static function getSubscribedEvents()
@@ -90,14 +99,24 @@ class Login extends ValidationPoint
             ->where('billing.customerId = :customerId')
             ->setParameter('customerId', $user['id'])
             ->setMaxResults(1)
-            ->getQuery()->getOneOrNullResult();
+            ->getQuery()
+            ->getOneOrNullResult();
 
         if (!$billing) {
             return;
         }
 
-        $countryId = $billing['countryId'];
-        $countryISO = $this->getCountryRepository()->findOneById($countryId)->getIso();
+        /**
+         * If the VAT ID is required, but empty, set the requirement error
+         */
+        $required = $this->isVatIdRequired('business', $billing['company'], $billing['countryId']);
+
+        if (($required) && (!trim($billing['vatId']))) {
+            $result = $this->getRequirementErrorResult();
+            $this->session->offsetSet('vatIdValidationStatus', $result->serialize());
+
+            return;
+        }
 
         $result = $this->validate(
             $billing['vatId'],
@@ -105,7 +124,7 @@ class Login extends ValidationPoint
             $billing['street'],
             $billing['zipCode'],
             $billing['city'],
-            $countryISO,
+            $this->getCountryIso($billing['countryId']),
             $billing['id']
         );
 

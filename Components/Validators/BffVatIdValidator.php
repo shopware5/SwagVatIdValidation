@@ -81,7 +81,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
 
         $reg = '#<param>\s*<value><array><data>\s*<value><string>([^<]*)</string></value>\s*<value><string>([^<]*)</string></value>\s*</data></array></value>\s*</param>#msi';
 
-        if(empty($response)) {
+        if (empty($response)) {
             $this->result->setServiceUnavailable();
             return $this->result;
         }

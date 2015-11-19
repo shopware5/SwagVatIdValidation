@@ -1,7 +1,7 @@
 {extends file='frontend/account/index.tpl'}
 
 {block name='frontend_account_index_error_messages'}
-	{if $sErrorMessages || $vatIdCheck.errorMessages|count > 0}
+	{if $sErrorMessages || $vatIdCheck.errorMessages|count > 0 || $vatIdCheck.requiredButEmpty}
 		<div class="grid_16 error_msg">
 			{if $sErrorMessages}
 				{include file="frontend/register/error_message.tpl" error_messages=$sErrorMessages}

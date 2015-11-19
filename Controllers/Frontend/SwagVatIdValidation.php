@@ -61,11 +61,12 @@ class Shopware_Controllers_Frontend_SwagVatIdValidation extends Enlight_Controll
 
         $builder = $this->connection->createQueryBuilder();
 
-        $countryNameArray = $builder->select('countryname')
-                                    ->from('s_core_countries')->where('countryiso IN(:isos)')
-                                    ->setParameter('isos', $ISOs, Connection::PARAM_STR_ARRAY)
-                                    ->execute()
-                                    ->fetchAll();
+        $countryNameArray = $builder->select('countries.countryname')
+            ->from('s_core_countries', 'countries')
+            ->where('countryiso IN(:isos)')
+            ->setParameter('isos', $ISOs, Connection::PARAM_STR_ARRAY)
+            ->execute()
+            ->fetchAll();
 
         $countries = array_column($countryNameArray, 'countryname');
         $this->View()->assign('disabledCountries', $countries);
