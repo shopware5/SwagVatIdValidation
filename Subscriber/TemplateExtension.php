@@ -161,7 +161,7 @@ class TemplateExtension implements SubscriberInterface
         }
 
         $required = $this->config->get('vatIdRequired');
-        $displayMessage = (bool) $this->config->get('disabledCountryISOs')->count();
+        $displayMessage = (bool) $this->config->get('disabledCountryISOs');
 
         $view->assign(
             array(

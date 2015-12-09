@@ -170,7 +170,14 @@ abstract class ValidationPoint implements SubscriberInterface
         /**
          * ... or the check is disabled for the billing country.
          */
-        $disabledCountries = $this->config->get('disabledCountryISOs')->toArray();
+        $disabledCountries = $this->config->get('disabledCountryISOs');
+
+        if(is_string($disabledCountries)) {
+            $disabledCountries = explode(',', $disabledCountries);
+            $disabledCountries = array_map('trim', $disabledCountries);
+        } else {
+            $disabledCountries = $disabledCountries->toArray();
+        }
 
         if (in_array($countryISO, $disabledCountries)) {
             return false;
