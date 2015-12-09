@@ -13,7 +13,7 @@
 										{s namespace="frontend/swag_vat_id_validation/main" name="messages/modal/disabledCountries/withoutEU"}The following countries are not affected from VAT-ID validation:{/s}
 								{/block}
 							</b>
-							<ul>
+							<ul style="list-style-type: none;">
 							{block name="frontend_register_vatid_modal_country_iteration_parent"}
 								{foreach from=$disabledCountries item=country}
 									{block name="frontend_register_vatid_modal_country_iteration_item"}
