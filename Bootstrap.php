@@ -161,6 +161,31 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     }
 
     /**
+     * Handles the updates
+     *
+     * @param string $oldVersion
+     * @return bool
+     */
+    public function update($oldVersion)
+    {
+        $form = $this->Form();
+
+        switch($oldVersion){
+            case '1.0.0':
+            case '1.0.1':
+            case '1.0.5':
+            case '1.0.6':
+                $form->removeElement('extendedCheck');
+                break;
+
+            default:
+                return false;
+        }
+
+        return $this->install();
+    }
+
+    /**
      * (Insecure) uninstall method, removes also the user-defined data (like the maybe changed mail template)
      *
      * @return bool
@@ -178,7 +203,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     private function createMailTemplate()
     {
-        //check, if mail template already exists (because secureUninstall)
+        //check, if mail template already exists (because secureUninstall and update)
         $mail = $this->getMailRepository()->findOneByName('sSWAGVATIDVALIDATION_VALIDATIONERROR');
 
         if ($mail) {
@@ -203,7 +228,13 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $translation = new Translation();
 
         if ($this->assertMinimumVersion("5.1.0")) {
-            $translation->setShop($this->getShopByLocale("en_GB"));
+            $shop = $this->getShopByLocale("en_GB");
+
+            if (!$shop) {
+                return;
+            }
+
+            $translation->setShop($shop);
         } else {
             $translation->setLocale($this->getLocaleRepository()->findOneByLocale('en_GB'));
         }
