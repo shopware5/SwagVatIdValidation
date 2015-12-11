@@ -8,18 +8,20 @@
     "link": "http://store.shopware.com",
     "author": "Shopware AG",
 
-    "currentVersion": "1.0.7",
+    "currentVersion": "1.0.8",
 
     "changelog": {
         "de": {
-            "1.0.7": "PT-4694 - Bugfix: Installation ohne englischen Sprachshop funktioniert nun wieder, Update entfernt nun überflüssiges Konfigurationsfeld 'Erweiterte Prüfung durchführen', Korrektur, wann der Ausnahmen-Hinweis angezeigt wird",
+            "1.0.8": "PT-4694 - Bugfix: Korrektur, wann der Ausnahmen-Hinweis angezeigt wird;",
+            "1.0.7": "PT-4694 - Bugfix: Installation ohne englischen Sprachshop funktioniert nun wieder, Update entfernt nun überflüssiges Konfigurationsfeld 'Erweiterte Prüfung durchführen';",
             "1.0.6": "PT-4651 - Bugfix: Länder-Ausnahmen unterstützen nun auch Text-Eingaben (bspw. DE,AT)",
             "1.0.5": "PT-3158 - Bugfix: Pflichtfeld mit Leerzeichen; PT-3714, PT-4155 - Bugfix: Problem mit erweiterter Validierung; PT-3890 - Bugfix: Validierung nur für Länder innerhalb der EU; PT-4021 - Feature: Verhindere Checkout, wenn USt-IdNr. benötigt, aber nicht vorhanden ist; PT-4438 - Feature: Länderauswahl als Multiselect Box;",
             "1.0.1": "PT-2746 - Fix: SW5 Kompatiblität",
             "1.0.0": "Erstveröffentlichung"
         },
         "en": {
-            "1.0.7": "PT-4694 - Bugfix: Installation without english language shop throws no longer an exception, Update removes deprecated config field 'Extended checks', Fixed visibility of the exception message",
+            "1.0.8": "PT-4694 - Bugfix: Fixed visibility of the exception message;",
+            "1.0.7": "PT-4694 - Bugfix: Installation without english language shop throws no longer an exception, Update removes deprecated config field 'Extended checks';",
             "1.0.6": "PT-4651 - Bugfix: Country exclusions for the VAT id will now support plain string input (e.g. DE,AT)",
             "1.0.5": "PT-3158 - Bugfix: Required field with space character; PT-3714, PT-4155 - Bugfix: Problem with extended validation; PT-3890 - Bugfix: Validation only for countries within the EU; PT-4021 - Feature: Prevent checkout when VAT ID is required but empty; PT-4438 - Feature: Country selection as multiselect box;",
             "1.0.1": "PT-2746 - Fix: SW5 compatibility",
