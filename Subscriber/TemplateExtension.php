@@ -26,6 +26,7 @@ namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
 use Shopware\Models\Shop\Shop;
+use Shopware\Plugins\SwagVatIdValidation\Components\EUStates;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 /**
@@ -161,11 +162,18 @@ class TemplateExtension implements SubscriberInterface
         }
 
         $required = $this->config->get('vatIdRequired');
-        $displayMessage = (bool) $this->config->get('disabledCountryISOs');
+        $ISOs = $this->config->get('disabledCountryISOs');
+
+        if (is_string($ISOs)) {
+            $ISOs = explode(',', $ISOs);
+            $ISOs = array_map('trim', $ISOs);
+        } else {
+            $ISOs = $ISOs->toArray();
+        }
 
         $view->assign(
             array(
-                'displayMessage' => $displayMessage,
+                'displayMessage' => EUStates::hasValidEUCountry($ISOs),
                 'vatIdCheck' => array(
                     'errorMessages' => array_values($errorMessages),
                     'required' => $required,

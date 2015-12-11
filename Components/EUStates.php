@@ -45,4 +45,14 @@ class EUStates
     {
         return in_array($countryIso, self::$EUCountries);
     }
+
+    /**
+     * A helper function that returns a boolean if there are valid EU country isos in the array
+     * @param string[] $countryIsos
+     * @return bool
+     */
+    public static function hasValidEUCountry(array $countryIsos)
+    {
+        return (bool) array_intersect($countryIsos, self::$EUCountries);
+    }
 }
