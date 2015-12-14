@@ -53,7 +53,12 @@ class SaveBilling extends ValidationPoint
     public function onValidateStep2FilterStart(\Enlight_Event_EventArgs $arguments)
     {
         $post = $arguments->getPost();
+        $rules = $arguments->getRules();
         $errors = $arguments->getReturn();
+
+        if (!array_key_exists('ustid', $rules)) {
+            return $errors;
+        }
 
         /**
          * If the VAT ID is required, but empty, set the error flag
@@ -80,7 +85,12 @@ class SaveBilling extends ValidationPoint
     public function onValidateStep2FilterResult(\Enlight_Event_EventArgs $arguments)
     {
         $post = $arguments->getPost();
+        $rules = $arguments->getRules();
         $errors = $arguments->getReturn();
+
+        if (!array_key_exists('ustid', $rules)) {
+            return $errors;
+        }
 
         if ($this->customerIsNoCompany($post['customer_type'], $post['register']['billing']['company'])) {
             return $errors;
