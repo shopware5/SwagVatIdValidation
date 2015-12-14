@@ -161,7 +161,27 @@ class TemplateExtension implements SubscriberInterface
             unset($errorMessages['required']);
         }
 
-        $required = $this->config->get('vatIdRequired');
+        $required = (bool) $this->config->get('vatIdRequired');
+        $displayMessage = ($required) ? $this->hasExceptedEUCountries() : false;
+
+        $view->assign(
+            array(
+                'displayMessage' => $displayMessage,
+                'vatIdCheck' => array(
+                    'errorMessages' => array_values($errorMessages),
+                    'required' => $required,
+                    'requiredButEmpty' => $requiredButEmpty
+                )
+            )
+        );
+    }
+
+    /**
+     * Returns true, if there are valid EU countries excepted from the input requirement
+     * @return bool
+     */
+    private function hasExceptedEUCountries()
+    {
         $ISOs = $this->config->get('disabledCountryISOs');
 
         if (is_string($ISOs)) {
@@ -171,16 +191,7 @@ class TemplateExtension implements SubscriberInterface
             $ISOs = $ISOs->toArray();
         }
 
-        $view->assign(
-            array(
-                'displayMessage' => EUStates::hasValidEUCountry($ISOs),
-                'vatIdCheck' => array(
-                    'errorMessages' => array_values($errorMessages),
-                    'required' => $required,
-                    'requiredButEmpty' => $requiredButEmpty
-                )
-            )
-        );
+        return EUStates::hasValidEUCountry($ISOs);
     }
 
     /**

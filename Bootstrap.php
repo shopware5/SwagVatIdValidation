@@ -161,6 +161,26 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     }
 
     /**
+     * Standard plugin enable method
+     *
+     * @return array
+     */
+    public function enable()
+    {
+        return array('success' => true, 'invalidateCache' => $this->getInvalidateCacheArray());
+    }
+
+    /**
+     * Standard plugin disable method
+     *
+     * @return array
+     */
+    public function disable()
+    {
+        return array('success' => true, 'invalidateCache' => $this->getInvalidateCacheArray());
+    }
+
+    /**
      * Handles the updates
      *
      * @param string $oldVersion
@@ -195,7 +215,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         //do NOT remove the mail template on secureUninstall
         $this->removeMailTemplate();
 
-        return true;
+        return array('success' => true, 'invalidateCache' => $this->getInvalidateCacheArray());
     }
 
     /**
@@ -496,6 +516,16 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         foreach ($subscribers as $subscriber) {
             $this->Application()->Events()->addSubscriber($subscriber);
         }
+    }
+
+    /**
+     * Helper method to return all the caches, that need to be cleared after installing/uninstalling/enabling/disabling a plugin
+     *
+     * @return array
+     */
+    private function getInvalidateCacheArray()
+    {
+        return array('frontend', 'theme');
     }
 
     /**
