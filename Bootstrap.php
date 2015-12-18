@@ -188,18 +188,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      */
     public function update($oldVersion)
     {
-        $form = $this->Form();
-
-        switch($oldVersion){
-            case '1.0.0':
-            case '1.0.1':
-            case '1.0.5':
-            case '1.0.6':
-                $form->removeElement('extendedCheck');
-                break;
-
-            default:
-                return false;
+        if (version_compare($oldVersion, '1.0.7', '<')) {
+            $form = $this->Form();
+            $form->removeElement('extendedCheck');
         }
 
         return $this->install();
