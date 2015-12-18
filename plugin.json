@@ -8,10 +8,11 @@
     "link": "http://store.shopware.com",
     "author": "Shopware AG",
 
-    "currentVersion": "1.0.9",
+    "currentVersion": "1.0.10",
 
     "changelog": {
         "de": {
+            "1.0.10": "PT-4752 - Bugfix: Update Methode;",
             "1.0.9": "PT-4709 - Feature: Cache wird nun korrekt nach Plugin-Aktivierung geleert; PT-3190 - Bugfix: Fehlermeldungen werden nicht mehr doppelt ausgegeben;",
             "1.0.8": "PT-4694 - Bugfix: Korrektur, wann der Ausnahmen-Hinweis angezeigt wird;",
             "1.0.7": "PT-4694 - Bugfix: Installation ohne englischen Sprachshop funktioniert nun wieder, Update entfernt nun überflüssiges Konfigurationsfeld 'Erweiterte Prüfung durchführen';",
@@ -21,6 +22,7 @@
             "1.0.0": "Erstveröffentlichung"
         },
         "en": {
+            "1.0.10": "PT-4752 - Bugfix: Update method;",
             "1.0.9": "PT-4709 - Feature: Cache will now be properly cleared after (de-)activating a plugin;PT-3190 - Bugfix: Fixed duplicated error-messages;",
             "1.0.8": "PT-4694 - Bugfix: Fixed visibility of the exception message;",
             "1.0.7": "PT-4694 - Bugfix: Installation without english language shop throws no longer an exception, Update removes deprecated config field 'Extended checks';",
