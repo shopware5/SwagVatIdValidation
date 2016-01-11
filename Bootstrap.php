@@ -326,7 +326,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 'label' => 'Eigene USt-IdNr.',
                 'value' => Shopware()->Config()->get('sTAXNUMBER'),
                 'description' => 'Eigene USt-IdNr., die zur Prüfung verwendet werden soll.',
-                'required' => true
+                'required' => true,
+                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
             )
         );
 
@@ -343,7 +344,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 'description' => 'An diese E-Mail-Adresse erhalten Sie eine Mitteilungen, wenn die Ust-IdNr. eines Bestandskunden ungültig ist.<br>
                                   1. <u>Nein</u>: Es wird keine E-Mail versendet.<br>
                                   2. <u>Shopbetreiber-E-Mail-Adresse</u>: Es wird die E-Mail-Adresse aus den Stammdaten genutzt.<br>
-                                     <u>Hinweis:</u> Sie können auch eine individuelle E-Mail-Adresse hinterlegen.'
+                                     <u>Hinweis:</u> Sie können auch eine individuelle E-Mail-Adresse hinterlegen.',
+                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
             )
         );
 
@@ -353,7 +355,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             array(
                 'label' => 'Ust-IdNr.-Angabe ist Pflicht',
                 'value' => false,
-                'description' => 'Wandelt das Feld für die Ust-IdNr. für EU-Länder in ein Pflichtfeld um. Ausnahmen können unten angegeben werden.'
+                'description' => 'Wandelt das Feld für die Ust-IdNr. für EU-Länder in ein Pflichtfeld um. Ausnahmen können unten angegeben werden.',
+                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
             )
         );
 
@@ -371,7 +374,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 'description' => '1. <u>Keine</u>: Es wird keine API-Überprüfung durchgeführt.<br>
                                   2. <u>Einfach</u>: Es wird überprüft, ob diese Ust-IdNr. existiert.<br>
                                   3. <u>Erweitert</u>: Es wird überprüft, ob diese Ust-IdNr. existiert und zur Adresse passt.
-                                     <u>Hinweis:</u> Erweiterte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden. Sofern der angefragte EU-Mitgliedsstaat die Adressdaten bereit stellt, werden diese anderenfalls manuell durch das Plugin verglichen.'
+                                     <u>Hinweis:</u> Erweiterte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden. Sofern der angefragte EU-Mitgliedsstaat die Adressdaten bereit stellt, werden diese anderenfalls manuell durch das Plugin verglichen.',
+                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
             )
         );
 
@@ -381,7 +385,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             array(
                 'label' => 'Amtliche Bestätigungsmitteilung',
                 'value' => false,
-                'description' => 'Amtliche Bestätigungsmitteilung bei qualifizierten Bestätigungsanfragen anfordern. Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden.'
+                'description' => 'Amtliche Bestätigungsmitteilung bei qualifizierten Bestätigungsanfragen anfordern. Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden.',
+                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
             )
         );
 
@@ -422,7 +427,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 ),
                 'multiSelect' => true,
                 'value' => '',
-                'description' => 'Hier können Sie ISO Codes von EU-Ländern eintragen, die eine Ausnahme in Bezug auf die Einstellung "Ust-IdNr.-Angabe ist Pflicht" bilden. Beispiele sind z.B. DE, GB oder AT, Angabe mehrer Länder mit Komma getrennt möglich.'
+                'description' => 'Hier können Sie ISO Codes von EU-Ländern eintragen, die eine Ausnahme in Bezug auf die Einstellung "Ust-IdNr.-Angabe ist Pflicht" bilden. Beispiele sind z.B. DE, GB oder AT, Angabe mehrer Länder mit Komma getrennt möglich.',
+                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
             )
         );
 
