@@ -331,12 +331,19 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         );
 
         $form->setElement(
-            'text',
+            'select',
             'shopEmailNotification',
             array(
                 'label' => 'E-Mail-Benachrichtigung',
-                'value' => Shopware()->Config()->get('sMAIL'),
-                'description' => 'An diese E-Mail-Adresse erhalten Sie eine Mitteilungen, wenn die Ust-IdNr. eines Bestandskunden abgelaufen ist. Wenn leer, erhalten Sie keine E-Mail.'
+                'store' => array(
+                    array(0, array('de_DE' => 'Nein', 'en_GB' => 'No')),
+                    array(1, array('de_DE' => 'Shopbetreiber-E-Mail-Adresse', 'en_GB' => 'Shop owner email address'))
+                ),
+                'value' => 1,
+                'description' => 'An diese E-Mail-Adresse erhalten Sie eine Mitteilungen, wenn die Ust-IdNr. eines Bestandskunden ungültig ist.<br>
+                                  1. <u>Nein</u>: Es wird keine E-Mail versendet.<br>
+                                  2. <u>Shopbetreiber-E-Mail-Adresse</u>: Es wird die E-Mail-Adresse aus den Stammdaten genutzt.<br>
+                                     <u>Hinweis:</u> Sie können auch eine individuelle E-Mail-Adresse hinterlegen.'
             )
         );
 
@@ -428,7 +435,10 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                     ),
                     'shopEmailNotification' => array(
                         'label' => 'Own email notifications',
-                        'description' => 'If provided, you will receive an email when a VAT ID validation error occurs.'
+                        'description' => 'If provided, you will receive an email when a VAT ID validation error occurs.<br>
+                                          1. <u>No</u>: You won\'t receive an email.<br>
+                                          2. <u>Shopowner email address</u>: The email address of the basic information will be used.<br>
+                                             <u>Information:</u> You also can enter an individual email address.'
                     ),
                     'vatIdRequired' => array(
                         'label' => 'VAT ID is required',
