@@ -172,7 +172,7 @@ abstract class ValidationPoint implements SubscriberInterface
          */
         $disabledCountries = $this->config->get('disabledCountryISOs');
 
-        if(is_string($disabledCountries)) {
+        if (is_string($disabledCountries)) {
             $disabledCountries = explode(',', $disabledCountries);
             $disabledCountries = array_map('trim', $disabledCountries);
         } else {
@@ -437,8 +437,7 @@ abstract class ValidationPoint implements SubscriberInterface
      */
     private function sendShopOwnerEmail(VatIdCustomerInformation $customerInformation, VatIdValidatorResult $result)
     {
-        $email = $this->config->get('shopEmailNotification');
-        $email = filter_var($email, FILTER_VALIDATE_EMAIL);
+        $email = $this->getEmailAddress();
 
         if (empty($email)) {
             return;
@@ -462,5 +461,25 @@ abstract class ValidationPoint implements SubscriberInterface
         $mail = $this->templateMail->createMail('sSWAGVATIDVALIDATION_VALIDATIONERROR', $context);
         $mail->addTo($email);
         $mail->send();
+    }
+
+    /**
+     * Helper function returns the configured email address or false if deactivated or invalid
+     *
+     * @return bool|string
+     */
+    private function getEmailAddress()
+    {
+        $emailNotification = $this->config->get('shopEmailNotification');
+
+        if (is_string($emailNotification)) {
+            $emailAddress = $emailNotification;
+        } elseif ($emailNotification) {
+            $emailAddress = Shopware()->Config()->get('sMAIL');
+        } else {
+            return false;
+        }
+
+        return filter_var($emailAddress, FILTER_VALIDATE_EMAIL);
     }
 }

@@ -8,10 +8,11 @@
     "link": "http://store.shopware.com",
     "author": "Shopware AG",
 
-    "currentVersion": "1.0.10",
+    "currentVersion": "1.0.11",
 
     "changelog": {
         "de": {
+            "1.0.11": "PT-4862 - Bugfix: Die E-Mail-Benachrichtigung kann nun einfach deaktiviert werden;",
             "1.0.10": "PT-4752 - Bugfix: Update Methode;",
             "1.0.9": "PT-4709 - Feature: Cache wird nun korrekt nach Plugin-Aktivierung geleert; PT-3190 - Bugfix: Fehlermeldungen werden nicht mehr doppelt ausgegeben;",
             "1.0.8": "PT-4694 - Bugfix: Korrektur, wann der Ausnahmen-Hinweis angezeigt wird;",
@@ -22,6 +23,7 @@
             "1.0.0": "Erstveröffentlichung"
         },
         "en": {
+            "1.0.11": "PT-4862 - Bugfix: The email notification can now be disabled the easy way;",
             "1.0.10": "PT-4752 - Bugfix: Update method;",
             "1.0.9": "PT-4709 - Feature: Cache will now be properly cleared after (de-)activating a plugin;PT-3190 - Bugfix: Fixed duplicated error-messages;",
             "1.0.8": "PT-4694 - Bugfix: Fixed visibility of the exception message;",
