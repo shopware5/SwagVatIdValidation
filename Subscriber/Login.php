@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -24,42 +25,33 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
-use Shopware\Components\Model\ModelManager;
+use Enlight\Event\SubscriberInterface;
+use Enlight_Components_Session_Namespace as Session;
+use Shopware\Components\DependencyInjection\Container;
+use Shopware\Models\Customer\Customer;
+use Shopware\Plugins\SwagVatIdValidation\Components\ValidationService;
 
 /**
  * Class Login
  *
  * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
-class Login extends ValidationPoint
+class Login implements SubscriberInterface
 {
     /** @var  string */
     private static $action;
 
-    /** @var \Enlight_Components_Session_Namespace */
-    private $session;
+    /** @var Container $container */
+    private $container;
 
     /**
-     * Constructor sets all properties
-     *
      * @param string $action
-     * @param \Enlight_Config $config
-     * @param \Shopware_Components_Snippet_Manager $snippetManager
-     * @param \Enlight_Components_Session_Namespace $session
-     * @param ModelManager $modelManager
-     * @param \Shopware_Components_TemplateMail $templateMail
+     * @param Container $container
      */
-    public function __construct(
-        $action,
-        \Enlight_Config $config,
-        \Shopware_Components_Snippet_Manager $snippetManager,
-        \Enlight_Components_Session_Namespace $session,
-        ModelManager $modelManager = null,
-        \Shopware_Components_TemplateMail $templateMail = null
-    ) {
-        parent::__construct($config, $snippetManager, $modelManager, $templateMail);
-        $this->session = $session;
+    public function __construct($action, Container $container)
+    {
         self::$action = $action;
+        $this->container = $container;
     }
 
     /**
@@ -71,12 +63,12 @@ class Login extends ValidationPoint
     {
         //After successfully registration, this would be a second validation. The first on save, the second on login.
         if (self::$action === 'saveRegister') {
-            return array();
+            return [];
         }
 
-        return array(
+        return [
             'Shopware_Modules_Admin_Login_Successful' => 'onLoginSuccessful'
-        );
+        ];
     }
 
     /**
@@ -84,50 +76,35 @@ class Login extends ValidationPoint
      */
     public function onLoginSuccessful(\Enlight_Event_EventArgs $arguments)
     {
-        $user = $arguments->getUser();
+        $user = $arguments->get('user');
 
-        $billing = $this->getBillingRepository()->createQueryBuilder('billing')
-            ->select(
-                'billing.id',
-                'billing.vatId',
-                'billing.company',
-                'billing.street',
-                'billing.zipCode',
-                'billing.city',
-                'billing.countryId'
-            )
-            ->where('billing.customerId = :customerId')
-            ->setParameter('customerId', $user['id'])
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
+        /** @var Customer $customer */
+        $customer = $this->container->get('models')->getRepository(Customer::class)->find($user['id']);
 
-        if (!$billing) {
+        $billingAddress = $customer->getDefaultBillingAddress();
+
+        if (!$billingAddress) {
             return;
         }
 
-        /**
-         * If the VAT ID is required, but empty, set the requirement error
-         */
-        $required = $this->isVatIdRequired('business', $billing['company'], $billing['countryId']);
+        /** @var ValidationService $validationService */
+        $validationService = $this->container->get('vat_id.validation_service');
 
-        if (($required) && (!trim($billing['vatId']))) {
-            $result = $this->getRequirementErrorResult();
-            $this->session->offsetSet('vatIdValidationStatus', $result->serialize());
-
-            return;
-        }
-
-        $result = $this->validate(
-            $billing['vatId'],
-            $billing['company'],
-            $billing['street'],
-            $billing['zipCode'],
-            $billing['city'],
-            $this->getCountryIso($billing['countryId']),
-            $billing['id']
+        /** If the VAT ID is required, but empty, set the requirement error */
+        $required = $validationService->isVatIdRequired(
+            $billingAddress->getCompany(),
+            $billingAddress->getCountry()->getId()
         );
 
-        $this->session->offsetSet('vatIdValidationStatus', $result->serialize());
+        if ($required && (!trim($billingAddress->getVatId()))) {
+            $result = $validationService->getRequirementErrorResult();
+            $this->container->get('session')->offsetSet('vatIdValidationStatus', $result->serialize());
+
+            return;
+        }
+
+        $result = $validationService->validateVatId($billingAddress);
+
+        $this->container->get('session')->offsetSet('vatIdValidationStatus', $result->serialize());
     }
 }
