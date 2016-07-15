@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -84,7 +85,7 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
             return $this->result;
         } catch (\SoapFault $error) {
             $errorMessage = strtoupper($error->faultstring);
-            if (in_array($errorMessage, array('SERVICE_UNAVAILABLE', 'MS_UNAVAILABLE', 'TIMEOUT', 'SERVER_BUSY'))) {
+            if (in_array($errorMessage, ['SERVICE_UNAVAILABLE', 'MS_UNAVAILABLE', 'TIMEOUT', 'SERVER_BUSY'])) {
                 $this->result->setServiceUnavailable();
                 return $this->result;
             }

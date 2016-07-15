@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -102,8 +103,8 @@ class VatIdValidatorResult implements \Serializable
     private function init($namespace)
     {
         $this->status = $this::VALID;
-        $this->errors = array();
-        $this->flags = array();
+        $this->errors = [];
+        $this->flags = [];
 
         if (!$this->snippetManager) {
             return;
@@ -277,10 +278,10 @@ class VatIdValidatorResult implements \Serializable
      */
     public function serialize()
     {
-        $serializeArray = array(
+        $serializeArray = [
             'namespace' => $this->namespace,
             'keys' => array_keys($this->errors)
-        );
+        ];
 
         return serialize($serializeArray);
     }

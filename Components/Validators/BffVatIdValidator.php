@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -71,12 +72,16 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
         $apiRequest = 'http://evatr.bff-online.de/evatrRPC?';
         $apiRequest .= http_build_query($data, '', '&');
 
-        $context = stream_context_create(array('http' => array(
+        $context = stream_context_create(
+            [
+                'http' => [
                 'method' => 'GET',
                 'header' => 'Content-Type: text/html; charset=utf-8',
                 'timeout' => 5,
                 'user_agent' => 'Shopware'
-            )));
+                ]
+            ]
+        );
         $response = @file_get_contents($apiRequest, false, $context);
 
         $reg = '#<param>\s*<value><array><data>\s*<value><string>([^<]*)</string></value>\s*<value><string>([^<]*)</string></value>\s*</data></array></value>\s*</param>#msi';

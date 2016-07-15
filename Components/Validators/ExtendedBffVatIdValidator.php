@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -49,7 +50,7 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
-        return array(
+        return [
             'UstId_1' => $shopInformation->getVatId(),
             'UstId_2' => $customerInformation->getVatId(),
             'Firmenname' => $customerInformation->getCompany(),
@@ -57,7 +58,7 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
             'PLZ' => $customerInformation->getZipCode(),
             'Strasse' => $customerInformation->getStreet(),
             'Druck' => ($this->confirmation) ? 'ja' : 'nein'
-        );
+        ];
     }
 
     /**
@@ -69,12 +70,12 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
      */
     protected function addExtendedResults($response)
     {
-        $extendedResults = array(
+        $extendedResults = [
             'company' => $response['Erg_Name'],
             'street' => $response['Erg_Str'],
             'zipCode' => $response['Erg_PLZ'],
             'city' => $response['Erg_Ort']
-        );
+        ];
 
         $extendedResults = array_keys($extendedResults, 'B', true);
 
