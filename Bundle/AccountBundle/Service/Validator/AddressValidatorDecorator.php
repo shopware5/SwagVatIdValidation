@@ -84,12 +84,9 @@ class AddressValidatorDecorator implements AddressValidatorInterface
         $additional = $address->getAdditional();
         $customerType = !empty($additional['customer_type']) ? $additional['customer_type'] : null;
 
-        if ($customerType === Customer::CUSTOMER_TYPE_BUSINESS) {
-            if ($this->config->get('vatcheckrequired')) {
-                $this->addVatIdValidation($address, $validationContext);
-            }
+        if ($customerType === Customer::CUSTOMER_TYPE_BUSINESS && $this->config->get('vatcheckrequired')) {
+            $this->addVatIdValidation($address, $validationContext);
         }
-
 
         if ($validationContext->getViolations()->count()) {
             throw new ValidationException($validationContext->getViolations());
