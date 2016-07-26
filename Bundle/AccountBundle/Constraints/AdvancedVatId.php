@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -23,25 +22,10 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
+namespace Shopware\Plugins\SwagVatIdValidation\Bundle\AccountBundle\Constraints;
 
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
+use Symfony\Component\Validator\Constraint;
 
-/**
- * Interface that define the minimum of methods a shopware VAT ID Validator must contain
- *
- * Interface VatIdValidatorInterface
- * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
- */
-interface VatIdValidatorInterface
+class AdvancedVatId extends Constraint
 {
-    /**
-     * Validates the VatId, has to return a VatIdValidatorResult
-     * @param \Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation $shopInformation
-     * @return VatIdValidatorResult
-     */
-    public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
 }

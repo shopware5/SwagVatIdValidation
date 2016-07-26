@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -45,7 +46,7 @@ class VatIdInformation
      */
     public function __construct($vatId)
     {
-        $this->vatId = str_replace(array(' ', '.', '-', ',', ', '), '', trim($vatId));
+        $this->vatId = str_replace([' ', '.', '-', ',', ', '], '', trim($vatId));
         $this->countryCode = substr($this->vatId, 0, 2);
         $this->vatNumber = substr($this->vatId, 2);
     }

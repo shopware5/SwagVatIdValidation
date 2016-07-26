@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -24,13 +25,35 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
+use ArrayObject;
+use Enlight\Event\SubscriberInterface;
+use Enlight_Controller_ActionEventArgs as ActionEventArgs;
+use Enlight_Controller_Request_RequestHttp as Request;
+use Enlight_Controller_Response_ResponseHttp as Response;
+use Shopware\Components\DependencyInjection\Container;
+use Shopware\Plugins\SwagVatIdValidation\Components\ValidationService;
+use Shopware_Controllers_Frontend_Checkout as CheckoutController;
+
 /**
  * Class CheckoutFinish
  *
  * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
-class CheckoutFinish extends ValidationPoint
+class CheckoutFinish implements SubscriberInterface
 {
+    /**
+     * @var Container $container
+     */
+    private $container;
+
+    /**
+     * @param Container $container
+     */
+    public function __construct(Container $container)
+    {
+        $this->container = $container;
+    }
+
     /**
      * Returns the events we need to subscribe to
      *
@@ -38,26 +61,26 @@ class CheckoutFinish extends ValidationPoint
      */
     public static function getSubscribedEvents()
     {
-        return array(
-            'Enlight_Controller_Action_PreDispatch_Frontend_Checkout' => 'onPreDispatchFrontend',
-            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onPostDispatchFrontend',
-        );
+        return [
+            'Enlight_Controller_Action_PreDispatch_Frontend_Checkout' => 'onPreDispatchCheckout',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onPostDispatchCheckout',
+        ];
     }
 
     /**
      * Listener to check on checkout finish, whether the VAT ID is stated when required
      *
-     * @param \Enlight_Event_EventArgs $arguments
+     * @param ActionEventArgs $arguments
      */
-    public function onPreDispatchFrontend(\Enlight_Event_EventArgs $arguments)
+    public function onPreDispatchCheckout(ActionEventArgs $arguments)
     {
-        /**@var \Enlight_Controller_Action $subject */
+        /**@var CheckoutController $subject */
         $subject = $arguments->getSubject();
 
-        /** @var \Enlight_Controller_Request_RequestHttp $request */
+        /** @var Request $request */
         $request = $subject->Request();
 
-        /** @var \Enlight_Controller_Response_ResponseHttp $response */
+        /** @var Response $response */
         $response = $subject->Response();
 
         if (!$request->isDispatched()
@@ -68,36 +91,45 @@ class CheckoutFinish extends ValidationPoint
             return;
         }
 
-        $orderDetails = Shopware()->Session()->get('sOrderVariables')->getArrayCopy();
+        /** @var ArrayObject $orderDetails */
+        $orderDetails = $this->container->get('session')->get('sOrderVariables');
+        $orderDetails = $orderDetails->getArrayCopy();
         $billing = $orderDetails['sUserData']['billingaddress'];
 
-        $required = $this->isVatIdRequired('business', $billing['company'], $billing['countryID']);
+        /** @var ValidationService $validationService */
+        $validationService = $this->container->get('vat_id.validation_service');
 
-        if (($required) && (!$billing['ustid'])) {
-            return $subject->forward('confirm', 'checkout', null, array('vatIdRequiredButEmpty' => true));
+        $required = $validationService->isVatIdRequired($billing['company'], $billing['country']['id']);
+
+        if ($required && !$billing['vatId']) {
+            $subject->forward('confirm', 'checkout', null, ['vatIdRequiredButEmpty' => true]);
+            return;
         }
     }
 
     /**
      * Listener to show the requirement error message
      *
-     * @param \Enlight_Event_EventArgs $arguments
+     * @param ActionEventArgs $arguments
      */
-    public function onPostDispatchFrontend(\Enlight_Event_EventArgs $arguments)
+    public function onPostDispatchCheckout(ActionEventArgs $arguments)
     {
-        /**@var \Enlight_Controller_Action $subject */
+        /**@var CheckoutController $subject */
         $subject = $arguments->getSubject();
 
-        /** @var \Enlight_Controller_Request_RequestHttp $request */
+        /** @var Request $request */
         $request = $subject->Request();
 
         if ($request->getActionName() != 'confirm') {
             return;
         }
 
+        /** @var ValidationService $validationService */
+        $validationService = $this->container->get('vat_id.validation_service');
+
         if ($request->getParam('vatIdRequiredButEmpty')) {
-            $result = $this->getRequirementErrorResult();
-            $subject->View()->sBasketInfo = current($result->getErrorMessages());
+            $result = $validationService->getRequirementErrorResult();
+            $subject->View()->assign('sBasketInfo', current($result->getErrorMessages()));
         }
     }
 }

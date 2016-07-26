@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -46,7 +47,7 @@ class SimpleBffVatIdValidator extends BffVatIdValidator
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
-        return array(
+        return [
             'UstId_1' => $shopInformation->getVatId(),
             'UstId_2' => $customerInformation->getVatId(),
             'Firmenname' => '',
@@ -54,7 +55,7 @@ class SimpleBffVatIdValidator extends BffVatIdValidator
             'PLZ' => '',
             'Strasse' => '',
             'Druck' => ''
-        );
+        ];
     }
 
     /**

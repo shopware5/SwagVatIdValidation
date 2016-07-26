@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -26,7 +27,6 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 /**
  * Extended Mias Validator:
@@ -49,7 +49,7 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
-        return array(
+        return [
             'countryCode' => $customerInformation->getCountryCode(),
             'vatNumber' => $customerInformation->getVatNumber(),
             'traderName' => $customerInformation->getCompany(),
@@ -58,7 +58,7 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
             'traderCity' => $customerInformation->getCity(),
             'requesterCountryCode' => $shopInformation->getCountryCode(),
             'requesterVatNumber' => $shopInformation->getVatNumber(),
-        );
+        ];
     }
 
     /**
@@ -74,18 +74,18 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
             return;
         }
 
-        $extendedData = array();
+        $extendedData = [];
 
-        $extendedData['company'] = array($response->traderName, $customerInformation->getCompany());
+        $extendedData['company'] = [$response->traderName, $customerInformation->getCompany()];
 
         $address = explode("\n", $response->traderAddress);
-        $extendedData['street'] = array($address[0], $customerInformation->getStreet());
+        $extendedData['street'] = [$address[0], $customerInformation->getStreet()];
 
         $address = trim($address[1]);
         $address = explode(' ', $address, 2);
 
-        $extendedData['zipCode'] = array($address[0], $customerInformation->getZipCode());
-        $extendedData['city'] = array($address[1], $customerInformation->getCity());
+        $extendedData['zipCode'] = [$address[0], $customerInformation->getZipCode()];
+        $extendedData['city'] = [$address[1], $customerInformation->getCity()];
 
         foreach ($extendedData as &$data) {
             $string1 = trim($data[0]);

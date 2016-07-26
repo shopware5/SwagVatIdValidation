@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -23,6 +24,8 @@
  */
 
 namespace Shopware\Plugins\SwagVatIdValidation\Components;
+
+use Shopware\Models\Customer\Address;
 
 /**
  * Class VatIdCustomerInformation
@@ -47,21 +50,18 @@ class VatIdCustomerInformation extends VatIdInformation
 
     /**
      * Constructor sets all properties
-     * @param string $vatId
-     * @param string $company
-     * @param string $street
-     * @param string $zipCode
-     * @param string $city
+     *
+     * @param Address $billingAddress
      */
-    public function __construct($vatId, $company, $street, $zipCode, $city, $billingCountryIso)
+    public function __construct(Address $billingAddress)
     {
-        parent::__construct($vatId);
+        parent::__construct($billingAddress->getVatId());
 
-        $this->company = $company;
-        $this->street = $street;
-        $this->zipCode = $zipCode;
-        $this->city = $city;
-        $this->billingCountryIso = $billingCountryIso;
+        $this->company = $billingAddress->getCompany();
+        $this->street = $billingAddress->getStreet();
+        $this->zipCode = $billingAddress->getZipcode();
+        $this->city = $billingAddress->getCity();
+        $this->billingCountryIso = $billingAddress->getCountry()->getIso();
     }
 
     /**

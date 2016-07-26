@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Shopware 4.0
- * Copyright © 2012 shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -26,46 +26,28 @@
  * @package    Shopware_Controllers_Frontend_SwagBrowserLanguage
  * @copyright  Copyright (c) 2013, shopware AG (http://www.shopware.de)
  */
+
 use Doctrine\DBAL\Connection;
 
-class Shopware_Controllers_Frontend_SwagVatIdValidation extends Enlight_Controller_Action
+class Shopware_Controllers_Widgets_SwagVatIdValidation extends Enlight_Controller_Action
 {
-    /**
-     * @var  Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap
-     */
-    private $config;
-
-    /**
-     * @var \Doctrine\DBAL\Connection
-     */
-    private $connection;
-
-    /**
-     * The pre-dispatch function of this controller
-     */
-    public function preDispatch()
-    {
-        $this->config = $this->get('plugins')->Core()->SwagVatIdValidation()->Config();
-        $this->connection = Shopware()->Models()->getConnection();
-    }
-
     /**
      * This action displays the content of the modal box
      */
-    public function getModalAction()
+    public function modalInfoContentAction()
     {
-        $this->loadTemplate();
+        /** @var Enlight_Config|string $ISOs */
+        $ISOs = $this->get('plugins')->Core()->SwagVatIdValidation()->Config()->get('disabledCountryISOs');
 
-        $ISOs = $this->config->get('disabledCountryISOs');
-
-        if(is_string($ISOs)) {
+        if (is_string($ISOs)) {
             $ISOs = explode(',', $ISOs);
             $ISOs = array_map('trim', $ISOs);
         } else {
             $ISOs = $ISOs->toArray();
         }
 
-        $builder = $this->connection->createQueryBuilder();
+        /** @var \Doctrine\DBAL\Query\QueryBuilder $builder */
+        $builder = $this->get('dbal_connection')->createQueryBuilder();
 
         $countryNameArray = $builder->select('countries.countryname')
             ->from('s_core_countries', 'countries')
@@ -76,15 +58,5 @@ class Shopware_Controllers_Frontend_SwagVatIdValidation extends Enlight_Controll
 
         $countries = array_column($countryNameArray, 'countryname');
         $this->View()->assign('disabledCountries', $countries);
-    }
-
-    private function loadTemplate()
-    {
-        $version = Shopware()->Shop()->getTemplate()->getVersion();
-        if ($version >= 3) {
-            $this->View()->loadTemplate('responsive/swag_vat_id_validation/modal_info_content.tpl');
-        } else {
-            $this->View()->loadTemplate('emotion/frontend/plugins/swag_vat_id_validation/modal_info_content.tpl');
-        }
     }
 }

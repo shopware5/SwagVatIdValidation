@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -22,64 +23,60 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
+namespace Shopware\Plugins\SwagVatIdValidation\Components;
 
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Country\Country;
+use Shopware\Models\Customer\Address;
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\VatIdValidatorInterface;
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\DummyVatIdValidator;
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleBffVatIdValidator;
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedBffVatIdValidator;
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleMiasVatIdValidator;
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedMiasVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\APIValidationType;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\EUStates;
-use Enlight\Event\SubscriberInterface;
-use Shopware\Models\Customer\Billing;
+use Shopware_Components_Config as ShopwareConfig;
+use Shopware_Components_Snippet_Manager as SnippetManager;
+use Shopware_Components_TemplateMail as TemplateMail;
 
 /**
- * Class ValidationPoint
- *
  * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
-abstract class ValidationPoint implements SubscriberInterface
+class ValidationService
 {
-    /** @var  \Enlight_Config */
+    /** @var ShopwareConfig $config */
     protected $config;
 
-    /** @var  \Shopware_Components_Snippet_Manager */
+    /** @var SnippetManager $snippetManager */
     private $snippetManager;
 
-    /** @var  ModelManager */
+    /** @var ModelManager */
     private $modelManager;
 
-    /** @var  \Shopware_Components_TemplateMail */
+    /** @var TemplateMail $templateMail */
     private $templateMail;
 
-    /** @var  \Shopware\Models\Customer\BillingRepository */
+    /** @var \Shopware\Models\Customer\BillingRepository $billingRepository */
     private $billingRepository;
 
-    /** @var  \Shopware\Models\Country\Repository */
+    /** @var \Shopware\Models\Country\Repository $countryRepository */
     private $countryRepository;
 
-    /** @var  string */
+    /** @var string */
     private $countryIso;
 
     /**
      * Constructor sets all properties
      *
-     * @param \Enlight_Config $config
-     * @param \Shopware_Components_Snippet_Manager $snippetManager
+     * @param ShopwareConfig $config
+     * @param SnippetManager $snippetManager
      * @param ModelManager $modelManager
-     * @param \Shopware_Components_TemplateMail $templateMail
+     * @param TemplateMail $templateMail
      */
     public function __construct(
-        \Enlight_Config $config,
-        \Shopware_Components_Snippet_Manager $snippetManager,
-        ModelManager $modelManager = null,
-        \Shopware_Components_TemplateMail $templateMail = null
+        ShopwareConfig $config,
+        SnippetManager $snippetManager,
+        ModelManager $modelManager,
+        TemplateMail $templateMail
     ) {
         $this->config = $config;
         $this->snippetManager = $snippetManager;
@@ -91,70 +88,26 @@ abstract class ValidationPoint implements SubscriberInterface
     }
 
     /**
-     * Helper function to get the BillingRepository
-     *
-     * @return \Shopware\Models\Customer\BillingRepository
-     */
-    protected function getBillingRepository()
-    {
-        if (!$this->billingRepository) {
-            $this->billingRepository = $this->modelManager->getRepository('\Shopware\Models\Customer\Billing');
-        }
-
-        return $this->billingRepository;
-    }
-
-    /**
-     * Helper function to get the CountryRepository
-     *
-     * @return \Shopware\Models\Country\Repository
-     */
-    protected function getCountryRepository()
-    {
-        if (!$this->countryRepository) {
-            $this->countryRepository = $this->modelManager->getRepository('\Shopware\Models\Country\Country');
-        }
-
-        return $this->countryRepository;
-    }
-
-    /**
-     * Helper function to get the country iso of the given billing address
-     *
-     * @param integer $countryId
-     * @return string
-     */
-    protected function getCountryIso($countryId)
-    {
-        if (!$this->countryIso) {
-            $this->countryIso = $this->getCountryRepository()->findOneById($countryId)->getIso();
-        }
-
-        return $this->countryIso;
-    }
-
-    /**
      * Helper method returns true if the VAT ID is required
      *
-     * @param string $customerType
      * @param string $company
      * @param integer $countryId
      * @return bool
      */
-    protected function isVatIdRequired($customerType, $company, $countryId)
+    public function isVatIdRequired($company, $countryId)
     {
         /**
          * There is no VAT Id required, if...
          * ... the Vat Id is not required in the config,
          */
-        if (!$this->config->get('vatIdRequired')) {
+        if (!$this->config->get('vatcheckrequired')) {
             return false;
         }
 
         /**
          * ... the customer is not a company,
          */
-        if ($this->customerIsNoCompany($customerType, $company)) {
+        if (!$company) {
             return false;
         }
 
@@ -175,8 +128,6 @@ abstract class ValidationPoint implements SubscriberInterface
         if (is_string($disabledCountries)) {
             $disabledCountries = explode(',', $disabledCountries);
             $disabledCountries = array_map('trim', $disabledCountries);
-        } else {
-            $disabledCountries = $disabledCountries->toArray();
         }
 
         if (in_array($countryISO, $disabledCountries)) {
@@ -187,44 +138,14 @@ abstract class ValidationPoint implements SubscriberInterface
     }
 
     /**
-     * Helper method, returns true if customer type is not "business" or the company is not set
-     *
-     * @param string $customerType
-     * @param string $company
-     * @return bool
-     */
-    protected function customerIsNoCompany($customerType, $company)
-    {
-        return (($customerType !== 'business') || (!$company));
-    }
-
-    /**
-     * Helper method to get a valid result if the VAT ID is required but empty
-     *
-     * @return VatIdValidatorResult
-     */
-    protected function getRequirementErrorResult()
-    {
-        $result = new VatIdValidatorResult($this->snippetManager, 'main');
-        $result->setVatIdRequired();
-
-        return $result;
-    }
-
-    /**
      * Helper function for the whole validation process
      * If billing Id is set, the matching customer billing address will be removed if validation result is invalid
      *
-     * @param string $vatId
-     * @param string $company
-     * @param string $street
-     * @param string $zipCode
-     * @param string $city
-     * @param string $countryIso
-     * @param integer|null $billingId
+     * @param Address $billingAddress
+     * @param boolean $deleteVatIdFromAddress
      * @return VatIdValidatorResult
      */
-    public function validate($vatId, $company, $street, $zipCode, $city, $countryIso, $billingId = null)
+    public function validateVatId(Address $billingAddress, $deleteVatIdFromAddress = true)
     {
         /**
          * Step 1: Dummy validation
@@ -235,7 +156,7 @@ abstract class ValidationPoint implements SubscriberInterface
          * - VAT Number includes non-alphanumerical chars
          * - VAT Number only has alphabetical chars
          */
-        $customerInformation = new VatIdCustomerInformation($vatId, $company, $street, $zipCode, $city, $countryIso);
+        $customerInformation = new VatIdCustomerInformation($billingAddress);
         $result = $this->validateWithDummyValidator($customerInformation);
 
         /**
@@ -244,7 +165,7 @@ abstract class ValidationPoint implements SubscriberInterface
          */
         if (!$result->isValid()) {
             $this->sendShopOwnerEmail($customerInformation, $result);
-            $this->removeVatIdFromBilling($billingId, $result);
+            $this->removeVatIdFromBilling($billingAddress->getId(), $result, $deleteVatIdFromAddress);
 
             return $result;
         }
@@ -309,13 +230,71 @@ abstract class ValidationPoint implements SubscriberInterface
             /**
              * ... otherwise also the VAT Id has to be removed from the billing address.
              */
-            $this->removeVatIdFromBilling($billingId, $result);
+            $this->removeVatIdFromBilling($billingAddress->getId(), $result, $deleteVatIdFromAddress);
         }
 
         /**
          * The returned result includes a status code, the error messages and error flags
          */
         return $result;
+    }
+
+    /**
+     * Helper method to get a valid result if the VAT ID is required but empty
+     *
+     * @return VatIdValidatorResult
+     */
+    public function getRequirementErrorResult()
+    {
+        $result = new VatIdValidatorResult($this->snippetManager, 'main');
+        $result->setVatIdRequired();
+
+        return $result;
+    }
+
+    /**
+     * Helper function to get the address repository
+     *
+     * @return \Shopware\Models\Customer\AddressRepository
+     */
+    private function getAddressRepository()
+    {
+        if (!$this->billingRepository) {
+            $this->billingRepository = $this->modelManager->getRepository(Address::class);
+        }
+
+        return $this->billingRepository;
+    }
+
+    /**
+     * Helper function to get the CountryRepository
+     *
+     * @return \Shopware\Models\Country\Repository
+     */
+    private function getCountryRepository()
+    {
+        if (!$this->countryRepository) {
+            $this->countryRepository = $this->modelManager->getRepository(Country::class);
+        }
+
+        return $this->countryRepository;
+    }
+
+    /**
+     * Helper function to get the country iso of the given billing address
+     *
+     * @param integer $countryId
+     * @return string
+     */
+    private function getCountryIso($countryId)
+    {
+        if (!$this->countryIso) {
+            /** @var Country $country */
+            $country = $this->getCountryRepository()->find($countryId);
+            $this->countryIso = $country->getIso();
+        }
+
+        return $this->countryIso;
     }
 
     /**
@@ -408,23 +387,24 @@ abstract class ValidationPoint implements SubscriberInterface
     /**
      * Helper function to remove the VAT Id from the customer billing address
      *
-     * @param integer $billingId
+     * @param integer $billingAddressId
      * @param VatIdValidatorResult $result
+     * @param boolean $deleteVatIdFromAddress
      */
-    private function removeVatIdFromBilling($billingId, VatIdValidatorResult $result)
+    private function removeVatIdFromBilling($billingAddressId, VatIdValidatorResult $result, $deleteVatIdFromAddress)
     {
-        if (empty($billingId)) {
+        if (!$deleteVatIdFromAddress || empty($billingAddressId)) {
             return;
         }
 
-        /** @var Billing $billing */
-        $billing = $this->getBillingRepository()->findOneById($billingId);
-        $billing->setVatId('');
+        /** @var Address $billingAddress */
+        $billingAddress = $this->getAddressRepository()->find($billingAddressId);
+        $billingAddress->setVatId('');
 
-        $this->modelManager->persist($billing);
-        $this->modelManager->flush();
+        $this->modelManager->persist($billingAddress);
+        $this->modelManager->flush($billingAddress);
 
-        if ($this->isVatIdRequired('business', $billing->getCompany(), $billing->getCountryId())) {
+        if ($this->isVatIdRequired($billingAddress->getCompany(), $billingAddress->getCountry()->getId())) {
             $result->setVatIdRequired();
         }
     }
@@ -449,18 +429,22 @@ abstract class ValidationPoint implements SubscriberInterface
             $error = implode("\n", $result->getErrorMessages());
         }
 
-        $context = array(
+        $context = [
             'sVatId' => $customerInformation->getVatId(),
             'sCompany' => $customerInformation->getCompany(),
             'sStreet' => $customerInformation->getStreet(),
             'sZipCode' => $customerInformation->getZipCode(),
             'sCity' => $customerInformation->getCity(),
             'sError' => $error
-        );
+        ];
 
-        $mail = $this->templateMail->createMail('sSWAGVATIDVALIDATION_VALIDATIONERROR', $context);
-        $mail->addTo($email);
-        $mail->send();
+        try {
+            $mail = $this->templateMail->createMail('sSWAGVATIDVALIDATION_VALIDATIONERROR', $context);
+            $mail->addTo($email);
+            $mail->send();
+        } catch (\Exception $e) {
+            Shopware()->Container()->get('pluginlogger')->log(\Monolog\Logger::ERROR, $e->getMessage());
+        }
     }
 
     /**
@@ -475,7 +459,7 @@ abstract class ValidationPoint implements SubscriberInterface
         if (is_string($emailNotification)) {
             $emailAddress = $emailNotification;
         } elseif ($emailNotification) {
-            $emailAddress = Shopware()->Config()->get('sMAIL');
+            $emailAddress = $this->config->get('sMAIL');
         } else {
             return false;
         }

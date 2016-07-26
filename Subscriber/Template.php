@@ -1,7 +1,8 @@
 <?php
+
 /**
- * Shopware 4
- * Copyright © shopware AG
+ * Shopware 5
+ * Copyright (c) shopware AG
  *
  * According to our dual licensing model, this program can be used either
  * under the terms of the GNU Affero General Public License, version 3,
@@ -21,11 +22,13 @@
  * trademark license. Therefore any rights, title and interest in
  * our trademarks remain entirely with us.
  */
-
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
-use Shopware\Models\Shop\Shop;
+use Enlight_Controller_Action;
+use Enlight_Controller_ActionEventArgs as ActionEventArgs;
+use Enlight_Controller_Request_RequestHttp as Request;
+use Shopware\Components\DependencyInjection\Container;
 use Shopware\Plugins\SwagVatIdValidation\Components\EUStates;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
@@ -34,44 +37,24 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
  *
  * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
  */
-class TemplateExtension implements SubscriberInterface
+class Template implements SubscriberInterface
 {
-    /** @var  \Enlight_Config */
-    private $config;
+    /**
+     * @var Container $container
+     */
+    private $container;
 
-    /** @var  string */
+    /** @var string $path */
     private $path;
 
-    /** @var  \Enlight_Components_Session_Namespace */
-    private $session;
-
-    /** @var  \Shopware_Components_Snippet_Manager */
-    private $snippetManager;
-
-    /** @var  Shop */
-    private $shop;
-
     /**
-     * Constructor sets all properties
-     *
-     * @param \Enlight_Config $config
+     * @param Container $container
      * @param string $path
-     * @param \Enlight_Components_Session_Namespace $session
-     * @param \Shopware_Components_Snippet_Manager $snippetManager
-     * @param Shop $shop
      */
-    public function __construct(
-        \Enlight_Config $config,
-        $path,
-        \Enlight_Components_Session_Namespace $session,
-        \Shopware_Components_Snippet_Manager $snippetManager,
-        Shop $shop
-    ) {
-        $this->config = $config;
+    public function __construct(Container $container, $path)
+    {
+        $this->container = $container;
         $this->path = $path;
-        $this->session = $session;
-        $this->snippetManager = $snippetManager;
-        $this->shop = $shop;
     }
 
     /**
@@ -81,11 +64,11 @@ class TemplateExtension implements SubscriberInterface
      */
     public static function getSubscribedEvents()
     {
-        return array(
+        return [
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Account' => 'onPostDispatchFrontendAccount',
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onPostDispatchFrontendCheckout',
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Register' => 'onPostDispatchFrontendRegister'
-        );
+        ];
     }
 
     /**
@@ -93,65 +76,67 @@ class TemplateExtension implements SubscriberInterface
      * On Account Index, a short info message will be shown if the validator was not available
      * On Account Billing, the Vat Id input field can be set required
      *
-     * @param \Enlight_Event_EventArgs $arguments
+     * @param ActionEventArgs $arguments
      */
-    public function onPostDispatchFrontendAccount(\Enlight_Event_EventArgs $arguments)
+    public function onPostDispatchFrontendAccount(ActionEventArgs $arguments)
     {
-        $this->postDispatchFrontendController($arguments->getSubject(), array('index', 'billing'));
+        $this->postDispatchFrontendController($arguments->getSubject(), ['index', 'billing']);
     }
 
     /**
      * Listener to FrontendCheckout (confirm),
      * Shows a short info message if the validator was not available
      *
-     * @param \Enlight_Event_EventArgs $arguments
+     * @param ActionEventArgs $arguments
      */
-    public function onPostDispatchFrontendCheckout(\Enlight_Event_EventArgs $arguments)
+    public function onPostDispatchFrontendCheckout(ActionEventArgs $arguments)
     {
-        $this->postDispatchFrontendController($arguments->getSubject(), array('confirm'));
+        $this->postDispatchFrontendController($arguments->getSubject(), ['confirm']);
     }
 
     /**
      * Listener to FrontendRegister (index)
      * The Vat Id input field can be set required
      *
-     * @param \Enlight_Event_EventArgs $arguments
+     * @param ActionEventArgs $arguments
      */
-    public function onPostDispatchFrontendRegister(\Enlight_Event_EventArgs $arguments)
+    public function onPostDispatchFrontendRegister(ActionEventArgs $arguments)
     {
-        $this->postDispatchFrontendController($arguments->getSubject(), array('index'));
+        $this->postDispatchFrontendController($arguments->getSubject(), ['index']);
     }
 
     /**
      * Helper function to assign the plugin data to the template
      *
-     * @param \Enlight_Controller_Action $controller
-     * @param array $actions
+     * @param Enlight_Controller_Action $controller
+     * @param string[] $actions
      */
-    public function postDispatchFrontendController(\Enlight_Controller_Action $controller, $actions)
+    public function postDispatchFrontendController(Enlight_Controller_Action $controller, array $actions)
     {
-        /** @var $request \Zend_Controller_Request_Http */
+        /** @var Request $request */
         $request = $controller->Request();
 
-        /** @var $view \Enlight_View_Default */
-        $view = $controller->View();
-
-        //Check if there is a template and if an exception has occurred
         if (!in_array($request->getActionName(), $actions)) {
             return;
         }
 
-        $this->extendsTemplate($view, 'frontend/plugins/swag_vat_id_validation/index.tpl');
+        /** @var \Enlight_Components_Session_Namespace $session */
+        $session = $this->container->get('session');
 
-        $errorMessages = array();
+        /** @var $view \Enlight_View_Default */
+        $view = $controller->View();
+
+        $view->addTemplateDir($this->path . 'Views/');
+
+        $errorMessages = [];
         $requiredButEmpty = false;
 
-        if ($this->session->offsetExists('vatIdValidationStatus')) {
-            $serialized = $this->session->offsetGet('vatIdValidationStatus');
+        if ($session->offsetExists('vatIdValidationStatus')) {
+            $serialized = $session->get('vatIdValidationStatus');
 
-            $result = new VatIdValidatorResult($this->snippetManager);
+            $result = new VatIdValidatorResult($this->container->get('snippets'));
             $result->unserialize($serialized);
-            $this->session->offsetUnset('vatIdValidationStatus');
+            $session->offsetUnset('vatIdValidationStatus');
 
             $errorMessages = $result->getErrorMessages();
         }
@@ -161,52 +146,36 @@ class TemplateExtension implements SubscriberInterface
             unset($errorMessages['required']);
         }
 
-        $required = (bool) $this->config->get('vatIdRequired');
+        $required = (bool) $this->container->get('config')->get('vatcheckrequired');
         $displayMessage = ($required) ? $this->hasExceptedEUCountries() : false;
 
         $view->assign(
-            array(
+            [
                 'displayMessage' => $displayMessage,
-                'vatIdCheck' => array(
+                'vatIdCheck' => [
                     'errorMessages' => array_values($errorMessages),
                     'required' => $required,
                     'requiredButEmpty' => $requiredButEmpty
-                )
-            )
+                ]
+            ]
         );
     }
 
     /**
      * Returns true, if there are valid EU countries excepted from the input requirement
+     *
      * @return bool
      */
     private function hasExceptedEUCountries()
     {
-        $ISOs = $this->config->get('disabledCountryISOs');
+        /** @var array|string $ISOs */
+        $ISOs = $this->container->get('config')->get('disabledCountryISOs');
 
         if (is_string($ISOs)) {
             $ISOs = explode(',', $ISOs);
             $ISOs = array_map('trim', $ISOs);
-        } else {
-            $ISOs = $ISOs->toArray();
         }
 
         return EUStates::hasValidEUCountry($ISOs);
-    }
-
-    /**
-     * @param \Enlight_View_Default $view
-     * @param string $templatePath
-     */
-    private function extendsTemplate(\Enlight_View_Default $view, $templatePath)
-    {
-        $version = $this->shop->getTemplate()->getVersion();
-        if ($version >= 3) {
-            $view->sErrorMessages = array_values($view->sErrorMessages);
-            $view->addTemplateDir($this->path . 'Views/responsive/');
-        } else {
-            $view->addTemplateDir($this->path . 'Views/emotion/');
-            $view->extendsTemplate($templatePath);
-        }
     }
 }
