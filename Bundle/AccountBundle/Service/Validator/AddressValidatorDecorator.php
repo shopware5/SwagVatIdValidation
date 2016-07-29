@@ -110,7 +110,10 @@ class AddressValidatorDecorator implements AddressValidatorInterface
         $company = $address->getCompany();
         $countryId = $address->getCountry()->getId();
         if ($this->validationService->isVatIdRequired($company, $countryId)) {
-            $validationContext->atPath('vatId')->validate($address->getVatId(), [new AdvancedVatId()]);
+            $validationContext->atPath('vatId')->validate(
+                $address->getVatId(),
+                [new AdvancedVatId(['address' => $address])]
+            );
         }
     }
 }

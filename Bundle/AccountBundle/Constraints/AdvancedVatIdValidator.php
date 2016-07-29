@@ -46,11 +46,14 @@ class AdvancedVatIdValidator extends ConstraintValidator
         if (empty($value)) {
             return;
         }
-        /** @var Form $form */
-        $form = $this->context->getRoot();
 
         /** @var Address $address */
-        $address = $form->getData();
+        $address = $constraint->address;
+        if (!$address) {
+            /** @var Form $form */
+            $form = $this->context->getRoot();
+            $address = $form->getData();
+        }
 
         /** @var VatIdValidatorResult $result */
         $result = Shopware()->Container()->get('vat_id.validation_service')->validateVatId($address, false);

@@ -24,8 +24,11 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Bundle\AccountBundle\Constraints;
 
+use Shopware\Models\Customer\Address;
 use Symfony\Component\Validator\Constraint;
 
 class AdvancedVatId extends Constraint
 {
+    /** @var Address $address */
+    public $address;
 }
