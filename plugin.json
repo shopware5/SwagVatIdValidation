@@ -12,6 +12,7 @@
 
     "changelog": {
         "de": {
+            "1.1.0": "PT-5837 - Feature: Shopware 5.2 Kompatibilität;",
             "1.0.11": "PT-4862 - Bugfix: Die E-Mail-Benachrichtigung kann nun einfach deaktiviert werden; PT-4866 - Feature: Subshopfähigkeit;",
             "1.0.10": "PT-4752 - Bugfix: Update Methode;",
             "1.0.9": "PT-4709 - Feature: Cache wird nun korrekt nach Plugin-Aktivierung geleert; PT-3190 - Bugfix: Fehlermeldungen werden nicht mehr doppelt ausgegeben;",
@@ -23,6 +24,7 @@
             "1.0.0": "Erstveröffentlichung"
         },
         "en": {
+            "1.1.0": "PT-5837 - Feature: Shopware 5.2 compatibility;",
             "1.0.11": "PT-4862 - Bugfix: The email notification can now be disabled the easy way; PT-4866 - Feature: Added multishop support;",
             "1.0.10": "PT-4752 - Bugfix: Update method;",
             "1.0.9": "PT-4709 - Feature: Cache will now be properly cleared after (de-)activating a plugin;PT-3190 - Bugfix: Fixed duplicated error-messages;",
