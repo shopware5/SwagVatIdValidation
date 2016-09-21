@@ -111,14 +111,7 @@ class ValidationService
             return false;
         }
 
-        /**
-         * ... the billing country is a non-EU-country
-         */
         $countryISO = $this->getCountryIso($countryId);
-
-        if (!EUStates::isEUCountry($countryISO)) {
-            return false;
-        }
 
         /**
          * ... or the check is disabled for the billing country.
@@ -133,6 +126,14 @@ class ValidationService
         if (in_array($countryISO, $disabledCountries)) {
             return false;
         }
+
+        /**
+         * ... the billing country is a non-EU-country
+         */
+        if (!EUStates::isEUCountry($countryISO)) {
+            return false;
+        }
+
 
         return true;
     }

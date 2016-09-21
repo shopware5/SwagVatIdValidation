@@ -64,13 +64,18 @@ class DummyVatIdValidator implements VatIdValidatorInterface
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation = null)
     {
+        $exceptedNonEuISOs = explode(',', Shopware()->Container()->get("config")->get('disabledCountryISOs'));
+        $exceptedNonEuISOs = array_map('trim', $exceptedNonEuISOs);
+
+        $isExcepted = in_array($customerInformation->getBillingCountryIso(), $exceptedNonEuISOs);
+
         //An empty VAT Id can be valid
         if ($customerInformation->getVatId() === '') {
             return $this->result;
         }
 
         //If there is a VAT Id for a Non-EU-countries, its invalid
-        if (!EUStates::isEUCountry($customerInformation->getBillingCountryIso())) {
+        if (!EUStates::isEUCountry($customerInformation->getBillingCountryIso()) && !$isExcepted) {
             $this->result->setVatIdInvalid('5');
             $this->result->setCountryInvalid();
             return $this->result;
@@ -83,10 +88,12 @@ class DummyVatIdValidator implements VatIdValidatorInterface
             $this->result->setVatIdInvalid('2');
         }
 
+        $isExcepted = in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs);
+
         //The country code has to be an EU prefix and has to match the billing country
-        if (!EUStates::isEUCountry($customerInformation->getCountryCode())) {
+        if (!EUStates::isEUCountry($customerInformation->getCountryCode()) && !$isExcepted) {
             $this->result->setVatIdInvalid('3');
-        } elseif ($customerInformation->getCountryCode() !== $customerInformation->getBillingCountryIso()) {
+        } elseif ($customerInformation->getCountryCode() !== $customerInformation->getBillingCountryIso() && !$isExcepted) {
             $this->result->setVatIdInvalid('6');
             $this->result->setCountryInvalid();
         }
