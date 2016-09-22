@@ -48,12 +48,18 @@ class DummyVatIdValidator implements VatIdValidatorInterface
     private $result;
 
     /**
+     * @var ShopwareConfig
+     */
+    private $config;
+
+    /**
      * Constructor sets the snippet namespace
      * @param \Shopware_Components_Snippet_Manager $snippetManager
      */
     public function __construct(\Shopware_Components_Snippet_Manager $snippetManager)
     {
         $this->result = new VatIdValidatorResult($snippetManager, 'dummyValidator');
+        $this->config = Shopware()->Container()->get("config");
     }
 
     /**
@@ -64,7 +70,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation = null)
     {
-        $exceptedNonEuISOs = explode(',', Shopware()->Container()->get("config")->get('disabledCountryISOs'));
+        $exceptedNonEuISOs = explode(',', $this->config->get('disabledCountryISOs'));
         $exceptedNonEuISOs = array_map('trim', $exceptedNonEuISOs);
 
         $isExcepted = in_array($customerInformation->getBillingCountryIso(), $exceptedNonEuISOs);
