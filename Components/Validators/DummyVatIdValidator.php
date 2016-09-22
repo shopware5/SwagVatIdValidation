@@ -69,8 +69,10 @@ class DummyVatIdValidator implements VatIdValidatorInterface
 
         $isExcepted = in_array($customerInformation->getBillingCountryIso(), $exceptedNonEuISOs);
 
-        //An empty VAT Id can be valid
+        //An empty VAT Id can't be valid
         if ($customerInformation->getVatId() === '') {
+            //Set the error code to 1 to avoid vatIds with only a "."
+            $this->result->setVatIdInvalid('1');
             return $this->result;
         }
 
