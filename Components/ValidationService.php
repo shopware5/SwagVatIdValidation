@@ -134,7 +134,6 @@ class ValidationService
             return false;
         }
 
-
         return true;
     }
 
