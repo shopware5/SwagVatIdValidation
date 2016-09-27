@@ -101,7 +101,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
         //The country code has to be an EU prefix and has to match the billing country
         if (!EUStates::isEUCountry($customerInformation->getCountryCode()) && !$isExcepted) {
             $this->result->setVatIdInvalid('3');
-        } elseif ($customerInformation->getCountryCode() !== $customerInformation->getBillingCountryIso() && !$isExcepted) {
+        } elseif ($customerInformation->getCountryCode() !== $customerInformation->getBillingCountryIso()) {
             $this->result->setVatIdInvalid('6');
             $this->result->setCountryInvalid();
         }
