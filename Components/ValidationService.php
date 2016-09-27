@@ -178,6 +178,19 @@ class ValidationService
         }
 
         /**
+         * Get all whitelisted country ISOs from the plugin config
+         */
+        $exceptedNonEuISOs = explode(',', $this->config->get('disabledCountryISOs'));
+        $exceptedNonEuISOs = array_map('trim', $exceptedNonEuISOs);
+
+        /**
+         * If the country code is whitelisted skip validation
+         */
+        if (in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs)) {
+            return $result;
+        }
+
+        /**
          * Step 2: API validation
          * There are two API validators, both with two validation methods:
          *
@@ -335,6 +348,7 @@ class ValidationService
             $shopInformation->getCountryCode(),
             $validationType
         );
+
         $result = $validator->check($customerInformation, $shopInformation);
 
         return $result;
