@@ -179,7 +179,11 @@ class ValidationService
         /**
          * Get all whitelisted country ISOs from the plugin config
          */
-        $exceptedNonEuISOs = explode(',', $this->config->get('disabledCountryISOs'));
+        $exceptedNonEuISOs = $this->config->get("disabledCountryISOs");
+
+        if (!is_array($exceptedNonEuISOs)) {
+            $exceptedNonEuISOs = explode(',', $exceptedNonEuISOs);
+        }
         $exceptedNonEuISOs = array_map('trim', $exceptedNonEuISOs);
 
         /**

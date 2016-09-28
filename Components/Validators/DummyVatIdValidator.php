@@ -70,7 +70,11 @@ class DummyVatIdValidator implements VatIdValidatorInterface
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation = null)
     {
-        $exceptedNonEuISOs = explode(',', $this->config->get('disabledCountryISOs'));
+        $exceptedNonEuISOs = $this->config->get("disabledCountryISOs");
+
+        if (!is_array($exceptedNonEuISOs)) {
+            $exceptedNonEuISOs = explode(',', $exceptedNonEuISOs);
+        }
         $exceptedNonEuISOs = array_map('trim', $exceptedNonEuISOs);
 
         $isExcepted = in_array($customerInformation->getBillingCountryIso(), $exceptedNonEuISOs);
