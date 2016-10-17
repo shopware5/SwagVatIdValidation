@@ -111,14 +111,7 @@ class ValidationService
             return false;
         }
 
-        /**
-         * ... the billing country is a non-EU-country
-         */
         $countryISO = $this->getCountryIso($countryId);
-
-        if (!EUStates::isEUCountry($countryISO)) {
-            return false;
-        }
 
         /**
          * ... or the check is disabled for the billing country.
@@ -131,6 +124,13 @@ class ValidationService
         }
 
         if (in_array($countryISO, $disabledCountries)) {
+            return false;
+        }
+
+        /**
+         * ... the billing country is a non-EU-country
+         */
+        if (!EUStates::isEUCountry($countryISO)) {
             return false;
         }
 
@@ -173,6 +173,23 @@ class ValidationService
         $apiValidationType = $this->config->get('apiValidationType');
 
         if ($apiValidationType === APIValidationType::NONE) {
+            return $result;
+        }
+
+        /**
+         * Get all whitelisted country ISOs from the plugin config
+         */
+        $exceptedNonEuISOs = $this->config->get("disabledCountryISOs");
+
+        if (!is_array($exceptedNonEuISOs)) {
+            $exceptedNonEuISOs = explode(',', $exceptedNonEuISOs);
+        }
+        $exceptedNonEuISOs = array_map('trim', $exceptedNonEuISOs);
+
+        /**
+         * If the country code is whitelisted skip validation
+         */
+        if (in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs)) {
             return $result;
         }
 
@@ -334,6 +351,7 @@ class ValidationService
             $shopInformation->getCountryCode(),
             $validationType
         );
+
         $result = $validator->check($customerInformation, $shopInformation);
 
         return $result;
