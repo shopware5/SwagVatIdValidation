@@ -126,6 +126,10 @@ class Template implements SubscriberInterface
         /** @var $view \Enlight_View_Default */
         $view = $controller->View();
 
+        if ($view->sUserData["billingaddress"]["company"] === null) {
+            return;
+        }
+
         $view->addTemplateDir($this->path . 'Views/');
 
         $errorMessages = [];
