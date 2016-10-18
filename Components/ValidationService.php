@@ -435,6 +435,10 @@ class ValidationService
      */
     private function sendShopOwnerEmail(VatIdCustomerInformation $customerInformation, VatIdValidatorResult $result)
     {
+        if ($customerInformation->getCompany() === null) {
+            return;
+        }
+
         $email = $this->getEmailAddress();
 
         if (empty($email)) {
