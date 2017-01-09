@@ -101,6 +101,9 @@ class Login implements SubscriberInterface
             $this->container->get('session')->offsetSet('vatIdValidationStatus', $result->serialize());
 
             return;
+        } else if (!$required) {
+            //The check is not required, no validation required
+            return;
         }
 
         $result = $validationService->validateVatId($billingAddress);
