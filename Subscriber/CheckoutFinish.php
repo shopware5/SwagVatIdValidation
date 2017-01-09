@@ -93,6 +93,13 @@ class CheckoutFinish implements SubscriberInterface
 
         /** @var ArrayObject $orderDetails */
         $orderDetails = $this->container->get('session')->get('sOrderVariables');
+
+        //The user might have been logged out during the last request.
+        //If so, the orderDetails object won't be available.
+        if (!$orderDetails) {
+            return;
+        }
+
         $orderDetails = $orderDetails->getArrayCopy();
         $billing = $orderDetails['sUserData']['billingaddress'];
 
