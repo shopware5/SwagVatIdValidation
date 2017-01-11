@@ -59,8 +59,12 @@ class Forms implements SubscriberInterface
         /** @var FormInterface $builder */
         $builder = $args->get('builder');
 
-        $builder->add('vatId', TextType::class, [
-            'constraints' => [new AdvancedVatId()]
-        ]);
+        $builder->add(
+            'vatId',
+            TextType::class,
+            [
+                'constraints' => [new AdvancedVatId()],
+            ]
+        );
     }
 }

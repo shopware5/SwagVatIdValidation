@@ -179,7 +179,7 @@ class ValidationService
         /**
          * Get all whitelisted country ISOs from the plugin config
          */
-        $exceptedNonEuISOs = $this->config->get("disabledCountryISOs");
+        $exceptedNonEuISOs = $this->config->get('disabledCountryISOs');
 
         if (!is_array($exceptedNonEuISOs)) {
             $exceptedNonEuISOs = explode(',', $exceptedNonEuISOs);
@@ -352,9 +352,7 @@ class ValidationService
             $validationType
         );
 
-        $result = $validator->check($customerInformation, $shopInformation);
-
-        return $result;
+        return $validator->check($customerInformation, $shopInformation);
     }
 
     /**
@@ -457,6 +455,7 @@ class ValidationService
             'sStreet' => $customerInformation->getStreet(),
             'sZipCode' => $customerInformation->getZipCode(),
             'sCity' => $customerInformation->getCity(),
+            'sCountryCode' => $customerInformation->getBillingCountryIso(),
             'sError' => $error
         ];
 
