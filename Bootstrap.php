@@ -258,7 +258,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         }
 
         //Template
-        $content = "Hallo,\n\nbei der Überprüfung der USt-IdNr. {\$sVatId} der Firma\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nist ein Fehler aufgetreten:\n\n{\$sError}\n\n{config name=shopName}";
+        $content = "Hallo,\n\nbei der Überprüfung der USt-IdNr. {\$sVatId} der Firma\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\n{\$sCountryCode}\n\nist ein Fehler aufgetreten:\n\n{\$sError}\n\n{config name=shopName}";
 
         $mail = new Mail();
         $mail->setName('sSWAGVATIDVALIDATION_VALIDATIONERROR');
@@ -288,7 +288,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             serialize(
                 [
                     'subject' => "An error occurred when validating VAT ID {\$sVatId}.",
-                    'content' => "Hello,\n\nAn error occurred during the validation of VAT ID {\$sVatId} associated with the following company:\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nThe following errors were detected:\n\n{\$sError}\n\n{config name=shopName}"
+                    'content' => "Hello,\n\nAn error occurred during the validation of VAT ID {\$sVatId} associated with the following company:\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\n{\$sCountryCode}\n\nThe following errors were detected:\n\n{\$sError}\n\n{config name=shopName}"
                 ]
             )
         );

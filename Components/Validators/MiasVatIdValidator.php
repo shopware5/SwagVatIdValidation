@@ -63,7 +63,7 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
         try {
-            $client = new \SoapClient("http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl");
+            $client = new \SoapClient('http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl');
         } catch (\SoapFault $error) {
             $this->result->setServiceUnavailable();
             return $this->result;
