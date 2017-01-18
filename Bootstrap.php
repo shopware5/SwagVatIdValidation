@@ -418,7 +418,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             'select',
             'disabledCountryISOs',
             [
-                'label' => 'Ausnahmen der Pflichtangabe der Ust-IdNr.',
+                'label' => 'Ausnahmen für die erweiterte API-Überprüfung',
                 'store' => [
                     ['AT', ['de_DE' => 'Österreich', 'en_GB' => 'Austria']], //Republic of Austria
                     ['BE', ['de_DE' => 'Belgien', 'en_GB' => 'Belgium']], //Kingdom of Belgium
@@ -451,7 +451,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 ],
                 'multiSelect' => true,
                 'value' => '',
-                'description' => 'Hier können Sie ISO Codes von EU-Ländern eintragen, die eine Ausnahme in Bezug auf die Einstellung "Ust-IdNr.-Angabe ist Pflicht" bilden. Beispiele sind z.B. DE, GB oder AT, Angabe mehrer Länder mit Komma getrennt möglich.',
+                'description' => 'Hier können Sie EU-Länder auswählen, die eine Ausnahme bei der erweiterten API-Validierung bilden.',
                 'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
             ]
         );
@@ -482,8 +482,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                         'description' => 'Only available for German-based shops. Requests an official mail confirmation for qualified checks of foreign VAT IDs.'
                     ],
                     'disabledCountryISOs' => [
-                        'label' => 'Exceptions for the requirement of the VAT ID',
-                        'description' => 'The country ISO codes you enter here will be excluded from the VAT id requirement if enabled above. Examples are DE, GB or AT. Multiple countries are possible separated by comma'
+                        'label' => 'Exceptions for the adv. API validation',
+                        'description' => 'You can select EU-Countries which will be excluded from the advanced API validation process.'
                     ],
                 ]
             ]
