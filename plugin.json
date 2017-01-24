@@ -8,11 +8,12 @@
     "link": "http://store.shopware.com",
     "author": "Shopware AG",
 
-    "currentVersion": "1.1.2",
+    "currentVersion": "1.1.3",
 
     "changelog": {
         "de": {
-            "1.1.2": "PT-6881 - Fehlermeldung bei Privatkunden ohne VatId entfernt;",
+            "1.1.3": "PT-6946 - Bugfix: Fehlerhafte Meldung nach Login; PT-7036 - Bugfix: Fatal Error auf der Bestellabschlussseite; PT-7343 - Feature: Anzeige des Ländercodes in der E-Mail Vorlage;",
+            "1.1.2": "PT-6881 - Bugfix: Fehlermeldung bei Privatkunden ohne Ust-Id. entfernt;",
             "1.1.1": "PT-5691 - Bugfix: Verbesserung der Überprüfung; PT-6588 - Bugfix: White listing von Nicht-EU-Staaten;",
             "1.1.0": "PT-5837 - Feature: Shopware 5.2 Kompatibilität;",
             "1.0.11": "PT-4862 - Bugfix: Die E-Mail-Benachrichtigung kann nun einfach deaktiviert werden; PT-4866 - Feature: Subshopfähigkeit;",
@@ -26,7 +27,8 @@
             "1.0.0": "Erstveröffentlichung"
         },
         "en": {
-            "1.1.2": "PT-6881 - Removed error message for private customers without vatid;",
+            "1.1.3": "PT-6946 - Bugfix: Wrong message after login; PT-7036 - Bugfix: Fatal Error on checkout finish page; PT-7343 - Feature: Display country code in email template;",
+            "1.1.2": "PT-6881 - Bugfix: Removed error message for private customers without VAT id;",
             "1.1.1": "PT-5691 - Bugfix: Improving of check; PT-6588 - Bugfix: White listing of non EU states;",
             "1.1.0": "PT-5837 - Feature: Shopware 5.2 compatibility;",
             "1.0.11": "PT-4862 - Bugfix: The email notification can now be disabled the easy way; PT-4866 - Feature: Added multishop support;",
