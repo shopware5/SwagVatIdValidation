@@ -47,11 +47,15 @@ class AdvancedVatIdValidator extends ConstraintValidator
             return;
         }
 
+        /** @var Form $form */
+        $form = $this->context->getRoot();
+        if (!$form) {
+            return;
+        }
+
         /** @var Address $address */
         $address = $constraint->address;
         if (!$address) {
-            /** @var Form $form */
-            $form = $this->context->getRoot();
             $address = $form->getData();
         }
 
