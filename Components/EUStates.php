@@ -38,6 +38,7 @@ class EUStates
         'DK', //Kingdom of Denmark
         'EE', //Republic of Estonia
         'EL', //Hellenic Republic (Greece)
+        'GR', //Greece's second ISO-Code
         'ES', //Kingdom of Spain
         'FI', //Republic of Finland
         'FR', //French Republic
