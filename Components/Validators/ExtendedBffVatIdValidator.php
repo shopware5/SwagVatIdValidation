@@ -52,7 +52,8 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
     {
         return [
             'UstId_1' => $shopInformation->getVatId(),
-            'UstId_2' => $customerInformation->getVatId(),
+            //The bff validator api does only support 'EL' as greece iso. Therefore, we replace the original GR with the EL.
+            'UstId_2' => str_replace('GR', 'EL', $customerInformation->getVatId()),
             'Firmenname' => $customerInformation->getCompany(),
             'Ort' => $customerInformation->getCity(),
             'PLZ' => $customerInformation->getZipCode(),

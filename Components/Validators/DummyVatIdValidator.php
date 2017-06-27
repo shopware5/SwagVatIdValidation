@@ -106,8 +106,12 @@ class DummyVatIdValidator implements VatIdValidatorInterface
         if (!EUStates::isEUCountry($customerInformation->getCountryCode()) && !$isExcepted) {
             $this->result->setVatIdInvalid('3');
         } elseif ($customerInformation->getCountryCode() !== $customerInformation->getBillingCountryIso()) {
-            $this->result->setVatIdInvalid('6');
-            $this->result->setCountryInvalid();
+            //The country greece has two different ISO codes. GR and EL
+            //Since shopware does only know "GR" as "Greece", we have to manually check for "EL" here.
+            if ($customerInformation->getCountryCode() !== 'EL' || $customerInformation->getBillingCountryIso() !== 'GR') {
+                $this->result->setVatIdInvalid('6');
+                $this->result->setCountryInvalid();
+            }
         }
 
         //The VAT number always only consists of alphanumerical chars
