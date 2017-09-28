@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -27,25 +26,31 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components;
 
 use Shopware\Models\Customer\Address;
 
-/**
- * Class VatIdCustomerInformation
- * @package Shopware\Plugins\SwagVatIdValidation\Components
- */
 class VatIdCustomerInformation extends VatIdInformation
 {
-    /** @var  string */
+    /**
+     * @var string
+     */
     protected $company;
 
-    /** @var  string */
+    /**
+     * @var string
+     */
     protected $street;
 
-    /** @var  string */
+    /**
+     * @var string
+     */
     protected $zipCode;
 
-    /** @var  string */
+    /**
+     * @var string
+     */
     protected $city;
 
-    /** @var  string */
+    /**
+     * @var string
+     */
     protected $billingCountryIso;
 
     /**
@@ -66,6 +71,7 @@ class VatIdCustomerInformation extends VatIdInformation
 
     /**
      * Returns the company
+     *
      * @return string
      */
     public function getCompany()
@@ -75,6 +81,7 @@ class VatIdCustomerInformation extends VatIdInformation
 
     /**
      * Returns the street
+     *
      * @return string
      */
     public function getStreet()
@@ -84,6 +91,7 @@ class VatIdCustomerInformation extends VatIdInformation
 
     /**
      * Returns the zip code
+     *
      * @return string
      */
     public function getZipCode()
@@ -93,6 +101,7 @@ class VatIdCustomerInformation extends VatIdInformation
 
     /**
      * Returns the city
+     *
      * @return string
      */
     public function getCity()
@@ -102,6 +111,7 @@ class VatIdCustomerInformation extends VatIdInformation
 
     /**
      * Returns the iso code of the billing country
+     *
      * @return string
      */
     public function getBillingCountryIso()

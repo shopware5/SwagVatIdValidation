@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -22,6 +21,7 @@
  * trademark license. Therefore any rights, title and interest in
  * our trademarks remain entirely with us.
  */
+
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
@@ -32,24 +32,21 @@ use Shopware\Components\DependencyInjection\Container;
 use Shopware\Plugins\SwagVatIdValidation\Components\EUStates;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
-/**
- * Class TemplateExtension
- *
- * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
- */
 class Template implements SubscriberInterface
 {
     /**
-     * @var Container $container
+     * @var Container
      */
     private $container;
 
-    /** @var string $path */
+    /**
+     * @var string
+     */
     private $path;
 
     /**
      * @param Container $container
-     * @param string $path
+     * @param string    $path
      */
     public function __construct(Container $container, $path)
     {
@@ -58,16 +55,14 @@ class Template implements SubscriberInterface
     }
 
     /**
-     * Returns the events we need to subscribe to
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents()
     {
         return [
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Account' => 'onPostDispatchFrontendAccount',
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onPostDispatchFrontendCheckout',
-            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Register' => 'onPostDispatchFrontendRegister'
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Register' => 'onPostDispatchFrontendRegister',
         ];
     }
 
@@ -109,14 +104,14 @@ class Template implements SubscriberInterface
      * Helper function to assign the plugin data to the template
      *
      * @param Enlight_Controller_Action $controller
-     * @param string[] $actions
+     * @param string[]                  $actions
      */
     public function postDispatchFrontendController(Enlight_Controller_Action $controller, array $actions)
     {
         /** @var Request $request */
         $request = $controller->Request();
 
-        if (!in_array($request->getActionName(), $actions)) {
+        if (!in_array($request->getActionName(), $actions, true)) {
             return;
         }
 
@@ -126,7 +121,7 @@ class Template implements SubscriberInterface
         /** @var $view \Enlight_View_Default */
         $view = $controller->View();
 
-        if ($view->sUserData["billingaddress"]["company"] === null) {
+        if ($view->getAssign('sUserData')['billingaddress']['company'] === null) {
             return;
         }
 
@@ -151,7 +146,7 @@ class Template implements SubscriberInterface
         }
 
         $required = (bool) $this->container->get('config')->get('vatcheckrequired');
-        $displayMessage = ($required) ? $this->hasExceptedEUCountries() : false;
+        $displayMessage = $required ? $this->hasExceptedEUCountries() : false;
 
         $view->assign(
             [
@@ -159,8 +154,8 @@ class Template implements SubscriberInterface
                 'vatIdCheck' => [
                     'errorMessages' => array_values($errorMessages),
                     'required' => $required,
-                    'requiredButEmpty' => $requiredButEmpty
-                ]
+                    'requiredButEmpty' => $requiredButEmpty,
+                ],
             ]
         );
     }

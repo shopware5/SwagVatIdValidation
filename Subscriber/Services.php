@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -30,13 +29,10 @@ use Shopware\Components\DependencyInjection\Container;
 use Shopware\Plugins\SwagVatIdValidation\Bundle\AccountBundle\Service\Validator\AddressValidatorDecorator;
 use Shopware\Plugins\SwagVatIdValidation\Components\ValidationService;
 
-/**
- * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
- */
 class Services implements SubscriberInterface
 {
     /**
-     * @var Container $container
+     * @var Container
      */
     private $container;
 
@@ -49,13 +45,13 @@ class Services implements SubscriberInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents()
     {
         return [
             'Enlight_Bootstrap_InitResource_vat_id.validation_service' => 'onInitValidationService',
-            'Enlight_Bootstrap_AfterInitResource_shopware_account.address_validator' => 'onDecorateAddressValidator'
+            'Enlight_Bootstrap_AfterInitResource_shopware_account.address_validator' => 'onDecorateAddressValidator',
         ];
     }
 

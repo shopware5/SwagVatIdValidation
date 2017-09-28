@@ -29,6 +29,8 @@ use Symfony\Component\Validator\Constraint;
 
 class AdvancedVatId extends Constraint
 {
-    /** @var Address $address */
+    /**
+     * @var Address
+     */
     public $address;
 }

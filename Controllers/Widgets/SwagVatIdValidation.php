@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -21,10 +20,6 @@
  * The licensing of the program under the AGPLv3 does not imply a
  * trademark license. Therefore any rights, title and interest in
  * our trademarks remain entirely with us.
- *
- * @category   Shopware
- * @package    Shopware_Controllers_Frontend_SwagBrowserLanguage
- * @copyright  Copyright (c) 2013, shopware AG (http://www.shopware.de)
  */
 
 use Doctrine\DBAL\Connection;

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -34,20 +33,15 @@ use Shopware\Components\DependencyInjection\Container;
 use Shopware\Plugins\SwagVatIdValidation\Components\ValidationService;
 use Shopware_Controllers_Frontend_Checkout as CheckoutController;
 
-/**
- * Class CheckoutFinish
- *
- * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
- */
 class CheckoutFinish implements SubscriberInterface
 {
     /**
-     * @var Container $container
+     * @var Container
      */
     private $container;
 
     /**
-     * @param Container $container
+     * {@inheritdoc}
      */
     public function __construct(Container $container)
     {
@@ -74,7 +68,7 @@ class CheckoutFinish implements SubscriberInterface
      */
     public function onPreDispatchCheckout(ActionEventArgs $arguments)
     {
-        /**@var CheckoutController $subject */
+        /** @var CheckoutController $subject */
         $subject = $arguments->getSubject();
 
         /** @var Request $request */
@@ -85,7 +79,7 @@ class CheckoutFinish implements SubscriberInterface
 
         if (!$request->isDispatched()
             || $response->isException()
-            || $request->getActionName() != 'finish'
+            || $request->getActionName() !== 'finish'
             || !$subject->View()->hasTemplate()
         ) {
             return;
@@ -110,6 +104,7 @@ class CheckoutFinish implements SubscriberInterface
 
         if ($required && !$billing['vatId']) {
             $subject->forward('confirm', 'checkout', null, ['vatIdRequiredButEmpty' => true]);
+
             return;
         }
     }
@@ -121,13 +116,13 @@ class CheckoutFinish implements SubscriberInterface
      */
     public function onPostDispatchCheckout(ActionEventArgs $arguments)
     {
-        /**@var CheckoutController $subject */
+        /** @var CheckoutController $subject */
         $subject = $arguments->getSubject();
 
         /** @var Request $request */
         $request = $subject->Request();
 
-        if ($request->getActionName() != 'confirm') {
+        if ($request->getActionName() !== 'confirm') {
             return;
         }
 
@@ -136,7 +131,8 @@ class CheckoutFinish implements SubscriberInterface
 
         if ($request->getParam('vatIdRequiredButEmpty')) {
             $result = $validationService->getRequirementErrorResult();
-            $subject->View()->assign('sBasketInfo', current($result->getErrorMessages()));
+            $errorMessages = $result->getErrorMessages();
+            $subject->View()->assign('sBasketInfo', current($errorMessages));
         }
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -38,22 +37,22 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
  * - Country Code includes non-alphabetical chars
  * - VAT Number includes non-alphanumerical chars
  * - VAT Number only has alphabetical chars
- *
- * Class DummyVatIdValidator
- * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
  */
 class DummyVatIdValidator implements VatIdValidatorInterface
 {
-    /** @var  VatIdValidatorResult */
+    /**
+     * @var VatIdValidatorResult
+     */
     private $result;
 
     /**
-     * @var ShopwareConfig
+     * @var \Shopware_Components_Config
      */
     private $config;
 
     /**
      * Constructor sets the snippet namespace
+     *
      * @param \Shopware_Components_Snippet_Manager $snippetManager
      */
     public function __construct(\Shopware_Components_Snippet_Manager $snippetManager)
@@ -63,10 +62,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
     }
 
     /**
-     * Check process of a validator
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation $shopInformation
-     * @return VatIdValidatorResult
+     * {@inheritdoc}
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation = null)
     {
@@ -77,12 +73,13 @@ class DummyVatIdValidator implements VatIdValidatorInterface
         }
         $exceptedNonEuISOs = array_map('trim', $exceptedNonEuISOs);
 
-        $isExcepted = in_array($customerInformation->getBillingCountryIso(), $exceptedNonEuISOs);
+        $isExcepted = in_array($customerInformation->getBillingCountryIso(), $exceptedNonEuISOs, true);
 
         //An empty VAT Id can't be valid
         if ($customerInformation->getVatId() === '') {
             //Set the error code to 1 to avoid vatIds with only a "."
             $this->result->setVatIdInvalid('1');
+
             return $this->result;
         }
 
@@ -90,6 +87,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
         if (!EUStates::isEUCountry($customerInformation->getBillingCountryIso()) && !$isExcepted) {
             $this->result->setVatIdInvalid('5');
             $this->result->setCountryInvalid();
+
             return $this->result;
         }
 
@@ -100,7 +98,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
             $this->result->setVatIdInvalid('2');
         }
 
-        $isExcepted = in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs);
+        $isExcepted = in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs, true);
 
         //The country code has to be an EU prefix and has to match the billing country
         if (!EUStates::isEUCountry($customerInformation->getCountryCode()) && !$isExcepted) {

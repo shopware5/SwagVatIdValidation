@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -35,29 +34,33 @@ use Shopware_Components_Config as ShopwareConfig;
 use Symfony\Component\Validator\Validator\ContextualValidatorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-/**
- * @package Shopware\Plugins\SwagVatIdValidation\Components
- * @copyright Copyright (c) shopware AG (http://www.shopware.com)
- */
 class AddressValidatorDecorator implements AddressValidatorInterface
 {
-    /** @var ShopwareConfig $config */
+    /**
+     * @var ShopwareConfig
+     */
     private $config;
 
-    /** @var AddressValidatorInterface $coreAddressValidator */
+    /**
+     * @var AddressValidatorInterface
+     */
     private $coreAddressValidator;
 
-    /** @var ValidationService $validationService */
+    /**
+     * @var ValidationService
+     */
     private $validationService;
 
-    /** @var ValidatorInterface $validator */
+    /**
+     * @var ValidatorInterface
+     */
     private $validator;
 
     /**
      * @param AddressValidatorInterface $coreAddressValidator
-     * @param ShopwareConfig $config
-     * @param ValidationService $validationService
-     * @param ValidatorInterface $validator
+     * @param ShopwareConfig            $config
+     * @param ValidationService         $validationService
+     * @param ValidatorInterface        $validator
      */
     public function __construct(
         AddressValidatorInterface $coreAddressValidator,
@@ -72,7 +75,7 @@ class AddressValidatorDecorator implements AddressValidatorInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function validate(Address $address)
     {
@@ -94,7 +97,7 @@ class AddressValidatorDecorator implements AddressValidatorInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isValid(Address $address)
     {
@@ -102,7 +105,7 @@ class AddressValidatorDecorator implements AddressValidatorInterface
     }
 
     /**
-     * @param Address $address
+     * @param Address                      $address
      * @param ContextualValidatorInterface $validationContext
      */
     private function addVatIdValidation(Address $address, $validationContext)

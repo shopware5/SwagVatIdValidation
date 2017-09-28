@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -34,7 +33,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 class AdvancedVatIdValidator extends ConstraintValidator
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function validate($value, Constraint $constraint)
     {

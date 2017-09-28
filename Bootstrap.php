@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -24,34 +23,38 @@
  */
 
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Config\Element;
 use Shopware\Models\Mail\Mail;
-use Shopware\Models\Translation\Translation;
 use Shopware\Models\Shop\Locale;
+use Shopware\Models\Shop\Shop;
+use Shopware\Models\Translation\Translation;
 use Shopware\Plugins\SwagVatIdValidation\Components\APIValidationType;
 use Shopware\Plugins\SwagVatIdValidation\Subscriber\CheckoutFinish;
 use Shopware\Plugins\SwagVatIdValidation\Subscriber\Forms;
 use Shopware\Plugins\SwagVatIdValidation\Subscriber\Login;
-use Shopware\Plugins\SwagVatIdValidation\Subscriber\Template;
 use Shopware\Plugins\SwagVatIdValidation\Subscriber\Services;
+use Shopware\Plugins\SwagVatIdValidation\Subscriber\Template;
 
-/**
- * @category   Shopware
- * @package    Shopware_Plugins
- * @subpackage SwagVatIdValidation
- * @copyright  Copyright (c), shopware AG (http://de.shopware.com)
- */
 class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Components_Plugin_Bootstrap
 {
-    /** @var  \Shopware\Models\Mail\Repository */
+    /**
+     * @var \Shopware\Models\Mail\Repository
+     */
     private $mailRepository;
 
-    /** @var  \Shopware\Models\Shop\Repository */
+    /**
+     * @var \Shopware\Models\Shop\Repository
+     */
     private $localeRepository;
 
-    /** @var  \Shopware\Components\Model\ModelRepository */
+    /**
+     * @var \Shopware\Components\Model\ModelRepository
+     */
     private $translationRepository;
 
-    /** @var ModelManager $em */
+    /**
+     * @var ModelManager
+     */
     private $em;
 
     /**
@@ -74,7 +77,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
             'install' => true,
             'enable' => true,
             'update' => true,
-            'secureUninstall' => true
+            'secureUninstall' => true,
         ];
     }
 
@@ -91,8 +94,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     /**
      * Returns the current version of the plugin.
      *
+     * @throws RuntimeException
+     *
      * @return string
-     * @throws Exception
      */
     public function getVersion()
     {
@@ -100,9 +104,9 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
 
         if ($info) {
             return $info['currentVersion'];
-        } else {
-            throw new Exception('The plugin has an invalid version file.');
         }
+
+        throw new RuntimeException('The plugin has an invalid version file.');
     }
 
     /**
@@ -124,14 +128,15 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      *
      * Registers all necessary components and dependencies.
      *
-     * @return boolean
-     * @throws Exception
+     * @throws RuntimeException
+     *
+     * @return bool
      */
     public function install()
     {
         // Check if shopware version matches
         if (!$this->assertMinimumVersion('5.2.0')) {
-            throw new Exception('This plugin requires Shopware 5.2.0 or a later version');
+            throw new RuntimeException('This plugin requires Shopware 5.2.0 or a later version');
         }
 
         $this->createMailTemplate();
@@ -167,14 +172,16 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      * Handles the updates
      *
      * @param string $oldVersion
-     * @return boolean|array
-     * @throws Exception
+     *
+     * @throws RuntimeException
+     *
+     * @return bool|array
      */
     public function update($oldVersion)
     {
         // Check if shopware version matches
         if (!$this->assertMinimumVersion('5.2.0')) {
-            throw new Exception('This plugin requires Shopware 5.2.0 or a later version');
+            throw new RuntimeException('This plugin requires Shopware 5.2.0 or a later version');
         }
 
         if (version_compare($oldVersion, '1.0.7', '<')) {
@@ -190,7 +197,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     /**
      * (Insecure) uninstall method, removes also the user-defined data (like the maybe changed mail template)
      *
-     * @return boolean|array
+     * @return bool|array
      */
     public function uninstall()
     {
@@ -201,7 +208,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function secureUninstall()
     {
@@ -220,24 +227,18 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         //Only subscribe when we are in the frontend
         $module = $args->getRequest()->getParam('module');
 
-        if (!in_array($module, ['', 'frontend'])) {
+        if (!in_array($module, ['', 'frontend'], true)) {
             return;
         }
 
         $container = $this->get('service_container');
 
         $subscribers = [
-            new Template(
-                $container,
-                $this->Path()
-            ),
-            new Login(
-                $args->getRequest()->getActionName(),
-                $container
-            ),
+            new Template($container, $this->Path()),
+            new Login($args->getRequest()->getActionName(), $container),
             new Services($container),
             new CheckoutFinish($container),
-            new Forms()
+            new Forms(),
         ];
 
         foreach ($subscribers as $subscriber) {
@@ -264,7 +265,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $mail->setName('sSWAGVATIDVALIDATION_VALIDATIONERROR');
         $mail->setFromMail('');
         $mail->setFromName('');
-        $mail->setSubject("Bei der Überprüfung der Ust-IdNr. {\$sVatId} ist ein Fehler aufgetreten");
+        $mail->setSubject('Bei der Überprüfung der Ust-IdNr. {$sVatId} ist ein Fehler aufgetreten');
         $mail->setContent($content);
         $mail->setMailtype(Mail::MAILTYPE_SYSTEM);
 
@@ -274,7 +275,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         //Translation
         $translation = new Translation();
 
-        $shop = $this->getShopByLocale("en_GB");
+        $shop = $this->getShopByLocale('en_GB');
 
         if (!$shop) {
             return;
@@ -287,8 +288,8 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
         $translation->setData(
             serialize(
                 [
-                    'subject' => "An error occurred when validating VAT ID {\$sVatId}.",
-                    'content' => "Hello,\n\nAn error occurred during the validation of VAT ID {\$sVatId} associated with the following company:\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nCountry code: {\$sCountryCode}\n\nThe following errors were detected:\n\n{\$sError}\n\n{config name=shopName}"
+                    'subject' => 'An error occurred when validating VAT ID {$sVatId}.',
+                    'content' => "Hello,\n\nAn error occurred during the validation of VAT ID {\$sVatId} associated with the following company:\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nCountry code: {\$sCountryCode}\n\nThe following errors were detected:\n\n{\$sError}\n\n{config name=shopName}",
                 ]
             )
         );
@@ -301,11 +302,12 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
      * Helper method that returns the correct shop for the specified locale.
      *
      * @param string $locale
-     * @return Shopware\Models\Shop\Shop $result
+     *
+     * @return Shop $result
      */
     private function getShopByLocale($locale)
     {
-        return $this->get('models')->getRepository('Shopware\Models\Shop\Shop')
+        return $this->get('models')->getRepository(Shop::class)
             ->findOneBy(['locale' => $this->getLocaleRepository()->findOneBy(['locale' => $locale])]);
     }
 
@@ -362,7 +364,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 'value' => $this->get('config')->get('sTAXNUMBER'),
                 'description' => 'Eigene USt-IdNr., die zur Prüfung verwendet werden soll.',
                 'required' => true,
-                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                'scope' => Element::SCOPE_SHOP,
             ]
         );
 
@@ -373,14 +375,14 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 'label' => 'E-Mail-Benachrichtigung',
                 'store' => [
                     [0, ['de_DE' => 'Nein', 'en_GB' => 'No']],
-                    [1, ['de_DE' => 'Shopbetreiber-E-Mail-Adresse', 'en_GB' => 'Shop owner email address']]
+                    [1, ['de_DE' => 'Shopbetreiber-E-Mail-Adresse', 'en_GB' => 'Shop owner email address']],
                 ],
                 'value' => 1,
                 'description' => 'An diese E-Mail-Adresse erhalten Sie eine Mitteilungen, wenn die Ust-IdNr. eines Bestandskunden ungültig ist.<br>
                                   1. <u>Nein</u>: Es wird keine E-Mail versendet.<br>
                                   2. <u>Shopbetreiber-E-Mail-Adresse</u>: Es wird die E-Mail-Adresse aus den Stammdaten genutzt.<br>
                                      <u>Hinweis:</u> Sie können auch eine individuelle E-Mail-Adresse hinterlegen.',
-                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                'scope' => Element::SCOPE_SHOP,
             ]
         );
 
@@ -391,15 +393,15 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 'label' => 'Art der API-Überprüfung',
                 'value' => APIValidationType::SIMPLE,
                 'store' => [
-                    [APIValidationType::NONE, "Keine (None)"],
-                    [APIValidationType::SIMPLE, 'Einfach (Simple)'],
-                    [APIValidationType::EXTENDED, 'Erweitert (Extended)']
+                    [APIValidationType::NONE, ['de_DE' => 'Keine', 'en_GB' => 'None']],
+                    [APIValidationType::SIMPLE, ['de_DE' => 'Einfach', 'en_GB' => 'Simple']],
+                    [APIValidationType::EXTENDED, ['de_DE' => 'Erweitert', 'en_GB' => 'Extended']],
                 ],
                 'description' => '1. <u>Keine</u>: Es wird keine API-Überprüfung durchgeführt.<br>
                                   2. <u>Einfach</u>: Es wird überprüft, ob diese Ust-IdNr. existiert.<br>
                                   3. <u>Erweitert</u>: Es wird überprüft, ob diese Ust-IdNr. existiert und zur Adresse passt.
                                      <u>Hinweis:</u> Erweiterte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden. Sofern der angefragte EU-Mitgliedsstaat die Adressdaten bereit stellt, werden diese anderenfalls manuell durch das Plugin verglichen.',
-                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                'scope' => Element::SCOPE_SHOP,
             ]
         );
 
@@ -410,7 +412,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 'label' => 'Amtliche Bestätigungsmitteilung',
                 'value' => false,
                 'description' => 'Amtliche Bestätigungsmitteilung bei qualifizierten Bestätigungsanfragen anfordern. Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden.',
-                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                'scope' => Element::SCOPE_SHOP,
             ]
         );
 
@@ -452,7 +454,7 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 'multiSelect' => true,
                 'value' => '',
                 'description' => 'Hier können Sie EU-Länder auswählen, die eine Ausnahme bei der erweiterten API-Validierung bilden.',
-                'scope' => Shopware\Models\Config\Element::SCOPE_SHOP
+                'scope' => Element::SCOPE_SHOP,
             ]
         );
 
@@ -461,31 +463,31 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
                 'en_GB' => [
                     'vatId' => [
                         'label' => 'Own VAT ID',
-                        'description' => 'Your own VAT ID number which is required for validation. During the validation process, your VAT ID is never given to your customers.'
+                        'description' => 'Your own VAT ID number which is required for validation. During the validation process, your VAT ID is never given to your customers.',
                     ],
                     'shopEmailNotification' => [
                         'label' => 'Own email notifications',
                         'description' => 'If provided, you will receive an email when a VAT ID validation error occurs.<br>
                                           1. <u>No</u>: You won\'t receive an email.<br>
                                           2. <u>Shopowner email address</u>: The email address of the basic information will be used.<br>
-                                             <u>Information:</u> You also can enter an individual email address.'
+                                             <u>Information:</u> You also can enter an individual email address.',
                     ],
                     'apiValidationType' => [
                         'label' => 'Type of API validation',
                         'description' => '1. <u>None</u>: No API validation process will be executed.<br>
                                           2. <u>Simple</u>: It will be checked if the VAT ID exists in general.<br>
                                           3. <u>Extended</u>: It will be checked, if the VAT ID exists in general and if it matches the customers address.
-                                             <u>Information:</u> The extended check will compare the address provided by the customer with the data available in the remote VAT ID validation service. Note: depending on the market of both you and your customer, the completeness of the available information for comparison may be limited.'
+                                             <u>Information:</u> The extended check will compare the address provided by the customer with the data available in the remote VAT ID validation service. Note: depending on the market of both you and your customer, the completeness of the available information for comparison may be limited.',
                     ],
                     'confirmation' => [
                         'label' => 'Official mail confirmation',
-                        'description' => 'Only available for German-based shops. Requests an official mail confirmation for qualified checks of foreign VAT IDs.'
+                        'description' => 'Only available for German-based shops. Requests an official mail confirmation for qualified checks of foreign VAT IDs.',
                     ],
                     'disabledCountryISOs' => [
                         'label' => 'Exceptions for the adv. API validation',
-                        'description' => 'You can select EU-Countries which will be excluded from the advanced API validation process.'
+                        'description' => 'You can select EU-Countries which will be excluded from the advanced API validation process.',
                     ],
-                ]
+                ],
             ]
         );
     }
@@ -499,8 +501,6 @@ class Shopware_Plugins_Core_SwagVatIdValidation_Bootstrap extends Shopware_Compo
     {
         // Register an early event for our event subscribers
         $this->subscribeEvent('Enlight_Controller_Front_DispatchLoopStartup', 'onStartDispatch');
-
-        return;
     }
 
     /**
