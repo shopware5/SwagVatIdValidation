@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -25,23 +24,26 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Components;
 
-/**
- * Class VatIdInformation
- * @package Shopware\Plugins\SwagVatIdValidation\Components
- */
 class VatIdInformation
 {
-    /** @var string */
+    /**
+     * @var string
+     */
     protected $vatId;
 
-    /** @var string */
+    /**
+     * @var string
+     */
     protected $countryCode;
 
-    /** @var string */
+    /**
+     * @var string
+     */
     protected $vatNumber;
 
     /**
      * Constructor sets all properties
+     *
      * @param string $vatId
      */
     public function __construct($vatId)
@@ -53,6 +55,7 @@ class VatIdInformation
 
     /**
      * Returns the VAT ID
+     *
      * @return string
      */
     public function getVatId()
@@ -62,6 +65,7 @@ class VatIdInformation
 
     /**
      * Returns the country code (p.e. DE123456789 => DE)
+     *
      * @return string
      */
     public function getCountryCode()
@@ -71,6 +75,7 @@ class VatIdInformation
 
     /**
      * Returns the VAT number (p.e. DE123456789 => 123456789)
+     *
      * @return string
      */
     public function getVatNumber()

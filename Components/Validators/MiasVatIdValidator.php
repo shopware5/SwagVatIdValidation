@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -29,10 +28,6 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
-/**
- * Class MiasVatIdValidator
- * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
- */
 abstract class MiasVatIdValidator implements VatIdValidatorInterface
 {
     /**
@@ -42,11 +37,14 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
      * If the address data was returned the extended validation checks the similarity to users inputted address data
      */
 
-    /** @var  VatIdValidatorResult */
+    /**
+     * @var VatIdValidatorResult
+     */
     protected $result;
 
     /**
      * Constructor sets the snippet namespace
+     *
      * @param \Shopware_Components_Snippet_Manager $snippetManager
      */
     public function __construct(\Shopware_Components_Snippet_Manager $snippetManager)
@@ -55,10 +53,7 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
     }
 
     /**
-     * Check process of a validator
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation $shopInformation
-     * @return VatIdValidatorResult
+     * {@inheritdoc}
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
@@ -66,6 +61,7 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
             $client = new \SoapClient('http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl');
         } catch (\SoapFault $error) {
             $this->result->setServiceUnavailable();
+
             return $this->result;
         }
 
@@ -74,37 +70,44 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
         try {
             $response = $client->checkVatApprox($data);
 
-            if ($response->valid == true) {
+            if ((bool) $response->valid === true) {
                 // Vat Id is valid
                 $this->addExtendedResults($response, $customerInformation);
+
                 return $this->result;
             }
 
             // Vat Id is invalid
             $this->result->setVatIdInvalid('1');
+
             return $this->result;
         } catch (\SoapFault $error) {
             $errorMessage = strtoupper($error->faultstring);
-            if (in_array($errorMessage, ['SERVICE_UNAVAILABLE', 'MS_UNAVAILABLE', 'TIMEOUT', 'SERVER_BUSY'])) {
+            if (in_array($errorMessage, ['SERVICE_UNAVAILABLE', 'MS_UNAVAILABLE', 'TIMEOUT', 'SERVER_BUSY'], true)) {
                 $this->result->setServiceUnavailable();
+
                 return $this->result;
             }
 
             $this->result->setVatIdInvalid('2');
+
             return $this->result;
         }
     }
 
     /**
      * Helper function that returns an array in the format the validator needs it
+     *
      * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation $shopInformation
+     * @param VatIdInformation         $shopInformation
+     *
      * @return array
      */
     abstract protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
 
     /**
      * Helper function to set the address data results of a qualified confirmation request
+     *
      * @param $response
      * @param VatIdCustomerInformation $customerInformation
      */

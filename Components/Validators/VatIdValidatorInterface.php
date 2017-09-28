@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -31,16 +30,15 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 /**
  * Interface that define the minimum of methods a shopware VAT ID Validator must contain
- *
- * Interface VatIdValidatorInterface
- * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
  */
 interface VatIdValidatorInterface
 {
     /**
      * Validates the VatId, has to return a VatIdValidatorResult
+     *
      * @param \Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation $shopInformation
+     * @param VatIdInformation                                                          $shopInformation
+     *
      * @return VatIdValidatorResult
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);

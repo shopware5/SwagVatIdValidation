@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -26,26 +25,24 @@
 namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
-use Enlight_Components_Session_Namespace as Session;
 use Shopware\Components\DependencyInjection\Container;
 use Shopware\Models\Customer\Customer;
 use Shopware\Plugins\SwagVatIdValidation\Components\ValidationService;
 
-/**
- * Class Login
- *
- * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
- */
 class Login implements SubscriberInterface
 {
-    /** @var  string */
+    /**
+     * @var string
+     */
     private static $action;
 
-    /** @var Container $container */
+    /**
+     * @var Container
+     */
     private $container;
 
     /**
-     * @param string $action
+     * @param string    $action
      * @param Container $container
      */
     public function __construct($action, Container $container)
@@ -55,9 +52,7 @@ class Login implements SubscriberInterface
     }
 
     /**
-     * Returns the events we need to subscribe to
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents()
     {
@@ -67,7 +62,7 @@ class Login implements SubscriberInterface
         }
 
         return [
-            'Shopware_Modules_Admin_Login_Successful' => 'onLoginSuccessful'
+            'Shopware_Modules_Admin_Login_Successful' => 'onLoginSuccessful',
         ];
     }
 
@@ -80,6 +75,10 @@ class Login implements SubscriberInterface
 
         /** @var Customer $customer */
         $customer = $this->container->get('models')->getRepository(Customer::class)->find($user['id']);
+
+        if (!$customer) {
+            return;
+        }
 
         $billingAddress = $customer->getDefaultBillingAddress();
 
@@ -101,7 +100,9 @@ class Login implements SubscriberInterface
             $this->container->get('session')->offsetSet('vatIdValidationStatus', $result->serialize());
 
             return;
-        } elseif (!$required) {
+        }
+
+        if (!$required) {
             //The check is not required, no validation required
             return;
         }

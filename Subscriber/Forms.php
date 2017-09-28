@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -32,18 +31,15 @@ use Shopware\Plugins\SwagVatIdValidation\Bundle\AccountBundle\Constraints\Advanc
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormInterface;
 
-/**
- * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
- */
 class Forms implements SubscriberInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function getSubscribedEvents()
     {
         return [
-            'Shopware_Form_Builder' => 'onFormBuild'
+            'Shopware_Form_Builder' => 'onFormBuild',
         ];
     }
 

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -27,7 +26,6 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
 
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
 use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
 
 /**
  * Extended Bff Validator:
@@ -36,16 +34,15 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
  * - returns a detailed error message, if the VAT ID is invalid
  * - the API itself checks the address data
  * - an official mail confirmation can be optionally requested
- *
- * Class ExtendedBffVatIdValidator
- * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
  */
 class ExtendedBffVatIdValidator extends BffVatIdValidator
 {
     /**
      * Puts the customer and shop information into the format the API needs it.
+     *
      * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation $shopInformation
+     * @param VatIdInformation         $shopInformation
+     *
      * @return array
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
@@ -58,7 +55,7 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
             'Ort' => $customerInformation->getCity(),
             'PLZ' => $customerInformation->getZipCode(),
             'Strasse' => $customerInformation->getStreet(),
-            'Druck' => ($this->confirmation) ? 'ja' : 'nein'
+            'Druck' => $this->confirmation ? 'ja' : 'nein',
         ];
     }
 
@@ -66,8 +63,8 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
      * Evaluates the returned address data of a validation request
      * The Bff validator checks the committed address data itself, so it returns the result of each comparison
      * (A = valid, B = invalid, C = not requested, D = state does not approve)
+     *
      * @param array $response
-     * @return VatIdValidatorResult
      */
     protected function addExtendedResults($response)
     {
@@ -75,24 +72,24 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
             'company' => $response['Erg_Name'],
             'street' => $response['Erg_Str'],
             'zipCode' => $response['Erg_PLZ'],
-            'city' => $response['Erg_Ort']
+            'city' => $response['Erg_Ort'],
         ];
 
         $extendedResults = array_keys($extendedResults, 'B', true);
 
-        if (in_array('company', $extendedResults)) {
+        if (in_array('company', $extendedResults, true)) {
             $this->result->setCompanyInvalid();
         }
 
-        if (in_array('street', $extendedResults)) {
+        if (in_array('street', $extendedResults, true)) {
             $this->result->setStreetInvalid();
         }
 
-        if (in_array('zipCode', $extendedResults)) {
+        if (in_array('zipCode', $extendedResults, true)) {
             $this->result->setZipCodeInvalid();
         }
 
-        if (in_array('city', $extendedResults)) {
+        if (in_array('city', $extendedResults, true)) {
             $this->result->setCityInvalid();
         }
     }

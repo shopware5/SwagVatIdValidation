@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -35,16 +34,15 @@ use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
  * - returns an error message, if the VAT ID is invalid
  * - the API itself doesn't check the address data, the validator class does it manually
  * - an official mail confirmation can't be requested
- *
- * Class ExtendedMiasVatIdValidator
- * @package Shopware\Plugins\SwagVatIdValidation\Components\Validators
  */
 class ExtendedMiasVatIdValidator extends MiasVatIdValidator
 {
     /**
      * Puts the customer and shop information into the format the API needs.
+     *
      * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation $shopInformation
+     * @param VatIdInformation         $shopInformation
+     *
      * @return array
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
@@ -65,7 +63,8 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      * Evaluates the returned address data of a validation request
      * Because the Mias service doesn't compare the address data itself, but rather return the deposited address data
      * (if approved), this validator class has to compare the returned address with the provided address itself.
-     * @param array $response
+     *
+     * @param array                    $response
      * @param VatIdCustomerInformation $customerInformation
      */
     protected function addExtendedResults($response, VatIdCustomerInformation $customerInformation)
@@ -93,6 +92,7 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
 
             $data = $this->validateString($string1, $string2);
         }
+        unset($data);
 
         if (!$extendedData['company']) {
             $this->result->setCompanyInvalid();
@@ -114,8 +114,10 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
     /**
      * Helper function to check the similarity of two address data strings
      * If the difference is too big, the correct error message will be set to result
+     *
      * @param string $string1
      * @param string $string2
+     *
      * @return bool
      */
     private function validateString($string1, $string2)
@@ -130,9 +132,11 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
     /**
      * Helper function to check the similarity of two strings. On default, there have to
      * be a minimum accordance of 75%.
+     *
      * @param $string1
      * @param $string2
      * @param int $minPercentage
+     *
      * @return bool
      */
     private function isSimilar($string1, $string2, $minPercentage = 75)
@@ -142,6 +146,6 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
 
         similar_text($string1, $string2, $percentage);
 
-        return ($percentage >= $minPercentage);
+        return $percentage >= $minPercentage;
     }
 }

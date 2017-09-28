@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -27,7 +26,9 @@ namespace Shopware\Plugins\SwagVatIdValidation\Components;
 
 class EUStates
 {
-    /** @var string[] */
+    /**
+     * @var string[]
+     */
     private static $EUCountries = [
         'AT', //Republic of Austria
         'BE', //Kingdom of Belgium
@@ -62,7 +63,9 @@ class EUStates
 
     /**
      * A helper function that returns a boolean indicating if a country is in the EU or not
+     *
      * @param string $countryIso
+     *
      * @return bool
      */
     public static function isEUCountry($countryIso)
@@ -72,7 +75,9 @@ class EUStates
 
     /**
      * A helper function that returns a boolean if there are valid EU country isos in the array
+     *
      * @param string[] $countryIsos
+     *
      * @return bool
      */
     public static function hasValidEUCountry(array $countryIsos)

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -25,43 +24,55 @@
 
 namespace Shopware\Plugins\SwagVatIdValidation\Components;
 
+use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Country\Country;
 use Shopware\Models\Customer\Address;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\VatIdValidatorInterface;
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\DummyVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleBffVatIdValidator;
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedBffVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleMiasVatIdValidator;
 use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedMiasVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleBffVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleMiasVatIdValidator;
+use Shopware\Plugins\SwagVatIdValidation\Components\Validators\VatIdValidatorInterface;
 use Shopware_Components_Config as ShopwareConfig;
 use Shopware_Components_Snippet_Manager as SnippetManager;
 use Shopware_Components_TemplateMail as TemplateMail;
 
-/**
- * @package Shopware\Plugins\SwagVatIdValidation\Subscriber
- */
 class ValidationService
 {
-    /** @var ShopwareConfig $config */
+    /**
+     * @var ShopwareConfig
+     */
     protected $config;
 
-    /** @var SnippetManager $snippetManager */
+    /**
+     * @var SnippetManager
+     */
     private $snippetManager;
 
-    /** @var ModelManager */
+    /**
+     * @var ModelManager
+     */
     private $modelManager;
 
-    /** @var TemplateMail $templateMail */
+    /**
+     * @var TemplateMail
+     */
     private $templateMail;
 
-    /** @var \Shopware\Models\Customer\BillingRepository $billingRepository */
+    /**
+     * @var \Shopware\Models\Customer\BillingRepository
+     */
     private $billingRepository;
 
-    /** @var \Shopware\Models\Country\Repository $countryRepository */
+    /**
+     * @var \Shopware\Models\Country\Repository
+     */
     private $countryRepository;
 
-    /** @var string */
+    /**
+     * @var string
+     */
     private $countryIso;
 
     /**
@@ -69,8 +80,8 @@ class ValidationService
      *
      * @param ShopwareConfig $config
      * @param SnippetManager $snippetManager
-     * @param ModelManager $modelManager
-     * @param TemplateMail $templateMail
+     * @param ModelManager   $modelManager
+     * @param TemplateMail   $templateMail
      */
     public function __construct(
         ShopwareConfig $config,
@@ -82,8 +93,6 @@ class ValidationService
         $this->snippetManager = $snippetManager;
         $this->modelManager = $modelManager;
         $this->templateMail = $templateMail;
-        $this->billingRepository = null;
-        $this->countryRepository = null;
         $this->countryIso = '';
     }
 
@@ -91,12 +100,13 @@ class ValidationService
      * Helper method returns true if the VAT ID is required
      *
      * @param string $company
-     * @param integer $countryId
+     * @param int    $countryId
+     *
      * @return bool
      */
     public function isVatIdRequired($company, $countryId)
     {
-        /**
+        /*
          * There is no VAT Id required, if...
          * ... the Vat Id is not required in the config,
          */
@@ -104,7 +114,7 @@ class ValidationService
             return false;
         }
 
-        /**
+        /*
          * ... the customer is not a company,
          */
         if (!$company) {
@@ -123,11 +133,11 @@ class ValidationService
             $disabledCountries = array_map('trim', $disabledCountries);
         }
 
-        if (in_array($countryISO, $disabledCountries)) {
+        if (in_array($countryISO, $disabledCountries, true)) {
             return false;
         }
 
-        /**
+        /*
          * ... the billing country is a non-EU-country
          */
         if (!EUStates::isEUCountry($countryISO)) {
@@ -142,7 +152,8 @@ class ValidationService
      * If billing Id is set, the matching customer billing address will be removed if validation result is invalid
      *
      * @param Address $billingAddress
-     * @param boolean $deleteVatIdFromAddress
+     * @param bool    $deleteVatIdFromAddress
+     *
      * @return VatIdValidatorResult
      */
     public function validateVatId(Address $billingAddress, $deleteVatIdFromAddress = true)
@@ -159,7 +170,7 @@ class ValidationService
         $customerInformation = new VatIdCustomerInformation($billingAddress);
         $result = $this->validateWithDummyValidator($customerInformation);
 
-        /**
+        /*
          * If the VAT Id can't be valid, the API validation can be skipped. If the VAT Id belongs to a billing address,
          * the VAT Id will be removed from it and an email will optionally be sent to the shop owner.
          */
@@ -186,10 +197,10 @@ class ValidationService
         }
         $exceptedNonEuISOs = array_map('trim', $exceptedNonEuISOs);
 
-        /**
+        /*
          * If the country code is whitelisted skip validation
          */
-        if (in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs)) {
+        if (in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs, true)) {
             return $result;
         }
 
@@ -228,29 +239,29 @@ class ValidationService
         $shopInformation = new VatIdInformation($this->config->get('vatId'));
         $result = $this->validateWithApiValidator($customerInformation, $shopInformation, $apiValidationType);
 
-        /**
+        /*
          * If the VAT Id or the billing address is invalid or the API service is not available ...
          */
         if (!$result->isValid()) {
-            /**
+            /*
              * ... send a mail to the shop owner
              */
             $this->sendShopOwnerEmail($customerInformation, $result);
 
-            /**
+            /*
              * ... if the api was unavailable return the result, ...
              */
             if ($result->isApiUnavailable()) {
                 return $result;
             }
 
-            /**
+            /*
              * ... otherwise also the VAT Id has to be removed from the billing address.
              */
             $this->removeVatIdFromBilling($billingAddress->getId(), $result, $deleteVatIdFromAddress);
         }
 
-        /**
+        /*
          * The returned result includes a status code, the error messages and error flags
          */
         return $result;
@@ -300,7 +311,8 @@ class ValidationService
     /**
      * Helper function to get the country iso of the given billing address
      *
-     * @param integer $countryId
+     * @param int $countryId
+     *
      * @return string
      */
     private function getCountryIso($countryId)
@@ -318,22 +330,23 @@ class ValidationService
      * Helper function to check a VAT Id with the dummy validator
      *
      * @param VatIdCustomerInformation $customerInformation
+     *
      * @return VatIdValidatorResult
      */
     private function validateWithDummyValidator(VatIdCustomerInformation $customerInformation)
     {
         $validator = new DummyVatIdValidator($this->snippetManager);
-        $result = $validator->check($customerInformation);
 
-        return $result;
+        return $validator->check($customerInformation);
     }
 
     /**
      * Helper function to check a VAT Id with an API Validator (Bff or Mias, simple or extended)
      *
      * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation $shopInformation
-     * @param int $validationType
+     * @param VatIdInformation         $shopInformation
+     * @param int                      $validationType
+     *
      * @return VatIdValidatorResult
      */
     private function validateWithApiValidator(
@@ -360,7 +373,8 @@ class ValidationService
      *
      * @param string $customerCountryCode
      * @param string $shopCountryCode
-     * @param int $validationType
+     * @param int    $validationType
+     *
      * @return VatIdValidatorInterface
      */
     private function createValidator($customerCountryCode, $shopCountryCode, $validationType)
@@ -385,6 +399,7 @@ class ValidationService
      *
      * @param string $customerCountryCode
      * @param string $shopCountryCode
+     *
      * @return VatIdValidatorInterface
      */
     private function createExtendedValidator($customerCountryCode, $shopCountryCode)
@@ -403,9 +418,9 @@ class ValidationService
     /**
      * Helper function to remove the VAT Id from the customer billing address
      *
-     * @param integer $billingAddressId
+     * @param int                  $billingAddressId
      * @param VatIdValidatorResult $result
-     * @param boolean $deleteVatIdFromAddress
+     * @param bool                 $deleteVatIdFromAddress
      */
     private function removeVatIdFromBilling($billingAddressId, VatIdValidatorResult $result, $deleteVatIdFromAddress)
     {
@@ -415,6 +430,11 @@ class ValidationService
 
         /** @var Address $billingAddress */
         $billingAddress = $this->getAddressRepository()->find($billingAddressId);
+
+        if (!$billingAddress) {
+            return;
+        }
+
         $billingAddress->setVatId('');
 
         $this->modelManager->persist($billingAddress);
@@ -429,7 +449,7 @@ class ValidationService
      * Helper function to send an email to the shop owner, informing him about an invalid Vat Id
      *
      * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdValidatorResult $result
+     * @param VatIdValidatorResult     $result
      */
     private function sendShopOwnerEmail(VatIdCustomerInformation $customerInformation, VatIdValidatorResult $result)
     {
@@ -456,7 +476,7 @@ class ValidationService
             'sZipCode' => $customerInformation->getZipCode(),
             'sCity' => $customerInformation->getCity(),
             'sCountryCode' => $customerInformation->getBillingCountryIso(),
-            'sError' => $error
+            'sError' => $error,
         ];
 
         try {
@@ -464,7 +484,7 @@ class ValidationService
             $mail->addTo($email);
             $mail->send();
         } catch (\Exception $e) {
-            Shopware()->Container()->get('pluginlogger')->log(\Monolog\Logger::ERROR, $e->getMessage());
+            Shopware()->Container()->get('pluginlogger')->log(Logger::ERROR, $e->getMessage());
         }
     }
 
