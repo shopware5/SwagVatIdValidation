@@ -8,10 +8,11 @@
     "link": "http://store.shopware.com",
     "author": "Shopware AG",
 
-    "currentVersion": "1.1.5",
+    "currentVersion": "1.1.6",
 
     "changelog": {
         "de": {
+            "1.1.6": "PT-8563 - Smarty Security Fehler behoben;",
             "1.1.5": "PT-7460 - Fehler bei griechischer Ust.-Nr. Validierung behoben; PT-8405 - Template verbessert;",
             "1.1.4": "PT-7403 - Fehler durch mehrfache Validierung der Ust.-Nr.;",
             "1.1.3": "PT-6946 - Bugfix: Fehlerhafte Meldung nach Login; PT-7036 - Bugfix: Fatal Error auf der Bestellabschlussseite; PT-7343 - Feature: Anzeige des Ländercodes in der E-Mail Vorlage;",
@@ -29,6 +30,7 @@
             "1.0.0": "Erstveröffentlichung"
         },
         "en": {
+            "1.1.6": "PT-8563 - Fix smarty security issue;",
             "1.1.5": "PT-7460 - Fix error with greek VAT-ID validation; PT-8405 - Improve template;",
             "1.1.4": "PT-7403 - Error because of multiple validation of the VAT-ID;",
             "1.1.3": "PT-6946 - Bugfix: Wrong message after login; PT-7036 - Bugfix: Fatal Error on checkout finish page; PT-7343 - Feature: Display country code in email template;",
