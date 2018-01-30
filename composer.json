@@ -1,0 +1,9 @@
+{
+    "name": "shopware/swag-vat-id-validation",
+    "type": "shopware-plugin",
+    "description": "Adds support for an API driven Vat. Id validation in Shopware.",
+    "license": "proprietary",
+    "extra": {
+        "installer-name": "SwagVatIdValidation"
+    }
+}
