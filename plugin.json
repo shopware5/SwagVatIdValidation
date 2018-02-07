@@ -8,10 +8,11 @@
     "link": "http://store.shopware.com",
     "author": "Shopware AG",
 
-    "currentVersion": "1.1.6",
+    "currentVersion": "1.2.0",
 
     "changelog": {
         "de": {
+            "1.2.0": "PT-8810 - Shopware 5.4 Kompatibilität;",
             "1.1.6": "PT-8563 - Smarty Security Fehler behoben;",
             "1.1.5": "PT-7460 - Fehler bei griechischer Ust.-Nr. Validierung behoben; PT-8405 - Template verbessert;",
             "1.1.4": "PT-7403 - Fehler durch mehrfache Validierung der Ust.-Nr.;",
@@ -26,10 +27,11 @@
             "1.0.7": "PT-4694 - Bugfix: Installation ohne englischen Sprachshop funktioniert nun wieder, Update entfernt nun überflüssiges Konfigurationsfeld 'Erweiterte Prüfung durchführen';",
             "1.0.6": "PT-4651 - Bugfix: Länder-Ausnahmen unterstützen nun auch Text-Eingaben (bspw. DE,AT)",
             "1.0.5": "PT-3158 - Bugfix: Pflichtfeld mit Leerzeichen; PT-3714, PT-4155 - Bugfix: Problem mit erweiterter Validierung; PT-3890 - Bugfix: Validierung nur für Länder innerhalb der EU; PT-4021 - Feature: Verhindere Checkout, wenn USt-IdNr. benötigt, aber nicht vorhanden ist; PT-4438 - Feature: Länderauswahl als Multiselect Box;",
-            "1.0.1": "PT-2746 - Fix: SW5 Kompatiblität",
+            "1.0.1": "PT-2746 - Fix: SW5 Kompatibilität",
             "1.0.0": "Erstveröffentlichung"
         },
         "en": {
+            "1.2.0": "PT-8810 - Shopware 5.4 compatibility;",
             "1.1.6": "PT-8563 - Fix smarty security issue;",
             "1.1.5": "PT-7460 - Fix error with greek VAT-ID validation; PT-8405 - Improve template;",
             "1.1.4": "PT-7403 - Error because of multiple validation of the VAT-ID;",
@@ -50,7 +52,7 @@
     },
 
     "compatibility": {
-        "minimumVersion": "5.2.0",
+        "minimumVersion": "5.4.0",
         "maximumVersion": null,
         "blacklist": [
         ]
