@@ -469,6 +469,7 @@ class ValidationService implements ValidationServiceInterface
         try {
             $mail = $this->templateMail->createMail('sSWAGVATIDVALIDATION_VALIDATIONERROR', $context);
             $mail->addTo($email);
+            $mail->setFrom($this->config->get('sMAIL'), $this->config->get('sSHOPNAME'));
             $mail->send();
         } catch (\Exception $e) {
             Shopware()->Container()->get('pluginlogger')->log(Logger::ERROR, $e->getMessage());
