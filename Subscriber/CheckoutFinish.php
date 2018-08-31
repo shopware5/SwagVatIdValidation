@@ -22,30 +22,38 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
+namespace SwagVatIdValidation\Subscriber;
 
 use ArrayObject;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Controller_ActionEventArgs as ActionEventArgs;
 use Enlight_Controller_Request_RequestHttp as Request;
 use Enlight_Controller_Response_ResponseHttp as Response;
-use Shopware\Components\DependencyInjection\Container;
-use Shopware\Plugins\SwagVatIdValidation\Components\ValidationService;
 use Shopware_Controllers_Frontend_Checkout as CheckoutController;
+use SwagVatIdValidation\Components\DependencyProviderInterface;
+use SwagVatIdValidation\Components\ValidationServiceInterface;
 
 class CheckoutFinish implements SubscriberInterface
 {
     /**
-     * @var Container
+     * @var DependencyProviderInterface
      */
-    private $container;
+    private $dependencyProvider;
+
+    /**
+     * @var ValidationServiceInterface
+     */
+    private $validationService;
 
     /**
      * {@inheritdoc}
      */
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
+    public function __construct(
+        DependencyProviderInterface $dependencyProvider,
+        ValidationServiceInterface $validationService
+    ) {
+        $this->dependencyProvider = $dependencyProvider;
+        $this->validationService = $validationService;
     }
 
     /**
@@ -86,7 +94,7 @@ class CheckoutFinish implements SubscriberInterface
         }
 
         /** @var ArrayObject $orderDetails */
-        $orderDetails = $this->container->get('session')->get('sOrderVariables');
+        $orderDetails = $this->dependencyProvider->getSession()->get('sOrderVariables');
 
         //The user might have been logged out during the last request.
         //If so, the orderDetails object won't be available.
@@ -97,10 +105,7 @@ class CheckoutFinish implements SubscriberInterface
         $orderDetails = $orderDetails->getArrayCopy();
         $billing = $orderDetails['sUserData']['billingaddress'];
 
-        /** @var ValidationService $validationService */
-        $validationService = $this->container->get('vat_id.validation_service');
-
-        $required = $validationService->isVatIdRequired($billing['company'], $billing['country']['id']);
+        $required = $this->validationService->isVatIdRequired($billing['company'], $billing['country']['id']);
 
         if ($required && !$billing['vatId']) {
             $subject->forward('confirm', 'checkout', null, ['vatIdRequiredButEmpty' => true]);
@@ -126,11 +131,8 @@ class CheckoutFinish implements SubscriberInterface
             return;
         }
 
-        /** @var ValidationService $validationService */
-        $validationService = $this->container->get('vat_id.validation_service');
-
         if ($request->getParam('vatIdRequiredButEmpty')) {
-            $result = $validationService->getRequirementErrorResult();
+            $result = $this->validationService->getRequirementErrorResult();
             $errorMessages = $result->getErrorMessages();
             $subject->View()->assign('sBasketInfo', current($errorMessages));
         }

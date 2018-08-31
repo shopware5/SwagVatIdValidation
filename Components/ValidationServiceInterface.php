@@ -22,15 +22,37 @@
  * our trademarks remain entirely with us.
  */
 
-namespace SwagVatIdValidation\Bundle\AccountBundle\Constraints;
+namespace SwagVatIdValidation\Components;
 
 use Shopware\Models\Customer\Address;
-use Symfony\Component\Validator\Constraint;
 
-class AdvancedVatId extends Constraint
+interface ValidationServiceInterface
 {
     /**
-     * @var Address
+     * Helper method returns true if the VAT ID is required
+     *
+     * @param string $company
+     * @param int    $countryId
+     *
+     * @return bool
      */
-    public $address;
+    public function isVatIdRequired($company, $countryId);
+
+    /**
+     * Helper function for the whole validation process
+     * If billing Id is set, the matching customer billing address will be removed if validation result is invalid
+     *
+     * @param Address $billingAddress
+     * @param bool    $deleteVatIdFromAddress
+     *
+     * @return VatIdValidatorResult
+     */
+    public function validateVatId(Address $billingAddress, $deleteVatIdFromAddress = true);
+
+    /**
+     * Helper method to get a valid result if the VAT ID is required but empty
+     *
+     * @return VatIdValidatorResult
+     */
+    public function getRequirementErrorResult();
 }

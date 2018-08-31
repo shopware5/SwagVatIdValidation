@@ -22,10 +22,10 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Bundle\AccountBundle\Constraints;
+namespace SwagVatIdValidation\Bundle\AccountBundle\Constraints;
 
 use Shopware\Models\Customer\Address;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
+use SwagVatIdValidation\Components\VatIdValidatorResult;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;

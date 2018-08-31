@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/plugin.xsd">
+
+    <label lang="de">Umsatzsteuer-ID Prüfung</label>
+    <label lang="en">Vat ID-Validation</label>
+    <version>2.0.0</version>
+    <copyright>(c) by Shopware AG</copyright>
+    <license>proprietary</license>
+    <link>http://store.shopware.com</link>
+    <author>Shopware AG</author>
+    <compatibility minVersion="5.5.0"/>
+
+    <changelog version="2.0.0">
+        <changes lang="de">PT-9556 - Shopware 5.5 Kompatibilität;</changes>
+        <changes lang="en">PT-9556 - Shopware 5.5 compatibility;</changes>
+    </changelog>
+
+    <changelog version="1.2.0">
+        <changes lang="de">PT-8810 - Shopware 5.4 Kompatibilität;</changes>
+        <changes lang="en">PT-8810 - Shopware 5.4 compatibility;</changes>
+    </changelog>
+
+    <changelog version="1.1.6">
+        <changes lang="de">PT-8563 - Smarty Security Fehler behoben;</changes>
+        <changes lang="en">PT-8563 - Fix smarty security issue;</changes>
+    </changelog>
+
+    <changelog version="1.1.5">
+        <changes lang="de">
+            PT-7460 - Fehler bei griechischer Ust.-Nr. Validierung behoben;
+            PT-8405 - Template verbessert;
+        </changes>
+        <changes lang="en">
+            PT-7460 - Fix error with greek VAT-ID validation;
+            PT-8405 - Improve template;
+        </changes>
+    </changelog>
+
+    <changelog version="1.1.4">
+        <changes lang="de">PT-7403 - Fehler durch mehrfache Validierung der Ust.-Nr.;</changes>
+        <changes lang="en">PT-7403 - Error because of multiple validation of the VAT-ID;</changes>
+    </changelog>
+
+    <changelog version="1.1.3">
+        <changes lang="de">
+            PT-6946 - Bugfix: Fehlerhafte Meldung nach Login;
+            PT-7036 - Bugfix: Fatal Error auf der Bestellabschlussseite;
+            PT-7343 - Feature: Anzeige des Ländercodes in der E-Mail Vorlage;
+        </changes>
+        <changes lang="en">
+            PT-6946 - Bugfix: Wrong message after login;
+            PT-7036 - Bugfix: Fatal Error on checkout finish page;
+            PT-7343 - Feature: Display country code in email template;
+        </changes>
+    </changelog>
+
+    <changelog version="1.1.2">
+        <changes lang="de">PT-6881 - Bugfix: Fehlermeldung bei Privatkunden ohne Ust-Id. entfernt;</changes>
+        <changes lang="en">PT-6881 - Bugfix: Removed error message for private customers without VAT id;</changes>
+    </changelog>
+
+    <changelog version="1.1.1">
+        <changes lang="de">
+            PT-5691 - Bugfix: Verbesserung der Überprüfung;
+            PT-6588 - Bugfix: White listing von Nicht-EU-Staaten;
+        </changes>
+        <changes lang="en">
+            PT-5691 - Bugfix: Improving of check;
+            PT-6588 - Bugfix: White listing of non EU states;
+        </changes>
+    </changelog>
+
+    <changelog version="1.1.0">
+        <changes lang="de">PT-5837 - Feature: Shopware 5.2 Kompatibilität;</changes>
+        <changes lang="en">PT-5837 - Feature: Shopware 5.2 compatibility;</changes>
+    </changelog>
+
+    <changelog version="1.0.11">
+        <changes lang="de">
+            PT-4862 - Bugfix: Die E-Mail-Benachrichtigung kann nun einfach deaktiviert werden;
+            PT-4866 - Feature: Subshopfähigkeit;
+        </changes>
+        <changes lang="en">
+            PT-4862 - Bugfix: The email notification can now be disabled the easy way;
+            PT-4866 - Feature: Added multishop support;
+        </changes>
+    </changelog>
+
+    <changelog version="1.0.10">
+        <changes lang="de">PT-4752 - Bugfix: Update Methode;</changes>
+        <changes lang="en">PT-4752 - Bugfix: Update method;</changes>
+    </changelog>
+
+    <changelog version="1.0.9">
+        <changes lang="de">
+            PT-4709 - Feature: Cache wird nun korrekt nach Plugin-Aktivierung geleert;
+            PT-3190 - Bugfix: Fehlermeldungen werden nicht mehr doppelt ausgegeben;
+        </changes>
+        <changes lang="en">
+            PT-4709 - Feature: Cache will now be properly cleared after (de-)activating a plugin;
+            PT-3190 - Bugfix: Fixed duplicated error-messages;
+        </changes>
+    </changelog>
+
+    <changelog version="1.0.8">
+        <changes lang="de">PT-4694 - Bugfix: Korrektur, wann der Ausnahmen-Hinweis angezeigt wird;</changes>
+        <changes lang="en">PT-4694 - Bugfix: Fixed visibility of the exception message;</changes>
+    </changelog>
+
+    <changelog version="1.0.7">
+        <changes lang="de">PT-4694 - Bugfix: Installation ohne englischen Sprachshop funktioniert nun wieder, Update entfernt nun überflüssiges Konfigurationsfeld 'Erweiterte Prüfung durchführen';</changes>
+        <changes lang="en">PT-4694 - Bugfix: Installation without english language shop throws no longer an exception, Update removes deprecated config field 'Extended checks';</changes>
+    </changelog>
+
+    <changelog version="1.0.6">
+        <changes lang="de">PT-4651 - Bugfix: Länder-Ausnahmen unterstützen nun auch Text-Eingaben (bspw. DE,AT)
+        </changes>
+        <changes lang="en">PT-4651 - Bugfix: Country exclusions for the VAT id will now support plain string input (e.g.
+            DE,AT)
+        </changes>
+    </changelog>
+
+    <changelog version="1.0.5">
+        <changes lang="de">
+            PT-3158 - Bugfix: Pflichtfeld mit Leerzeichen;
+            PT-3714, PT-4155 - Bugfix: Problem mit erweiterter Validierung;
+            PT-3890 - Bugfix: Validierung nur für Länder innerhalb der EU;
+            PT-4021 - Feature:Verhindere Checkout, wenn USt-IdNr. benötigt, aber nicht vorhanden ist;
+            PT-4438 - Feature:Länderauswahl als Multiselect Box;
+        </changes>
+        <changes lang="en">
+            PT-3158 - Bugfix: Required field with space character;
+            PT-3714, PT-4155 - Bugfix: Problem with extended validation;
+            PT-3890 - Bugfix: Validation only for countries within the EU;
+            PT-4021 - Feature: Prevent checkout when VAT ID is required but empty;
+            PT-4438 - Feature: Country selection as multiselect box;
+        </changes>
+    </changelog>
+
+    <changelog version="1.0.1">
+        <changes lang="de">PT-2746 - Fix: SW5 Kompatibilität</changes>
+        <changes lang="en">PT-2746 - Fix: SW5 compatibility</changes>
+    </changelog>
+
+    <changelog version="1.0.0">
+        <changes lang="de">Erstveröffentlichung</changes>
+        <changes lang="en">Initial version</changes>
+    </changelog>
+
+    <description lang="de">
+        <![CDATA[
+        <div style="padding-bottom:12px;color:999;">
+            <p>Dieses Plugin überprüft die Umsatzsteuer-Identifikationsnummer des Kunden auf ihre Richtigkeit.</p>
+            <br>
+            <p>Geprüft wird an folgenden Stellen:</p>
+            <br>
+            <ul>
+                <li>1. Bei Registrierung eines Neukunden</li>
+                <li>2. Bei Änderung der Rechnungsadresse</li>
+                <li>3. Bei jedem Kundenlogin</li>
+            </ul>
+            <br>
+            <p>Wird eine Ust-IdNr. als ungültig erkannt, wird sie aus den Benutzerdaten gelöscht.</p>
+            <p>Gleiches geschieht, wenn die Ust-IdNr. nicht geprüft werden kann.</p>
+            <p>Sollte bei einem Bestandskunden eine Prüfung fehlschlagen, können Sie sich per E-Mail darüber informieren lassen, die Prüfung manuell wiederholen und die Ust-IdNr. ggf. wieder in die Kundendaten eintragen.</p>
+            <p>Die Eingabe der Ust-IdNr. kann für Firmenkunden vorgeschrieben werden.</p>
+            <br>
+            <p>Mit diesem Plugin kann sowohl eine einfache als auch eine qualifizierte Bestätigungsabfrage gestellt werden.</p>
+            <p>Bei der qualifizierten Bestätigungsabfrage kann zudem eine amtliche Bestätigungsmitteilung angefordert werden, die Ihnen als Nachweis der Überprüfungspflicht dient.<br>
+            Bedingung hierfür ist jedoch, dass Sie über eine deutsche und Ihr Kunde über eine ausländische Ust.-Id. verfügen.</p>
+            <br>
+            <p>In jedem anderen Fall ist keine "richtige" qualifizierte Bestätigungsabfrage möglich.</p>
+            <p>Gibt der angefragte EU-Mitgliedsstaat die hinterlegte Adresse zur Ust-IdNr. zurück, wird diese mit den Angaben des Kunden durch das Plugin verglichen.<br>
+            <b>Achtung: Nicht jeder Mitgliedsstaat gibt die Adresse zurück! (z.B. Deutschland) In diesen Fällen wird immer eine einfache Prüfung durchgeführt!</b></p>
+            <br>
+            <p>Weitere Informationen zu dem Thema erhalten Sie unter folgenden Links:</p>
+            <br>
+            <ul>
+                <li>- <a target="_blank" href="http://www.bzst.de/DE/Steuern_International/USt_Identifikationsnummer/Bestaetigung/Bestaetigung_node.html">Bundeszentralamt für Steuern</a>
+                <li>- <a target="_blank" href="http://ec.europa.eu/taxation_customs/vies/faq.html">Europäische Kommission</a>
+            </ul>
+        </div>
+        ]]>
+    </description>
+    <description lang="en">
+        <![CDATA[
+        <div style="padding-bottom:12px;color:999;">
+            <p>This plugin validates the VAT-Id of business customers</p>
+            <br>
+            <p>The validations are:</p>
+            <br>
+            <ul>
+                <li>1. on the registration of a new customer</li>
+                <li>2. on changing the billing address</li>
+                <li>3. on each login</li>
+            </ul>
+            <br>
+            <p>If a VAT-Id is invalid, it will be removed from customers billing address.</p>
+            <p>The same happens, when the validation service is not available.</p>
+            <p>If the validation of a VAT-Id of an existing customer fails, you can get informed by an email, validate the Vat-Id manually and as the circumstances require re-enter it to the customer data.</p>
+            <p>The validation of the VAT-Id can be set required for business customers.</p>
+            <br>
+            <p>With this Plugin you can put a simple as well as a qualified confirmation request.</p>
+            <p>You also can order an official mail confirmation, if you have a german Vat-Id and customers VAT-Id is foreign.</p>
+            <br>
+            <p>In each other case, a "really" qualified confirmation request isn't possible.</p>
+            <p>If the requested EU member state returns the address data for a VAT Id, it will be compared by the plugin with customers inputted address data.<br>
+            <b>Attention: Not every member state returns the address data (p.e. Germany)! In this cases there will also be a simple validation!</b></p>
+            <br>
+            <p>You can get further information about this following this links:</p>
+            <br>
+            <ul>
+                <li>- <a target="_blank" href="http://www.bzst.de/DE/Steuern_International/USt_Identifikationsnummer/Bestaetigung/Bestaetigung_node.html">Federal Central Tax Office</a>
+                <li>- <a target="_blank" href="http://ec.europa.eu/taxation_customs/vies/faq.html">European Commission</a>
+            </ul>
+        </div>
+        ]]>
+    </description>
+
+</plugin>

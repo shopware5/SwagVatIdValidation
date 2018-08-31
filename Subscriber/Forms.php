@@ -22,12 +22,12 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
+namespace SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
 use Enlight_Event_EventArgs as EventArgs;
 use Shopware\Bundle\AccountBundle\Form\Account\AddressFormType;
-use Shopware\Plugins\SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatId;
+use SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatId;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormInterface;
 

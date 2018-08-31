@@ -22,7 +22,7 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Components;
+namespace SwagVatIdValidation\Components;
 
 class VatIdValidatorResult implements \Serializable
 {
