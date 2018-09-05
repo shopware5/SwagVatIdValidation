@@ -22,15 +22,38 @@
  * our trademarks remain entirely with us.
  */
 
-namespace SwagVatIdValidation\Bundle\AccountBundle\Constraints;
+namespace SwagVatIdValidation\Components;
 
-use Shopware\Models\Customer\Address;
-use Symfony\Component\Validator\Constraint;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class AdvancedVatId extends Constraint
+class DependencyProvider implements DependencyProviderInterface
 {
     /**
-     * @var Address
+     * @var ContainerInterface
      */
-    public $address;
+    private $container;
+
+    /**
+     * @param ContainerInterface $container
+     */
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSession()
+    {
+        return $this->container->get('session');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFront()
+    {
+        return $this->container->get('front');
+    }
 }

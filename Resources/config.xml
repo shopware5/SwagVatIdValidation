@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/config.xsd">
+
+    <elements>
+
+        <element scope="shop" required="true">
+            <name>vatId</name>
+            <label lang="de">Eigene USt-IdNr.</label>
+            <label lang="en">Own VAT ID</label>
+            <description lang="de">Eigene USt-IdNr., die zur Prüfung verwendet werden soll.</description>
+            <description lang="en">Your own VAT ID number which is required for validation. During the validation process, your VAT ID is never given to your customers.</description>
+        </element>
+
+        <element type="select" scope="shop">
+            <name>shopEmailNotification</name>
+            <label lang="de">E-Mail-Benachrichtigung</label>
+            <label lang="en">Own email notifications</label>
+            <value>1</value>
+            <description lang="de">
+                <![CDATA[
+                An diese E-Mail-Adresse erhalten Sie eine Mitteilungen, wenn die Ust-IdNr. eines Bestandskunden ungültig ist.<br>
+                1. <u>Nein</u>: Es wird keine E-Mail versendet.<br>
+                2. <u>Shopbetreiber-E-Mail-Adresse</u>: Es wird die E-Mail-Adresse aus den Stammdaten genutzt.<br>
+                <u>Hinweis:</u> Sie können auch eine individuelle E-Mail-Adresse hinterlegen.
+                ]]>
+            </description>
+            <description lang="en">
+                <![CDATA[
+                If provided, you will receive an email when a VAT ID validation error occurs.<br>
+                1. <u>No</u>: You won't receive an email.<br>
+                2. <u>Shopowner email address</u>: The email address of the basic information will be used.<br>
+                <u>Information:</u> You also can enter an individual email address.
+                ]]>
+            </description>
+            <store>
+                <option>
+                    <value>0</value>
+                    <label lang="de">Nein</label>
+                    <label lang="en">No</label>
+                </option>
+                <option>
+                    <value>1</value>
+                    <label lang="de">Shopbetreiber-E-Mail-Adresse</label>
+                    <label lang="en">Shop owner email address</label>
+                </option>
+            </store>
+        </element>
+        
+        <element type="combo" scope="shop">
+            <name>apiValidationType</name>
+            <label lang="de">Art der API-Überprüfung</label>
+            <label lang="en">Type of API validation</label>
+            <value>2</value>
+            <description lang="de">
+                <![CDATA[
+                1. <u>Keine</u>: Es wird keine API-Überprüfung durchgeführt.<br>
+                2. <u>Einfach</u>: Es wird überprüft, ob diese Ust-IdNr. existiert.<br>
+                3. <u>Erweitert</u>: Es wird überprüft, ob diese Ust-IdNr. existiert und zur Adresse passt.
+                <u>Hinweis:</u> Erweiterte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden. Sofern der angefragte EU-Mitgliedsstaat die Adressdaten bereit stellt, werden diese anderenfalls manuell durch das Plugin verglichen.
+                ]]>
+            </description>
+            <description lang="en">
+                <![CDATA[
+                1. <u>None</u>: No API validation process will be executed.<br>
+                2. <u>Simple</u>: It will be checked if the VAT ID exists in general.<br>
+                3. <u>Extended</u>: It will be checked, if the VAT ID exists in general and if it matches the customers address.
+                <u>Information:</u> The extended check will compare the address provided by the customer with the data available in the remote VAT ID validation service. Note: depending on the market of both you and your customer, the completeness of the available information for comparison may be limited.
+                ]]>
+            </description>
+            <store>
+                <option>
+                    <value>1</value>
+                    <label lang="de">Keine</label>
+                    <label lang="en">None</label>
+                </option>
+                <option>
+                    <value>2</value>
+                    <label lang="de">Einfach</label>
+                    <label lang="en">Simple</label>
+                </option>
+                <option>
+                    <value>3</value>
+                    <label lang="de">Erweitert</label>
+                    <label lang="en">Extended</label>
+                </option>
+            </store>
+        </element>
+        
+        <element type="boolean" scope="shop">
+            <name>confirmation</name>
+            <label lang="de">Amtliche Bestätigungsmitteilung</label>
+            <label lang="en">Official mail confirmation</label>
+            <description lang="de">Amtliche Bestätigungsmitteilung bei qualifizierten Bestätigungsanfragen anfordern. Qualifizierte Bestätigungsanfragen können nur von deutschen USt-IdNrn. für ausländische USt-IdNrn. gestellt werden.</description>
+            <description lang="en">Only available for German-based shops. Requests an official mail confirmation for qualified checks of foreign VAT IDs.</description>
+        </element>
+
+        <element type="combo" scope="shop">
+            <name>disabledCountryISOs</name>
+            <label lang="de">Ausnahmen für die erweiterte API-Überprüfung</label>
+            <label lang="en">Exceptions for the adv. API validation</label>
+            <description lang="de">Hier können Sie EU-Länder auswählen, die eine Ausnahme bei der erweiterten API-Validierung bilden.</description>
+            <description lang="en">You can select EU-Countries which will be excluded from the advanced API validation process.</description>
+            <store>
+                <option>
+                    <value>AT</value>
+                    <label lang="de">Österreich</label>
+                    <label lang="en">Austria</label>
+                </option>
+                <option>
+                    <value>BE</value>
+                    <label lang="de">Belgien</label>
+                    <label lang="en">Belgium</label>
+                </option>
+                <option>
+                    <value>BG</value>
+                    <label lang="de">Bulgarien</label>
+                    <label lang="en">Bulgaria</label>
+                </option>
+                <option>
+                    <value>CY</value>
+                    <label lang="de">Zypern</label>
+                    <label lang="en">Cyprus</label>
+                </option>
+                <option>
+                    <value>CZ</value>
+                    <label lang="de">Tschechien</label>
+                    <label lang="en">Czechia</label>
+                </option>
+                <option>
+                    <value>DE</value>
+                    <label lang="de">Deutschland</label>
+                    <label lang="en">Germany</label>
+                </option>
+                <option>
+                    <value>DK</value>
+                    <label lang="de">Dänemark</label>
+                    <label lang="en">Denmark</label>
+                </option>
+                <option>
+                    <value>EE</value>
+                    <label lang="de">Estland</label>
+                    <label lang="en">Estonia</label>
+                </option>
+                <option>
+                    <value>EL</value>
+                    <label lang="de">Griechenland</label>
+                    <label lang="en">Greece</label>
+                </option>
+                <option>
+                    <value>ES</value>
+                    <label lang="de">Spanien</label>
+                    <label lang="en">Spain</label>
+                </option>
+                <option>
+                    <value>FI</value>
+                    <label lang="de">Finnland</label>
+                    <label lang="en">Finland</label>
+                </option>
+                <option>
+                    <value>FR</value>
+                    <label lang="de">Frankreich</label>
+                    <label lang="en">France</label>
+                </option>
+                <option>
+                    <value>GB</value>
+                    <label lang="de">Großbritannien</label>
+                    <label lang="en">Great Britain</label>
+                </option>
+                <option>
+                    <value>HR</value>
+                    <label lang="de">Kroatien</label>
+                    <label lang="en">Croatia</label>
+                </option>
+                <option>
+                    <value>HU</value>
+                    <label lang="de">Ungarn</label>
+                    <label lang="en">Hungary</label>
+                </option>
+                <option>
+                    <value>IE</value>
+                    <label lang="de">Irland</label>
+                    <label lang="en">Ireland</label>
+                </option>
+                <option>
+                    <value>IT</value>
+                    <label lang="de">Italien</label>
+                    <label lang="en">Italy</label>
+                </option>
+                <option>
+                    <value>LT</value>
+                    <label lang="de">Litauen</label>
+                    <label lang="en">Lithuania</label>
+                </option>
+                <option>
+                    <value>LU</value>
+                    <label lang="de">Luxemburg</label>
+                    <label lang="en">Luxembourg</label>
+                </option>
+                <option>
+                    <value>LV</value>
+                    <label lang="de">Lettland</label>
+                    <label lang="en">Latvia</label>
+                </option>
+                <option>
+                    <value>MT</value>
+                    <label lang="de">Malta</label>
+                    <label lang="en">Malta</label>
+                </option>
+                <option>
+                    <value>NL</value>
+                    <label lang="de">Niederlande</label>
+                    <label lang="en">Netherlands</label>
+                </option>
+                <option>
+                    <value>PL</value>
+                    <label lang="de">Polen</label>
+                    <label lang="en">Poland</label>
+                </option>
+                <option>
+                    <value>PT</value>
+                    <label lang="de">Portugal</label>
+                    <label lang="en">Portugal</label>
+                </option>
+                <option>
+                    <value>RO</value>
+                    <label lang="de">Rumänien</label>
+                    <label lang="en">Romania</label>
+                </option>
+                <option>
+                    <value>SE</value>
+                    <label lang="de">Schweden</label>
+                    <label lang="en">Sweden</label>
+                </option>
+                <option>
+                    <value>SI</value>
+                    <label lang="de">Slowenien</label>
+                    <label lang="en">Slovenia</label>
+                </option>
+                <option>
+                    <value>SK</value>
+                    <label lang="de">Slowakei</label>
+                    <label lang="en">Slovakia</label>
+                </option>
+            </store>
+            <options>
+                <multiSelect>true</multiSelect>
+            </options>
+        </element>
+
+    </elements>
+</config>

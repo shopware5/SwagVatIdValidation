@@ -22,23 +22,23 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Components;
+namespace SwagVatIdValidation\Components;
 
 use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Country\Country;
 use Shopware\Models\Customer\Address;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\DummyVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedBffVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\ExtendedMiasVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleBffVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\SimpleMiasVatIdValidator;
-use Shopware\Plugins\SwagVatIdValidation\Components\Validators\VatIdValidatorInterface;
 use Shopware_Components_Config as ShopwareConfig;
 use Shopware_Components_Snippet_Manager as SnippetManager;
 use Shopware_Components_TemplateMail as TemplateMail;
+use SwagVatIdValidation\Components\Validators\DummyVatIdValidator;
+use SwagVatIdValidation\Components\Validators\ExtendedBffVatIdValidator;
+use SwagVatIdValidation\Components\Validators\ExtendedMiasVatIdValidator;
+use SwagVatIdValidation\Components\Validators\SimpleBffVatIdValidator;
+use SwagVatIdValidation\Components\Validators\SimpleMiasVatIdValidator;
+use SwagVatIdValidation\Components\Validators\VatIdValidatorInterface;
 
-class ValidationService
+class ValidationService implements ValidationServiceInterface
 {
     /**
      * @var ShopwareConfig
@@ -97,12 +97,7 @@ class ValidationService
     }
 
     /**
-     * Helper method returns true if the VAT ID is required
-     *
-     * @param string $company
-     * @param int    $countryId
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function isVatIdRequired($company, $countryId)
     {
@@ -148,13 +143,7 @@ class ValidationService
     }
 
     /**
-     * Helper function for the whole validation process
-     * If billing Id is set, the matching customer billing address will be removed if validation result is invalid
-     *
-     * @param Address $billingAddress
-     * @param bool    $deleteVatIdFromAddress
-     *
-     * @return VatIdValidatorResult
+     * {@inheritdoc}
      */
     public function validateVatId(Address $billingAddress, $deleteVatIdFromAddress = true)
     {
@@ -268,9 +257,7 @@ class ValidationService
     }
 
     /**
-     * Helper method to get a valid result if the VAT ID is required but empty
-     *
-     * @return VatIdValidatorResult
+     * {@inheritdoc}
      */
     public function getRequirementErrorResult()
     {

@@ -22,15 +22,15 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Bundle\AccountBundle\Service\Validator;
+namespace SwagVatIdValidation\Bundle\AccountBundle\Service\Validator;
 
 use Shopware\Bundle\AccountBundle\Service\Validator\AddressValidatorInterface;
 use Shopware\Components\Api\Exception\ValidationException;
 use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
-use Shopware\Plugins\SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatId;
-use Shopware\Plugins\SwagVatIdValidation\Components\ValidationService;
 use Shopware_Components_Config as ShopwareConfig;
+use SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatId;
+use SwagVatIdValidation\Components\ValidationServiceInterface;
 use Symfony\Component\Validator\Validator\ContextualValidatorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -47,7 +47,7 @@ class AddressValidatorDecorator implements AddressValidatorInterface
     private $coreAddressValidator;
 
     /**
-     * @var ValidationService
+     * @var ValidationServiceInterface
      */
     private $validationService;
 
@@ -57,15 +57,15 @@ class AddressValidatorDecorator implements AddressValidatorInterface
     private $validator;
 
     /**
-     * @param AddressValidatorInterface $coreAddressValidator
-     * @param ShopwareConfig            $config
-     * @param ValidationService         $validationService
-     * @param ValidatorInterface        $validator
+     * @param AddressValidatorInterface  $coreAddressValidator
+     * @param ShopwareConfig             $config
+     * @param ValidationServiceInterface $validationService
+     * @param ValidatorInterface         $validator
      */
     public function __construct(
         AddressValidatorInterface $coreAddressValidator,
         ShopwareConfig $config,
-        ValidationService $validationService,
+        ValidationServiceInterface $validationService,
         ValidatorInterface $validator
     ) {
         $this->coreAddressValidator = $coreAddressValidator;

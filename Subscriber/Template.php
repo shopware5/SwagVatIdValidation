@@ -22,36 +22,54 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
+namespace SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
 use Enlight_Controller_Action;
 use Enlight_Controller_ActionEventArgs as ActionEventArgs;
 use Enlight_Controller_Request_RequestHttp as Request;
-use Shopware\Components\DependencyInjection\Container;
-use Shopware\Plugins\SwagVatIdValidation\Components\EUStates;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
+use SwagVatIdValidation\Components\DependencyProviderInterface;
+use SwagVatIdValidation\Components\EUStates;
+use SwagVatIdValidation\Components\VatIdValidatorResult;
 
 class Template implements SubscriberInterface
 {
     /**
-     * @var Container
+     * @var DependencyProviderInterface
      */
-    private $container;
+    private $dependencyProvider;
+
+    /**
+     * @var \Shopware_Components_Snippet_Manager
+     */
+    private $snippetManager;
+
+    /**
+     * @var \Shopware_Components_Config
+     */
+    private $config;
 
     /**
      * @var string
      */
-    private $path;
+    private $pluginPath;
 
     /**
-     * @param Container $container
-     * @param string    $path
+     * @param DependencyProviderInterface          $dependencyProvider
+     * @param \Shopware_Components_Snippet_Manager $snippetManager
+     * @param \Shopware_Components_Config          $config
+     * @param string                               $pluginPath
      */
-    public function __construct(Container $container, $path)
-    {
-        $this->container = $container;
-        $this->path = $path;
+    public function __construct(
+        DependencyProviderInterface $dependencyProvider,
+        \Shopware_Components_Snippet_Manager $snippetManager,
+        \Shopware_Components_Config $config,
+        $pluginPath
+    ) {
+        $this->dependencyProvider = $dependencyProvider;
+        $this->snippetManager = $snippetManager;
+        $this->config = $config;
+        $this->pluginPath = $pluginPath;
     }
 
     /**
@@ -116,12 +134,12 @@ class Template implements SubscriberInterface
         }
 
         /** @var \Enlight_Components_Session_Namespace $session */
-        $session = $this->container->get('session');
+        $session = $this->dependencyProvider->getSession();
 
         /** @var $view \Enlight_View_Default */
         $view = $controller->View();
 
-        $view->addTemplateDir($this->path . 'Views/');
+        $view->addTemplateDir($this->pluginPath . '/Resources/views/');
 
         if ($view->getAssign('sUserData')['billingaddress']['company'] === null) {
             return;
@@ -133,7 +151,7 @@ class Template implements SubscriberInterface
         if ($session->offsetExists('vatIdValidationStatus')) {
             $serialized = $session->get('vatIdValidationStatus');
 
-            $result = new VatIdValidatorResult($this->container->get('snippets'));
+            $result = new VatIdValidatorResult($this->snippetManager);
             $result->unserialize($serialized);
             $session->offsetUnset('vatIdValidationStatus');
 
@@ -145,7 +163,7 @@ class Template implements SubscriberInterface
             unset($errorMessages['required']);
         }
 
-        $required = (bool) $this->container->get('config')->get('vatcheckrequired');
+        $required = (bool) $this->config->get('vatcheckrequired');
         $displayMessage = $required ? $this->hasExceptedEUCountries() : false;
 
         $view->assign(
@@ -168,7 +186,7 @@ class Template implements SubscriberInterface
     private function hasExceptedEUCountries()
     {
         /** @var array|string $ISOs */
-        $ISOs = $this->container->get('config')->get('disabledCountryISOs');
+        $ISOs = $this->config->get('disabledCountryISOs');
 
         if (is_string($ISOs)) {
             $ISOs = explode(',', $ISOs);

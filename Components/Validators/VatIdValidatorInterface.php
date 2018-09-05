@@ -22,11 +22,11 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
+namespace SwagVatIdValidation\Components\Validators;
 
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
+use SwagVatIdValidation\Components\VatIdCustomerInformation;
+use SwagVatIdValidation\Components\VatIdInformation;
+use SwagVatIdValidation\Components\VatIdValidatorResult;
 
 /**
  * Interface that define the minimum of methods a shopware VAT ID Validator must contain
@@ -36,8 +36,8 @@ interface VatIdValidatorInterface
     /**
      * Validates the VatId, has to return a VatIdValidatorResult
      *
-     * @param \Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation                                                          $shopInformation
+     * @param \SwagVatIdValidation\Components\VatIdCustomerInformation $customerInformation
+     * @param VatIdInformation                                         $shopInformation
      *
      * @return VatIdValidatorResult
      */

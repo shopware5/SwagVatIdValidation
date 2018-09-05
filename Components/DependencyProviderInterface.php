@@ -22,15 +22,17 @@
  * our trademarks remain entirely with us.
  */
 
-namespace SwagVatIdValidation\Bundle\AccountBundle\Constraints;
+namespace SwagVatIdValidation\Components;
 
-use Shopware\Models\Customer\Address;
-use Symfony\Component\Validator\Constraint;
-
-class AdvancedVatId extends Constraint
+interface DependencyProviderInterface
 {
     /**
-     * @var Address
+     * @return \Enlight_Components_Session_Namespace
      */
-    public $address;
+    public function getSession();
+
+    /**
+     * @return \Enlight_Controller_Front|object
+     */
+    public function getFront();
 }

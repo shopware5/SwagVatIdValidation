@@ -22,33 +22,44 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Subscriber;
+namespace SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
-use Shopware\Components\DependencyInjection\Container;
+use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Customer\Customer;
-use Shopware\Plugins\SwagVatIdValidation\Components\ValidationService;
+use SwagVatIdValidation\Components\DependencyProviderInterface;
+use SwagVatIdValidation\Components\ValidationServiceInterface;
 
 class Login implements SubscriberInterface
 {
     /**
-     * @var string
+     * @var DependencyProviderInterface
      */
-    private static $action;
+    private $dependencyProvider;
 
     /**
-     * @var Container
+     * @var ValidationServiceInterface
      */
-    private $container;
+    private $validationService;
 
     /**
-     * @param string    $action
-     * @param Container $container
+     * @var ModelManager
      */
-    public function __construct($action, Container $container)
-    {
-        self::$action = $action;
-        $this->container = $container;
+    private $modelManager;
+
+    /**
+     * @param DependencyProviderInterface $dependencyProvider
+     * @param ValidationServiceInterface  $validationService
+     * @param ModelManager                $modelManager
+     */
+    public function __construct(
+        DependencyProviderInterface $dependencyProvider,
+        ValidationServiceInterface $validationService,
+        ModelManager $modelManager
+    ) {
+        $this->dependencyProvider = $dependencyProvider;
+        $this->validationService = $validationService;
+        $this->modelManager = $modelManager;
     }
 
     /**
@@ -56,11 +67,6 @@ class Login implements SubscriberInterface
      */
     public static function getSubscribedEvents()
     {
-        //After successfully registration, this would be a second validation. The first on save, the second on login.
-        if (self::$action === 'saveRegister') {
-            return [];
-        }
-
         return [
             'Shopware_Modules_Admin_Login_Successful' => 'onLoginSuccessful',
         ];
@@ -71,33 +77,34 @@ class Login implements SubscriberInterface
      */
     public function onLoginSuccessful(\Enlight_Event_EventArgs $arguments)
     {
+        //After successfully registration, this would be a second validation. The first on save, the second on login.
+        if ($this->dependencyProvider->getFront()->Request()->getActionName() === 'saveRegister') {
+            return;
+        }
+
         $user = $arguments->get('user');
-
         /** @var Customer $customer */
-        $customer = $this->container->get('models')->getRepository(Customer::class)->find($user['id']);
-
+        $customer = $this->modelManager->getRepository(Customer::class)->find($user['id']);
         if (!$customer) {
             return;
         }
 
         $billingAddress = $customer->getDefaultBillingAddress();
-
         if (!$billingAddress) {
             return;
         }
 
-        /** @var ValidationService $validationService */
-        $validationService = $this->container->get('vat_id.validation_service');
-
         /** If the VAT ID is required, but empty, set the requirement error */
-        $required = $validationService->isVatIdRequired(
+        $required = $this->validationService->isVatIdRequired(
             $billingAddress->getCompany(),
             $billingAddress->getCountry()->getId()
         );
 
+        $session = $this->dependencyProvider->getSession();
+
         if ($required && (!trim($billingAddress->getVatId()))) {
-            $result = $validationService->getRequirementErrorResult();
-            $this->container->get('session')->offsetSet('vatIdValidationStatus', $result->serialize());
+            $result = $this->validationService->getRequirementErrorResult();
+            $session->offsetSet('vatIdValidationStatus', $result->serialize());
 
             return;
         }
@@ -107,8 +114,8 @@ class Login implements SubscriberInterface
             return;
         }
 
-        $result = $validationService->validateVatId($billingAddress);
+        $result = $this->validationService->validateVatId($billingAddress);
 
-        $this->container->get('session')->offsetSet('vatIdValidationStatus', $result->serialize());
+        $session->offsetSet('vatIdValidationStatus', $result->serialize());
     }
 }

@@ -22,12 +22,12 @@
  * our trademarks remain entirely with us.
  */
 
-namespace Shopware\Plugins\SwagVatIdValidation\Components\Validators;
+namespace SwagVatIdValidation\Components\Validators;
 
-use Shopware\Plugins\SwagVatIdValidation\Components\EUStates;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdCustomerInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdInformation;
-use Shopware\Plugins\SwagVatIdValidation\Components\VatIdValidatorResult;
+use SwagVatIdValidation\Components\EUStates;
+use SwagVatIdValidation\Components\VatIdCustomerInformation;
+use SwagVatIdValidation\Components\VatIdInformation;
+use SwagVatIdValidation\Components\VatIdValidatorResult;
 
 /**
  * Dummy validation
