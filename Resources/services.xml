@@ -52,5 +52,10 @@
             <tag name="shopware.event_subscriber"/>
         </service>
 
+        <service id="swag_vat_id_validation.advanced_vat_id_validator" class="SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatIdValidator">
+            <argument type="service" id="swag_vat_id_validation.validation_service"/>
+            <tag name="validator.constraint_validator" alias="swag_vat_id_validation.advanced_vat_id_validator" />
+        </service>
+
     </services>
 </container>

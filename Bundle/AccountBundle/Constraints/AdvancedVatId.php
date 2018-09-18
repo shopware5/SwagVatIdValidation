@@ -33,4 +33,12 @@ class AdvancedVatId extends Constraint
      * @var Address
      */
     public $address;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validatedBy()
+    {
+        return 'swag_vat_id_validation.advanced_vat_id_validator';
+    }
 }

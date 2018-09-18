@@ -48,7 +48,8 @@ class Forms implements SubscriberInterface
      */
     public function onFormBuild(EventArgs $args)
     {
-        if ($args->get('reference') !== AddressFormType::class) {
+        $ref = $args->get('reference');
+        if ($ref !== AddressFormType::class && $ref !== 'address') {
             return;
         }
 

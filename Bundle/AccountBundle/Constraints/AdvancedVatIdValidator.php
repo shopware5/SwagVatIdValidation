@@ -25,6 +25,7 @@
 namespace SwagVatIdValidation\Bundle\AccountBundle\Constraints;
 
 use Shopware\Models\Customer\Address;
+use SwagVatIdValidation\Components\ValidationServiceInterface;
 use SwagVatIdValidation\Components\VatIdValidatorResult;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Validator\Constraint;
@@ -32,6 +33,19 @@ use Symfony\Component\Validator\ConstraintValidator;
 
 class AdvancedVatIdValidator extends ConstraintValidator
 {
+    /**
+     * @var ValidationServiceInterface
+     */
+    private $validationService;
+
+    /**
+     * @param ValidationServiceInterface $validationService
+     */
+    public function __construct(ValidationServiceInterface $validationService)
+    {
+        $this->validationService = $validationService;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -59,7 +73,7 @@ class AdvancedVatIdValidator extends ConstraintValidator
         }
 
         /** @var VatIdValidatorResult $result */
-        $result = Shopware()->Container()->get('vat_id.validation_service')->validateVatId($address, false);
+        $result = $this->validationService->validateVatId($address, false);
 
         if (empty($result->getErrorMessages())) {
             return;
