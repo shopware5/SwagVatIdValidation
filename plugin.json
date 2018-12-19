@@ -8,10 +8,11 @@
     "link": "http://store.shopware.com",
     "author": "Shopware AG",
 
-    "currentVersion": "1.2.0",
+    "currentVersion": "1.2.1",
 
     "changelog": {
         "de": {
+            "1.2.1": "PT-10001 - Erlaube weiteren Response Code beim Bff Validator;",
             "1.2.0": "PT-8810 - Shopware 5.4 Kompatibilität;",
             "1.1.6": "PT-8563 - Smarty Security Fehler behoben;",
             "1.1.5": "PT-7460 - Fehler bei griechischer Ust.-Nr. Validierung behoben; PT-8405 - Template verbessert;",
@@ -31,6 +32,7 @@
             "1.0.0": "Erstveröffentlichung"
         },
         "en": {
+            "1.2.1": "PT-10001 - Allow further response code using the Bff validator;",
             "1.2.0": "PT-8810 - Shopware 5.4 compatibility;",
             "1.1.6": "PT-8563 - Fix smarty security issue;",
             "1.1.5": "PT-7460 - Fix error with greek VAT-ID validation; PT-8405 - Improve template;",
