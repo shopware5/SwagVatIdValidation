@@ -69,7 +69,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
         //The bff validator api does only support 'EL' as greece iso. Therefore, we replace the original GR with the EL.
         $data['UstId_2'] = str_replace('GR', 'EL', $data['UstId_2']);
 
-        $apiRequest = 'http://evatr.bff-online.de/evatrRPC?';
+        $apiRequest = 'https://evatr.bff-online.de/evatrRPC?';
         $apiRequest .= http_build_query($data, '', '&');
 
         $context = stream_context_create(
@@ -125,7 +125,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
      */
     private function createSimpleValidatorResult($response)
     {
-        if ($response['ErrorCode'] === '200') {
+        if ($response['ErrorCode'] === '200' || $response['ErrorCode'] === '222') {
             return;
         }
 
