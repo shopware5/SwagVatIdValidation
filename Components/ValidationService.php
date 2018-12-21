@@ -27,7 +27,9 @@ namespace SwagVatIdValidation\Components;
 use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Country\Country;
+use Shopware\Models\Country\Repository as CountryRepository;
 use Shopware\Models\Customer\Address;
+use Shopware\Models\Customer\AddressRepository;
 use Shopware_Components_Config as ShopwareConfig;
 use Shopware_Components_Snippet_Manager as SnippetManager;
 use Shopware_Components_TemplateMail as TemplateMail;
@@ -61,12 +63,12 @@ class ValidationService implements ValidationServiceInterface
     private $templateMail;
 
     /**
-     * @var \Shopware\Models\Customer\BillingRepository
+     * @var AddressRepository
      */
     private $billingRepository;
 
     /**
-     * @var \Shopware\Models\Country\Repository
+     * @var CountryRepository
      */
     private $countryRepository;
 
@@ -270,7 +272,7 @@ class ValidationService implements ValidationServiceInterface
     /**
      * Helper function to get the address repository
      *
-     * @return \Shopware\Models\Customer\AddressRepository
+     * @return AddressRepository
      */
     private function getAddressRepository()
     {
@@ -284,7 +286,7 @@ class ValidationService implements ValidationServiceInterface
     /**
      * Helper function to get the CountryRepository
      *
-     * @return \Shopware\Models\Country\Repository
+     * @return CountryRepository
      */
     private function getCountryRepository()
     {
@@ -322,9 +324,7 @@ class ValidationService implements ValidationServiceInterface
      */
     private function validateWithDummyValidator(VatIdCustomerInformation $customerInformation)
     {
-        $validator = new DummyVatIdValidator($this->snippetManager);
-
-        return $validator->check($customerInformation);
+        return (new DummyVatIdValidator($this->snippetManager))->check($customerInformation);
     }
 
     /**
