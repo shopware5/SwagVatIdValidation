@@ -4,12 +4,17 @@
 
     <label lang="de">Umsatzsteuer-ID Prüfung</label>
     <label lang="en">Vat ID-Validation</label>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
     <copyright>(c) by Shopware AG</copyright>
     <license>proprietary</license>
     <link>http://store.shopware.com</link>
     <author>Shopware AG</author>
     <compatibility minVersion="5.5.0"/>
+
+    <changelog version="2.0.2">
+        <changes lang="de">PT-9300 - Absender zur Info-Mail hinzugefügt;</changes>
+        <changes lang="en">PT-9300 - Add sender to information mail;</changes>
+    </changelog>
 
     <changelog version="2.0.1">
         <changes lang="de">PT-9938 - Erlaube weiteren Response Code beim Bff Validator;</changes>
