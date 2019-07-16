@@ -83,7 +83,16 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
             return $this->result;
         } catch (\SoapFault $error) {
             $errorMessage = strtoupper($error->faultstring);
-            if (in_array($errorMessage, ['SERVICE_UNAVAILABLE', 'MS_UNAVAILABLE', 'TIMEOUT', 'SERVER_BUSY'], true)) {
+            $errorTypes = [
+                'GLOBAL_MAX_CONCURRENT_REQ',
+                'MS_MAX_CONCURRENT_REQ',
+                'SERVICE_UNAVAILABLE',
+                'MS_UNAVAILABLE',
+                'TIMEOUT',
+                'SERVER_BUSY'
+            ];
+
+            if (in_array($errorMessage, $errorTypes, true)) {
                 $this->result->setServiceUnavailable();
 
                 return $this->result;
