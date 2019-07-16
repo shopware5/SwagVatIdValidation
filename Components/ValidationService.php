@@ -172,7 +172,7 @@ class ValidationService implements ValidationServiceInterface
             return $result;
         }
 
-        $apiValidationType = $this->config->get('apiValidationType');
+        $apiValidationType = (int) $this->config->get('apiValidationType');
 
         if ($apiValidationType === APIValidationType::NONE) {
             return $result;
