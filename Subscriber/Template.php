@@ -81,6 +81,7 @@ class Template implements SubscriberInterface
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Account' => 'onPostDispatchFrontendAccount',
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onPostDispatchFrontendCheckout',
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Register' => 'onPostDispatchFrontendRegister',
+            'Theme_Inheritance_Template_Directories_Collected' => 'onTemplatesCollected',
         ];
     }
 
@@ -119,6 +120,18 @@ class Template implements SubscriberInterface
     }
 
     /**
+     * @param \Enlight_Event_EventArgs $arguments
+     */
+    public function onTemplatesCollected(\Enlight_Event_EventArgs $arguments)
+    {
+        $dirs = $arguments->getReturn();
+
+        $dirs[] = $this->pluginPath . '/Resources/views';
+
+        $arguments->setReturn($dirs);
+    }
+
+    /**
      * Helper function to assign the plugin data to the template
      *
      * @param Enlight_Controller_Action $controller
@@ -138,9 +151,6 @@ class Template implements SubscriberInterface
 
         /** @var $view \Enlight_View_Default */
         $view = $controller->View();
-
-        $view->addTemplateDir($this->pluginPath . '/Resources/views/');
-
         if ($view->getAssign('sUserData')['billingaddress']['company'] === null) {
             return;
         }
