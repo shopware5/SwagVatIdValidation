@@ -21,7 +21,9 @@
  * trademark license. Therefore any rights, title and interest in
  * our trademarks remain entirely with us.
  */
+
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Query\QueryBuilder;
 
 class Shopware_Controllers_Widgets_SwagVatIdValidation extends Enlight_Controller_Action
 {
@@ -40,7 +42,7 @@ class Shopware_Controllers_Widgets_SwagVatIdValidation extends Enlight_Controlle
             $ISOs = $ISOs->toArray();
         }
 
-        /** @var \Doctrine\DBAL\Query\QueryBuilder $builder */
+        /** @var QueryBuilder $builder */
         $builder = $this->get('dbal_connection')->createQueryBuilder();
 
         $countryNameArray = $builder->select('countries.countryname')

@@ -132,8 +132,7 @@ class CheckoutFinish implements SubscriberInterface
         }
 
         if ($request->getParam('vatIdRequiredButEmpty')) {
-            $result = $this->validationService->getRequirementErrorResult();
-            $errorMessages = $result->getErrorMessages();
+            $errorMessages = $this->validationService->getRequirementErrorResult()->getErrorMessages();
             $subject->View()->assign('sBasketInfo', current($errorMessages));
         }
     }

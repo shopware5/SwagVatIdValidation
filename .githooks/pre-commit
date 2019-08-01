@@ -118,6 +118,7 @@ class PreCommitChecks
             return;
         }
 
+        $fixes = [];
         foreach ($fileList as $file) {
             exec('./../../../vendor/bin/php-cs-fixer fix -v --no-ansi --dry-run ' . escapeshellarg($file) . ' 2>&1', $output, $return);
 

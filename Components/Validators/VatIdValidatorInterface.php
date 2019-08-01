@@ -36,8 +36,8 @@ interface VatIdValidatorInterface
     /**
      * Validates the VatId, has to return a VatIdValidatorResult
      *
-     * @param \SwagVatIdValidation\Components\VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation                                         $shopInformation
+     * @param VatIdCustomerInformation $customerInformation
+     * @param VatIdInformation         $shopInformation
      *
      * @return VatIdValidatorResult
      */

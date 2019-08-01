@@ -89,7 +89,7 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
                 'SERVICE_UNAVAILABLE',
                 'MS_UNAVAILABLE',
                 'TIMEOUT',
-                'SERVER_BUSY'
+                'SERVER_BUSY',
             ];
 
             if (in_array($errorMessage, $errorTypes, true)) {
