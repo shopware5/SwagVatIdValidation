@@ -43,9 +43,6 @@ class Forms implements SubscriberInterface
         ];
     }
 
-    /**
-     * @param EventArgs $args
-     */
     public function onFormBuild(EventArgs $args)
     {
         $ref = $args->get('reference');

@@ -34,9 +34,6 @@ use SwagVatIdValidation\Bootstrap\Uninstaller;
 
 class SwagVatIdValidation extends Plugin
 {
-    /**
-     * @param InstallContext $context
-     */
     public function install(InstallContext $context)
     {
         $installer = new Installer(
@@ -46,9 +43,6 @@ class SwagVatIdValidation extends Plugin
         $installer->install();
     }
 
-    /**
-     * @param UninstallContext $context
-     */
     public function uninstall(UninstallContext $context)
     {
         $uninstaller = new Uninstaller(
@@ -60,17 +54,11 @@ class SwagVatIdValidation extends Plugin
         $context->scheduleClearCache(UninstallContext::CACHE_LIST_ALL);
     }
 
-    /**
-     * @param ActivateContext $context
-     */
     public function activate(ActivateContext $context)
     {
         $context->scheduleClearCache(ActivateContext::CACHE_LIST_ALL);
     }
 
-    /**
-     * @param DeactivateContext $context
-     */
     public function deactivate(DeactivateContext $context)
     {
         $context->scheduleClearCache(DeactivateContext::CACHE_LIST_ALL);

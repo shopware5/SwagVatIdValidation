@@ -38,9 +38,6 @@ class SimpleBffVatIdValidator extends BffVatIdValidator
     /**
      * Puts the customer and shop information into the format the API needs it.
      *
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation         $shopInformation
-     *
      * @return array
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)

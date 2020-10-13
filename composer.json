@@ -5,5 +5,14 @@
     "license": "proprietary",
     "extra": {
         "installer-name": "SwagVatIdValidation"
-    }
+    },
+    "require-dev": {
+        "shopware/plugin-dev-tools": "dev-2.x-dev"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/shopwareLabs/plugin-dev-tools"
+        }
+    ]
 }

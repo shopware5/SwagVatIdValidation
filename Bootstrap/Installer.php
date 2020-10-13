@@ -37,9 +37,6 @@ class Installer
      */
     private $modelManager;
 
-    /**
-     * @param ModelManager $modelManager
-     */
     public function __construct(ModelManager $modelManager)
     {
         $this->modelManager = $modelManager;
@@ -109,8 +106,6 @@ class Installer
     }
 
     /**
-     * @param Mail $mail
-     *
      * @return Translation|null
      */
     private function getTranslation(Mail $mail)

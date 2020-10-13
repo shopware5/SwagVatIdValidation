@@ -55,8 +55,6 @@ class VatIdCustomerInformation extends VatIdInformation
 
     /**
      * Constructor sets all properties
-     *
-     * @param Address $billingAddress
      */
     public function __construct(Address $billingAddress)
     {

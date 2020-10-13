@@ -56,12 +56,6 @@ class AddressValidatorDecorator implements AddressValidatorInterface
      */
     private $validator;
 
-    /**
-     * @param AddressValidatorInterface  $coreAddressValidator
-     * @param ShopwareConfig             $config
-     * @param ValidationServiceInterface $validationService
-     * @param ValidatorInterface         $validator
-     */
     public function __construct(
         AddressValidatorInterface $coreAddressValidator,
         ShopwareConfig $config,
@@ -105,7 +99,6 @@ class AddressValidatorDecorator implements AddressValidatorInterface
     }
 
     /**
-     * @param Address                      $address
      * @param ContextualValidatorInterface $validationContext
      */
     private function addVatIdValidation(Address $address, $validationContext)

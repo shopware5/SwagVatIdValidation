@@ -38,9 +38,6 @@ class AdvancedVatIdValidator extends ConstraintValidator
      */
     private $validationService;
 
-    /**
-     * @param ValidationServiceInterface $validationService
-     */
     public function __construct(ValidationServiceInterface $validationService)
     {
         $this->validationService = $validationService;

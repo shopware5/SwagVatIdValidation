@@ -71,8 +71,6 @@ class CheckoutFinish implements SubscriberInterface
 
     /**
      * Listener to check on checkout finish, whether the VAT ID is stated when required
-     *
-     * @param ActionEventArgs $arguments
      */
     public function onPreDispatchCheckout(ActionEventArgs $arguments)
     {
@@ -116,8 +114,6 @@ class CheckoutFinish implements SubscriberInterface
 
     /**
      * Listener to show the requirement error message
-     *
-     * @param ActionEventArgs $arguments
      */
     public function onPostDispatchCheckout(ActionEventArgs $arguments)
     {

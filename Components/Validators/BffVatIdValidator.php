@@ -50,8 +50,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
     /**
      * Constructor sets the snippet namespace
      *
-     * @param \Shopware_Components_Snippet_Manager $snippetManager
-     * @param bool                                 $confirmation
+     * @param bool $confirmation
      */
     public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, $confirmation = false)
     {
@@ -103,9 +102,6 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
 
     /**
      * Helper function that returns an array in the format the validator needs it
-     *
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation         $shopInformation
      *
      * @return array
      */

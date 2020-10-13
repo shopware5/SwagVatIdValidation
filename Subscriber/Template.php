@@ -55,10 +55,7 @@ class Template implements SubscriberInterface
     private $pluginPath;
 
     /**
-     * @param DependencyProviderInterface          $dependencyProvider
-     * @param \Shopware_Components_Snippet_Manager $snippetManager
-     * @param \Shopware_Components_Config          $config
-     * @param string                               $pluginPath
+     * @param string $pluginPath
      */
     public function __construct(
         DependencyProviderInterface $dependencyProvider,
@@ -89,8 +86,6 @@ class Template implements SubscriberInterface
      * Listener to FrontendAccount (index and billing)
      * On Account Index, a short info message will be shown if the validator was not available
      * On Account Billing, the Vat Id input field can be set required
-     *
-     * @param ActionEventArgs $arguments
      */
     public function onPostDispatchFrontendAccount(ActionEventArgs $arguments)
     {
@@ -100,8 +95,6 @@ class Template implements SubscriberInterface
     /**
      * Listener to FrontendCheckout (confirm),
      * Shows a short info message if the validator was not available
-     *
-     * @param ActionEventArgs $arguments
      */
     public function onPostDispatchFrontendCheckout(ActionEventArgs $arguments)
     {
@@ -111,17 +104,12 @@ class Template implements SubscriberInterface
     /**
      * Listener to FrontendRegister (index)
      * The Vat Id input field can be set required
-     *
-     * @param ActionEventArgs $arguments
      */
     public function onPostDispatchFrontendRegister(ActionEventArgs $arguments)
     {
         $this->postDispatchFrontendController($arguments->getSubject(), ['index']);
     }
 
-    /**
-     * @param \Enlight_Event_EventArgs $arguments
-     */
     public function onTemplatesCollected(\Enlight_Event_EventArgs $arguments)
     {
         $dirs = $arguments->getReturn();
@@ -134,8 +122,7 @@ class Template implements SubscriberInterface
     /**
      * Helper function to assign the plugin data to the template
      *
-     * @param Enlight_Controller_Action $controller
-     * @param string[]                  $actions
+     * @param string[] $actions
      */
     public function postDispatchFrontendController(Enlight_Controller_Action $controller, array $actions)
     {
@@ -149,7 +136,7 @@ class Template implements SubscriberInterface
         /** @var \Enlight_Components_Session_Namespace $session */
         $session = $this->dependencyProvider->getSession();
 
-        /** @var $view \Enlight_View_Default */
+        /** @var \Enlight_View_Default $view */
         $view = $controller->View();
         if ($view->getAssign('sUserData')['billingaddress']['company'] === null) {
             return;
