@@ -36,9 +36,6 @@ interface VatIdValidatorInterface
     /**
      * Validates the VatId, has to return a VatIdValidatorResult
      *
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation         $shopInformation
-     *
      * @return VatIdValidatorResult
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);

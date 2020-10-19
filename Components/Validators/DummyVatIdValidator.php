@@ -52,8 +52,6 @@ class DummyVatIdValidator implements VatIdValidatorInterface
 
     /**
      * Constructor sets the snippet namespace
-     *
-     * @param \Shopware_Components_Snippet_Manager $snippetManager
      */
     public function __construct(\Shopware_Components_Snippet_Manager $snippetManager)
     {

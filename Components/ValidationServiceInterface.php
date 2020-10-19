@@ -42,8 +42,7 @@ interface ValidationServiceInterface
      * Helper function for the whole validation process
      * If billing Id is set, the matching customer billing address will be removed if validation result is invalid
      *
-     * @param Address $billingAddress
-     * @param bool    $deleteVatIdFromAddress
+     * @param bool $deleteVatIdFromAddress
      *
      * @return VatIdValidatorResult
      */

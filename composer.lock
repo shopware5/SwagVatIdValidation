@@ -1,0 +1,48 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "6fa2132ee31d398674c67ed707f283e2",
+    "packages": [],
+    "packages-dev": [
+        {
+            "name": "shopware/plugin-dev-tools",
+            "version": "dev-2.x-dev",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/shopwareLabs/plugin-dev-tools.git",
+                "reference": "f722b864f47b3343fbfd4469c0823165c4f6b7d9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/shopwareLabs/plugin-dev-tools/zipball/f722b864f47b3343fbfd4469c0823165c4f6b7d9",
+                "reference": "f722b864f47b3343fbfd4469c0823165c4f6b7d9",
+                "shasum": ""
+            },
+            "type": "application",
+            "authors": [
+                {
+                    "name": "Simon Bäumer",
+                    "email": "s.baeumer@shopware.com"
+                }
+            ],
+            "description": "Tools for plugin development.",
+            "support": {
+                "source": "https://github.com/shopwareLabs/plugin-dev-tools/tree/2.x-dev",
+                "issues": "https://github.com/shopwareLabs/plugin-dev-tools/issues"
+            },
+            "time": "2020-10-13T08:11:00+00:00"
+        }
+    ],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "shopware/plugin-dev-tools": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

@@ -40,9 +40,6 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
     /**
      * Puts the customer and shop information into the format the API needs.
      *
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation         $shopInformation
-     *
      * @return array
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
@@ -64,8 +61,7 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      * Because the Mias service doesn't compare the address data itself, but rather return the deposited address data
      * (if approved), this validator class has to compare the returned address with the provided address itself.
      *
-     * @param array                    $response
-     * @param VatIdCustomerInformation $customerInformation
+     * @param array $response
      */
     protected function addExtendedResults($response, VatIdCustomerInformation $customerInformation)
     {
@@ -133,8 +129,6 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      * Helper function to check the similarity of two strings. On default, there have to
      * be a minimum accordance of 75%.
      *
-     * @param $string1
-     * @param $string2
      * @param int $minPercentage
      *
      * @return bool

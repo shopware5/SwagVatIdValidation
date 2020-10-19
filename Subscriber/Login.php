@@ -47,11 +47,6 @@ class Login implements SubscriberInterface
      */
     private $modelManager;
 
-    /**
-     * @param DependencyProviderInterface $dependencyProvider
-     * @param ValidationServiceInterface  $validationService
-     * @param ModelManager                $modelManager
-     */
     public function __construct(
         DependencyProviderInterface $dependencyProvider,
         ValidationServiceInterface $validationService,
@@ -72,9 +67,6 @@ class Login implements SubscriberInterface
         ];
     }
 
-    /**
-     * @param \Enlight_Event_EventArgs $arguments
-     */
     public function onLoginSuccessful(\Enlight_Event_EventArgs $arguments)
     {
         //After successfully registration, this would be a second validation. The first on save, the second on login.

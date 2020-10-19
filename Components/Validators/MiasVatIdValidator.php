@@ -44,8 +44,6 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
 
     /**
      * Constructor sets the snippet namespace
-     *
-     * @param \Shopware_Components_Snippet_Manager $snippetManager
      */
     public function __construct(\Shopware_Components_Snippet_Manager $snippetManager)
     {
@@ -107,18 +105,12 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
     /**
      * Helper function that returns an array in the format the validator needs it
      *
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation         $shopInformation
-     *
      * @return array
      */
     abstract protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
 
     /**
      * Helper function to set the address data results of a qualified confirmation request
-     *
-     * @param $response
-     * @param VatIdCustomerInformation $customerInformation
      */
     abstract protected function addExtendedResults($response, VatIdCustomerInformation $customerInformation);
 }

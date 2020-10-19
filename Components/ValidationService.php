@@ -79,11 +79,6 @@ class ValidationService implements ValidationServiceInterface
 
     /**
      * Constructor sets all properties
-     *
-     * @param ShopwareConfig $config
-     * @param SnippetManager $snippetManager
-     * @param ModelManager   $modelManager
-     * @param TemplateMail   $templateMail
      */
     public function __construct(
         ShopwareConfig $config,
@@ -318,8 +313,6 @@ class ValidationService implements ValidationServiceInterface
     /**
      * Helper function to check a VAT Id with the dummy validator
      *
-     * @param VatIdCustomerInformation $customerInformation
-     *
      * @return VatIdValidatorResult
      */
     private function validateWithDummyValidator(VatIdCustomerInformation $customerInformation)
@@ -330,9 +323,7 @@ class ValidationService implements ValidationServiceInterface
     /**
      * Helper function to check a VAT Id with an API Validator (Bff or Mias, simple or extended)
      *
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdInformation         $shopInformation
-     * @param int                      $validationType
+     * @param int $validationType
      *
      * @return VatIdValidatorResult
      */
@@ -405,9 +396,8 @@ class ValidationService implements ValidationServiceInterface
     /**
      * Helper function to remove the VAT Id from the customer billing address
      *
-     * @param int                  $billingAddressId
-     * @param VatIdValidatorResult $result
-     * @param bool                 $deleteVatIdFromAddress
+     * @param int  $billingAddressId
+     * @param bool $deleteVatIdFromAddress
      */
     private function removeVatIdFromBilling($billingAddressId, VatIdValidatorResult $result, $deleteVatIdFromAddress)
     {
@@ -434,9 +424,6 @@ class ValidationService implements ValidationServiceInterface
 
     /**
      * Helper function to send an email to the shop owner, informing him about an invalid Vat Id
-     *
-     * @param VatIdCustomerInformation $customerInformation
-     * @param VatIdValidatorResult     $result
      */
     private function sendShopOwnerEmail(VatIdCustomerInformation $customerInformation, VatIdValidatorResult $result)
     {

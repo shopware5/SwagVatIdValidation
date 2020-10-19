@@ -35,9 +35,6 @@ class Uninstaller
      */
     private $modelManager;
 
-    /**
-     * @param ModelManager $modelManager
-     */
     public function __construct(ModelManager $modelManager)
     {
         $this->modelManager = $modelManager;
@@ -76,8 +73,6 @@ class Uninstaller
 
     /**
      * Helper function to remove the translations of the mail template
-     *
-     * @param $mailTemplateId
      */
     private function removeMailTranslations($mailTemplateId)
     {
