@@ -56,6 +56,8 @@ return PhpCsFixer\Config::create()
         'no_superfluous_phpdoc_tags' => true,
         'php_unit_test_case_static_method_calls' => true,
         'single_line_throw' => false,
+        'native_constant_invocation' => true,
+        'native_function_invocation' => true,
         PhpCsFixerCustomFixers\Fixer\NoSuperfluousConcatenationFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\SingleSpaceAfterStatementFixer::name() => true,
         PhpCsFixerCustomFixers\Fixer\SingleSpaceBeforeStatementFixer::name() => true,

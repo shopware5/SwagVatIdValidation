@@ -66,12 +66,12 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
         $data = $this->getData($customerInformation, $shopInformation);
 
         //The bff validator api does only support 'EL' as greece iso. Therefore, we replace the original GR with the EL.
-        $data['UstId_2'] = str_replace('GR', 'EL', $data['UstId_2']);
+        $data['UstId_2'] = \str_replace('GR', 'EL', $data['UstId_2']);
 
         $apiRequest = 'https://evatr.bff-online.de/evatrRPC?';
-        $apiRequest .= http_build_query($data, '', '&');
+        $apiRequest .= \http_build_query($data, '', '&');
 
-        $context = stream_context_create(
+        $context = \stream_context_create(
             [
                 'http' => [
                 'method' => 'GET',
@@ -81,7 +81,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
                 ],
             ]
         );
-        $response = @file_get_contents($apiRequest, false, $context);
+        $response = @\file_get_contents($apiRequest, false, $context);
 
         $reg = '#<param>\s*<value><array><data>\s*<value><string>([^<]*)</string></value>\s*<value><string>([^<]*)</string></value>\s*</data></array></value>\s*</param>#msi';
 
@@ -91,8 +91,8 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
             return $this->result;
         }
 
-        if (preg_match_all($reg, $response, $matches)) {
-            $response = array_combine($matches[1], $matches[2]);
+        if (\preg_match_all($reg, $response, $matches)) {
+            $response = \array_combine($matches[1], $matches[2]);
             $this->createSimpleValidatorResult($response);
             $this->addExtendedResults($response);
         }

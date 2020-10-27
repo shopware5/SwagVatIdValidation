@@ -34,11 +34,11 @@ class SwagVatIdValidationTestKernel extends Kernel
 {
     public static function start(): void
     {
-        $kernel = new self((string) getenv('SHOPWARE_ENV') ?: 'testing', true);
+        $kernel = new self((string) \getenv('SHOPWARE_ENV') ?: 'testing', true);
         $kernel->boot();
 
         $container = $kernel->getContainer();
-        $container->get('plugins')->Core()->ErrorHandler()->registerErrorHandler(E_ALL | E_STRICT);
+        $container->get('plugins')->Core()->ErrorHandler()->registerErrorHandler(\E_ALL | \E_STRICT);
 
         /** @var \Shopware\Models\Shop\Repository $repository */
         $repository = $container->get('models')->getRepository(Shop::class);

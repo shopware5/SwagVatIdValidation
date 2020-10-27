@@ -274,10 +274,10 @@ class VatIdValidatorResult implements \Serializable
     {
         $serializeArray = [
             'namespace' => $this->namespace,
-            'keys' => array_keys($this->errors),
+            'keys' => \array_keys($this->errors),
         ];
 
-        return serialize($serializeArray);
+        return \serialize($serializeArray);
     }
 
     /**
@@ -289,7 +289,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function unserialize($serialized)
     {
-        $serializeArray = unserialize($serialized);
+        $serializeArray = \unserialize($serialized);
 
         $this->init($serializeArray['namespace']);
 

@@ -129,7 +129,7 @@ class Template implements SubscriberInterface
         /** @var Request $request */
         $request = $controller->Request();
 
-        if (!in_array($request->getActionName(), $actions, true)) {
+        if (!\in_array($request->getActionName(), $actions, true)) {
             return;
         }
 
@@ -156,7 +156,7 @@ class Template implements SubscriberInterface
         }
 
         if ($errorMessages) {
-            $requiredButEmpty = array_key_exists('required', $errorMessages);
+            $requiredButEmpty = \array_key_exists('required', $errorMessages);
             unset($errorMessages['required']);
         }
 
@@ -167,7 +167,7 @@ class Template implements SubscriberInterface
             [
                 'displayMessage' => $displayMessage,
                 'vatIdCheck' => [
-                    'errorMessages' => array_values($errorMessages),
+                    'errorMessages' => \array_values($errorMessages),
                     'required' => $required,
                     'requiredButEmpty' => $requiredButEmpty,
                 ],
@@ -185,9 +185,9 @@ class Template implements SubscriberInterface
         /** @var array|string $ISOs */
         $ISOs = $this->config->get('disabledCountryISOs');
 
-        if (is_string($ISOs)) {
-            $ISOs = explode(',', $ISOs);
-            $ISOs = array_map('trim', $ISOs);
+        if (\is_string($ISOs)) {
+            $ISOs = \explode(',', $ISOs);
+            $ISOs = \array_map('trim', $ISOs);
         }
 
         return EUStates::hasValidEUCountry($ISOs);

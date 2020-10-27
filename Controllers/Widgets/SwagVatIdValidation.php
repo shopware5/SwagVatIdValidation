@@ -35,9 +35,9 @@ class Shopware_Controllers_Widgets_SwagVatIdValidation extends Enlight_Controlle
         /** @var Enlight_Config|string $ISOs */
         $ISOs = $this->get('plugins')->Core()->SwagVatIdValidation()->Config()->get('disabledCountryISOs');
 
-        if (is_string($ISOs)) {
-            $ISOs = explode(',', $ISOs);
-            $ISOs = array_map('trim', $ISOs);
+        if (\is_string($ISOs)) {
+            $ISOs = \explode(',', $ISOs);
+            $ISOs = \array_map('trim', $ISOs);
         } else {
             $ISOs = $ISOs->toArray();
         }
@@ -52,7 +52,7 @@ class Shopware_Controllers_Widgets_SwagVatIdValidation extends Enlight_Controlle
             ->execute()
             ->fetchAll();
 
-        $countries = array_column($countryNameArray, 'countryname');
+        $countries = \array_column($countryNameArray, 'countryname');
         $this->View()->assign('disabledCountries', $countries);
     }
 }
