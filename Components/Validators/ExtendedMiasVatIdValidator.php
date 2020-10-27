@@ -73,18 +73,18 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
 
         $extendedData['company'] = [$response->traderName, $customerInformation->getCompany()];
 
-        $address = explode("\n", $response->traderAddress);
+        $address = \explode("\n", $response->traderAddress);
         $extendedData['street'] = [$address[0], $customerInformation->getStreet()];
 
-        $address = trim($address[1]);
-        $address = explode(' ', $address, 2);
+        $address = \trim($address[1]);
+        $address = \explode(' ', $address, 2);
 
         $extendedData['zipCode'] = [$address[0], $customerInformation->getZipCode()];
         $extendedData['city'] = [$address[1], $customerInformation->getCity()];
 
         foreach ($extendedData as &$data) {
-            $string1 = trim($data[0]);
-            $string2 = trim($data[1]);
+            $string1 = \trim($data[0]);
+            $string2 = \trim($data[1]);
 
             $data = $this->validateString($string1, $string2);
         }
@@ -135,10 +135,10 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      */
     private function isSimilar($string1, $string2, $minPercentage = 75)
     {
-        $string1 = strtolower($string1);
-        $string2 = strtolower($string2);
+        $string1 = \strtolower($string1);
+        $string2 = \strtolower($string2);
 
-        similar_text($string1, $string2, $percentage);
+        \similar_text($string1, $string2, $percentage);
 
         return $percentage >= $minPercentage;
     }

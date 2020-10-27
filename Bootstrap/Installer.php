@@ -124,7 +124,7 @@ class Installer
         $translation->setType('config_mails');
         $translation->setKey($mail->getId());
         $translation->setData(
-            serialize(
+            \serialize(
                 [
                     'subject' => 'An error occurred when validating VAT ID {$sVatId}.',
                     'content' => "Hello,\n\nAn error occurred during the validation of VAT ID {\$sVatId} associated with the following company:\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nCountry code: {\$sCountryCode}\n\nThe following errors were detected:\n\n{\$sError}\n\n{config name=shopName}",

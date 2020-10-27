@@ -80,7 +80,7 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
 
             return $this->result;
         } catch (\SoapFault $error) {
-            $errorMessage = strtoupper($error->faultstring);
+            $errorMessage = \strtoupper($error->faultstring);
             $errorTypes = [
                 'GLOBAL_MAX_CONCURRENT_REQ',
                 'MS_MAX_CONCURRENT_REQ',
@@ -90,7 +90,7 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
                 'SERVER_BUSY',
             ];
 
-            if (in_array($errorMessage, $errorTypes, true)) {
+            if (\in_array($errorMessage, $errorTypes, true)) {
                 $this->result->setServiceUnavailable();
 
                 return $this->result;

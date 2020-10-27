@@ -70,7 +70,7 @@ class EUStates
      */
     public static function isEUCountry($countryIso)
     {
-        return in_array($countryIso, self::$EUCountries);
+        return \in_array($countryIso, self::$EUCountries);
     }
 
     /**
@@ -82,6 +82,6 @@ class EUStates
      */
     public static function hasValidEUCountry(array $countryIsos)
     {
-        return (bool) array_intersect($countryIsos, self::$EUCountries);
+        return (bool) \array_intersect($countryIsos, self::$EUCountries);
     }
 }

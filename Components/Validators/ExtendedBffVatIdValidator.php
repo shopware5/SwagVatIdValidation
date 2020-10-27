@@ -47,7 +47,7 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
         return [
             'UstId_1' => $shopInformation->getVatId(),
             //The bff validator api does only support 'EL' as greece iso. Therefore, we replace the original GR with the EL.
-            'UstId_2' => str_replace('GR', 'EL', $customerInformation->getVatId()),
+            'UstId_2' => \str_replace('GR', 'EL', $customerInformation->getVatId()),
             'Firmenname' => $customerInformation->getCompany(),
             'Ort' => $customerInformation->getCity(),
             'PLZ' => $customerInformation->getZipCode(),
@@ -72,21 +72,21 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
             'city' => $response['Erg_Ort'],
         ];
 
-        $extendedResults = array_keys($extendedResults, 'B', true);
+        $extendedResults = \array_keys($extendedResults, 'B', true);
 
-        if (in_array('company', $extendedResults, true)) {
+        if (\in_array('company', $extendedResults, true)) {
             $this->result->setCompanyInvalid();
         }
 
-        if (in_array('street', $extendedResults, true)) {
+        if (\in_array('street', $extendedResults, true)) {
             $this->result->setStreetInvalid();
         }
 
-        if (in_array('zipCode', $extendedResults, true)) {
+        if (\in_array('zipCode', $extendedResults, true)) {
             $this->result->setZipCodeInvalid();
         }
 
-        if (in_array('city', $extendedResults, true)) {
+        if (\in_array('city', $extendedResults, true)) {
             $this->result->setCityInvalid();
         }
     }

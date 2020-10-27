@@ -94,7 +94,7 @@ class Login implements SubscriberInterface
 
         $session = $this->dependencyProvider->getSession();
 
-        if ($required && (!trim($billingAddress->getVatId()))) {
+        if ($required && (!\trim($billingAddress->getVatId()))) {
             $result = $this->validationService->getRequirementErrorResult();
             $session->offsetSet('vatIdValidationStatus', $result->serialize());
 

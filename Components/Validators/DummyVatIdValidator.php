@@ -66,12 +66,12 @@ class DummyVatIdValidator implements VatIdValidatorInterface
     {
         $exceptedNonEuISOs = $this->config->get('disabledCountryISOs');
 
-        if (!is_array($exceptedNonEuISOs)) {
-            $exceptedNonEuISOs = explode(',', $exceptedNonEuISOs);
+        if (!\is_array($exceptedNonEuISOs)) {
+            $exceptedNonEuISOs = \explode(',', $exceptedNonEuISOs);
         }
-        $exceptedNonEuISOs = array_map('trim', $exceptedNonEuISOs);
+        $exceptedNonEuISOs = \array_map('trim', $exceptedNonEuISOs);
 
-        $isExcepted = in_array($customerInformation->getBillingCountryIso(), $exceptedNonEuISOs, true);
+        $isExcepted = \in_array($customerInformation->getBillingCountryIso(), $exceptedNonEuISOs, true);
 
         //An empty VAT Id can't be valid
         if ($customerInformation->getVatId() === '') {
@@ -90,13 +90,13 @@ class DummyVatIdValidator implements VatIdValidatorInterface
         }
 
         //All VAT IDs have a length of 4 to 14 chars (romania has a min. length of 4 characters)
-        if (strlen($customerInformation->getVatId()) < 4) {
+        if (\strlen($customerInformation->getVatId()) < 4) {
             $this->result->setVatIdInvalid('1');
-        } elseif (strlen($customerInformation->getVatId()) > 14) {
+        } elseif (\strlen($customerInformation->getVatId()) > 14) {
             $this->result->setVatIdInvalid('2');
         }
 
-        $isExcepted = in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs, true);
+        $isExcepted = \in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs, true);
 
         //The country code has to be an EU prefix and has to match the billing country
         if (!EUStates::isEUCountry($customerInformation->getCountryCode()) && !$isExcepted) {
@@ -111,12 +111,12 @@ class DummyVatIdValidator implements VatIdValidatorInterface
         }
 
         //The VAT number always only consists of alphanumerical chars
-        if (!ctype_alnum($customerInformation->getVatNumber())) {
+        if (!\ctype_alnum($customerInformation->getVatNumber())) {
             $this->result->setVatIdInvalid('4');
         }
 
         //If the VAT number only consists alphas its invalid
-        if (ctype_alpha($customerInformation->getVatNumber())) {
+        if (\ctype_alpha($customerInformation->getVatNumber())) {
             $this->result->setVatIdInvalid('4');
         }
 

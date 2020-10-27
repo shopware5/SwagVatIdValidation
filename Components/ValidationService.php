@@ -120,12 +120,12 @@ class ValidationService implements ValidationServiceInterface
          */
         $disabledCountries = $this->config->get('disabledCountryISOs');
 
-        if (is_string($disabledCountries)) {
-            $disabledCountries = explode(',', $disabledCountries);
-            $disabledCountries = array_map('trim', $disabledCountries);
+        if (\is_string($disabledCountries)) {
+            $disabledCountries = \explode(',', $disabledCountries);
+            $disabledCountries = \array_map('trim', $disabledCountries);
         }
 
-        if (in_array($countryISO, $disabledCountries, true)) {
+        if (\in_array($countryISO, $disabledCountries, true)) {
             return false;
         }
 
@@ -178,15 +178,15 @@ class ValidationService implements ValidationServiceInterface
          */
         $exceptedNonEuISOs = $this->config->get('disabledCountryISOs');
 
-        if (!is_array($exceptedNonEuISOs)) {
-            $exceptedNonEuISOs = explode(',', $exceptedNonEuISOs);
+        if (!\is_array($exceptedNonEuISOs)) {
+            $exceptedNonEuISOs = \explode(',', $exceptedNonEuISOs);
         }
-        $exceptedNonEuISOs = array_map('trim', $exceptedNonEuISOs);
+        $exceptedNonEuISOs = \array_map('trim', $exceptedNonEuISOs);
 
         /*
          * If the country code is whitelisted skip validation
          */
-        if (in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs, true)) {
+        if (\in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs, true)) {
             return $result;
         }
 
@@ -440,7 +440,7 @@ class ValidationService implements ValidationServiceInterface
         if ($result->isApiUnavailable()) {
             $error = $result->getErrorMessage('messages/checkNotAvailable');
         } else {
-            $error = implode("\n", $result->getErrorMessages());
+            $error = \implode("\n", $result->getErrorMessages());
         }
 
         $context = [
@@ -472,7 +472,7 @@ class ValidationService implements ValidationServiceInterface
     {
         $emailNotification = $this->config->get('shopEmailNotification');
 
-        if (is_string($emailNotification)) {
+        if (\is_string($emailNotification)) {
             $emailAddress = $emailNotification;
         } elseif ($emailNotification) {
             $emailAddress = $this->config->get('sMAIL');
@@ -480,6 +480,6 @@ class ValidationService implements ValidationServiceInterface
             return false;
         }
 
-        return filter_var($emailAddress, FILTER_VALIDATE_EMAIL);
+        return \filter_var($emailAddress, \FILTER_VALIDATE_EMAIL);
     }
 }

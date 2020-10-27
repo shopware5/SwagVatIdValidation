@@ -48,9 +48,9 @@ class VatIdInformation
      */
     public function __construct($vatId)
     {
-        $this->vatId = str_replace([' ', '.', '-', ',', ', '], '', trim($vatId));
-        $this->countryCode = substr($this->vatId, 0, 2);
-        $this->vatNumber = substr($this->vatId, 2);
+        $this->vatId = \str_replace([' ', '.', '-', ',', ', '], '', \trim($vatId));
+        $this->countryCode = \substr($this->vatId, 0, 2);
+        $this->vatNumber = \substr($this->vatId, 2);
     }
 
     /**
