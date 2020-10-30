@@ -77,8 +77,12 @@ Code Coverage:
 .SW 5.7 default:
     stage: PHPUnit
     needs: [PHP analyze]
+    services:
+        - name: mysql:5.7
+          alias: mysql
     variables:
         CHECKOUT_SHOPWARE_BRANCH: "5.7"
+    before_script: []
     script:
         - zip -rq plugin.zip .
         - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.shopware.com/shopware/5/product/shopware.git shopware --depth=1 -b ${CHECKOUT_SHOPWARE_BRANCH}
@@ -95,18 +99,11 @@ Code Coverage:
         - php ../../../vendor/bin/phpunit
             --configuration phpunit.xml.dist
             --colors=never
-    services:
-        -   name: mysql:5.7
-            alias: mysql
 
 SW 5.7 PHP 7.3:
     extends: .SW 5.7 default
     image: shopware/5-continuous:7.3
-    before_script: []
 
 SW 5.7 PHP 8.0:
     extends: .SW 5.7 default
-    image: gitlab.shopware.com:5005/shopware/5/product/shopware:8.0
-    before_script:
-        - apk add --no-cache zip unzip
-        - apk add --no-cache make
+    image: gitlab.shopware.com:5005/shopware/5/product/image/continuous:8.0
