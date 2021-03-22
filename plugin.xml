@@ -11,6 +11,11 @@
     <author>Shopware AG</author>
     <compatibility minVersion="5.6.0" maxVersion="5.99.99"/>
 
+    <changelog version="REPLACE_GLOBAL_WITH_NEXT_VERSION">
+        <changes lang="de">PT-10115 - Behebt Fehler beim Validieren der Ust-Id;</changes>
+        <changes lang="en">PT-10115 - Fixes issue while validating the VAT-Id;</changes>
+    </changelog>
+
     <changelog version="2.0.4">
         <changes lang="de">PT-12110 - Shopware 5.7 Kompatibilität;</changes>
         <changes lang="en">PT-12110 - Shopware 5.7 compatibility;</changes>
