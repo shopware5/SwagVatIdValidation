@@ -102,6 +102,7 @@ class IsoServiceTest extends TestCase
             'SI',
             'SK',
             'SM',
+            'XI',
         ];
 
         static::assertSame($expectedResult, $result);
