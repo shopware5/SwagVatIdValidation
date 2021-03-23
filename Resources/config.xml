@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/config.xsd">
-
     <elements>
 
         <element scope="shop" required="true">
@@ -46,7 +45,7 @@
                 </option>
             </store>
         </element>
-        
+
         <element type="combo" scope="shop">
             <name>apiValidationType</name>
             <label lang="de">Art der API-Überprüfung</label>
@@ -86,7 +85,7 @@
                 </option>
             </store>
         </element>
-        
+
         <element type="boolean" scope="shop">
             <name>confirmation</name>
             <label lang="de">Amtliche Bestätigungsmitteilung</label>
@@ -246,6 +245,14 @@
             <options>
                 <multiSelect>true</multiSelect>
             </options>
+        </element>
+
+        <element type="boolean" scope="shop">
+            <name>vatId_is_required</name>
+            <label lang="de">USt-IdNr. für Firmenkunden in Europa als Pflichtfeld markieren</label>
+            <label lang="en">Mark VAT number for corporate clients in Europe as mandatory field</label>
+            <description lang="de">Wenn diese Einstellung aktiv ist muss die Einstellung "USt-IdNr. für Firmenkunden als Pflichtfeld markieren" ausgeschaltet werden. Zu finden ist diese Einstellung unter: "Einstellungen -> Grundeinstellungen -> Anmeldung / Registrierung -> USt-IdNr. für Firmenkunden als Pflichtfeld markieren"</description>
+            <description lang="en">If this setting is active, the setting "Mark VAT number for corporate clients as mandatory field" must be switched off. This setting can be found under: "Settings -> Basic settings -> Login / Registration -> Mark VAT registration number for corporate clients as mandatory field".</description>
         </element>
 
     </elements>

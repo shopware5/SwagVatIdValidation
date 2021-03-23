@@ -27,12 +27,24 @@ namespace SwagVatIdValidation\Subscriber;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Event_EventArgs as EventArgs;
 use Shopware\Bundle\AccountBundle\Form\Account\AddressFormType;
+use Shopware_Controllers_Frontend_Register;
 use SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatId;
+use SwagVatIdValidation\Components\IsoServiceInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormInterface;
 
 class Forms implements SubscriberInterface
 {
+    /**
+     * @var IsoServiceInterface
+     */
+    private $isoService;
+
+    public function __construct(IsoServiceInterface $isoService)
+    {
+        $this->isoService = $isoService;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -40,10 +52,11 @@ class Forms implements SubscriberInterface
     {
         return [
             'Shopware_Form_Builder' => 'onFormBuild',
+            'Enlight_Controller_Action_PreDispatch_Frontend_Register' => 'onRegister',
         ];
     }
 
-    public function onFormBuild(EventArgs $args)
+    public function onFormBuild(EventArgs $args): void
     {
         $ref = $args->get('reference');
         if ($ref !== AddressFormType::class && $ref !== 'address') {
@@ -59,6 +72,25 @@ class Forms implements SubscriberInterface
             [
                 'constraints' => [new AdvancedVatId()],
             ]
+        );
+    }
+
+    public function onRegister(EventArgs $args): void
+    {
+        /** @var Shopware_Controllers_Frontend_Register $controller */
+        $controller = $args->getSubject();
+
+        $request = $controller->Request();
+
+        if ($request->getActionName() !== 'index') {
+            return;
+        }
+
+        $controller->View()->assign(
+            'countryIsoIdList',
+            \json_encode(
+                $this->isoService->getCountryIdsFromIsoList()
+            )
         );
     }
 }

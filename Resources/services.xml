@@ -35,6 +35,7 @@
         </service>
 
         <service id="swag_vat_id_validation.subscriber.forms" class="SwagVatIdValidation\Subscriber\Forms">
+            <argument type="service" id="swag_vat_id_validation.iso_service"/>
             <tag name="shopware.event_subscriber"/>
         </service>
 
@@ -53,9 +54,24 @@
             <tag name="shopware.event_subscriber"/>
         </service>
 
-        <service id="swag_vat_id_validation.advanced_vat_id_validator" class="SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatIdValidator">
+        <service id="swag_vat_id_validation.advanced_vat_id_validator"
+                 class="SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatIdValidator">
             <argument type="service" id="swag_vat_id_validation.validation_service"/>
-            <tag name="validator.constraint_validator" alias="swag_vat_id_validation.advanced_vat_id_validator" />
+            <tag name="validator.constraint_validator" alias="swag_vat_id_validation.advanced_vat_id_validator"/>
+        </service>
+
+        <service id="swag_vat_id_validation.iso_service" class="SwagVatIdValidation\Components\IsoService">
+            <argument type="service" id="events"/>
+            <argument type="service" id="dbal_connection"/>
+        </service>
+
+        <service id="swag_vat_id_validation.address_form_type_validator_decorator"
+                 class="SwagVatIdValidation\Components\AddressFormTypeDecorator"
+                 decorates="shopware_account.form.addressform"
+                 public="false">
+            <argument type="service" id="swag_vat_id_validation.address_form_type_validator_decorator.inner"/>
+            <argument type="service" id="shopware.plugin.cached_config_reader"/>
+            <argument type="service" id="swag_vat_id_validation.iso_service"/>
         </service>
 
     </services>

@@ -29,7 +29,7 @@ use SwagVatIdValidation\Components\ValidationService;
 
 class ValidationServiceTest extends TestCase
 {
-    public function test_isVatIdRequired_noVatCheckRequred_shouldBeFalse()
+    public function testIsVatIdRequiredNoVatCheckRequredShouldBeFalse(): void
     {
         $validationService = $this->getValidationService(false);
 
@@ -40,7 +40,7 @@ class ValidationServiceTest extends TestCase
         static::assertFalse($result);
     }
 
-    public function test_isVatIdRequired_shouldBeFalse()
+    public function testIsVatIdRequiredShouldBeFalse(): void
     {
         $validationService = $this->getValidationService();
 
@@ -51,7 +51,7 @@ class ValidationServiceTest extends TestCase
         static::assertFalse($result);
     }
 
-    public function test_isVatIdRequired_noEuCountry_shouldBeFalse()
+    public function testIsVatIdRequiredNoEuCountryShouldBeFalse(): void
     {
         $validationService = $this->getValidationService();
 
@@ -62,7 +62,7 @@ class ValidationServiceTest extends TestCase
         static::assertFalse($result);
     }
 
-    public function test_isVatIdRequired_shouldBeTrue()
+    public function testIsVatIdRequiredShouldBeTrue(): void
     {
         $validationService = $this->getValidationService();
 
