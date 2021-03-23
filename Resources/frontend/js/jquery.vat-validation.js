@@ -26,6 +26,7 @@
 
         initializeEventListener: function() {
             this.countryField.on('change', $.proxy(this.onChangeCountry, this))
+            this.vatIdField.on('keyup', $.proxy(this.onChangeVatId, this));
         },
 
         onChangeCountry: function() {
@@ -33,8 +34,11 @@
                 this.vatIdField.removeAttr('required');
             } else {
                 this.vatIdField.attr('required', 'required');
-
             }
+        },
+
+        onChangeVatId: function() {
+            this.vatIdField.val(this.vatIdField.val().toUpperCase().replace(/\s|\W/g, ''));
         },
     });
 

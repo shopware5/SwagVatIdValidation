@@ -89,6 +89,7 @@ class IsoService implements IsoServiceInterface
             'SI',
             'SK',
             'SM',
+            'XI',
         ]);
 
         $this->eventManager->collect('SwagVatId_Collect_CountryIso', $collection);
