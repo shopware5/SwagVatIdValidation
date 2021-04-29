@@ -36,6 +36,7 @@
 
         <service id="swag_vat_id_validation.subscriber.forms" class="SwagVatIdValidation\Subscriber\Forms">
             <argument type="service" id="swag_vat_id_validation.iso_service"/>
+            <argument type="service" id="swag_vat_id_validation.config_reader"/>
             <tag name="shopware.event_subscriber"/>
         </service>
 
@@ -63,6 +64,7 @@
         <service id="swag_vat_id_validation.iso_service" class="SwagVatIdValidation\Components\IsoService">
             <argument type="service" id="events"/>
             <argument type="service" id="dbal_connection"/>
+            <argument type="service" id="swag_vat_id_validation.config_reader"/>
         </service>
 
         <service id="swag_vat_id_validation.address_form_type_validator_decorator"
@@ -72,6 +74,13 @@
             <argument type="service" id="swag_vat_id_validation.address_form_type_validator_decorator.inner"/>
             <argument type="service" id="shopware.plugin.cached_config_reader"/>
             <argument type="service" id="swag_vat_id_validation.iso_service"/>
+        </service>
+
+        <service id="swag_vat_id_validation.config_reader" class="SwagVatIdValidation\Components\VatIdConfigReader">
+            <argument>%swag_vat_id_validation.plugin_name%</argument>
+            <argument type="service" id="shopware_storefront.context_service"/>
+            <argument type="service" id="Shopware\Components\Plugin\Configuration\CachedReader" on-invalid="null"/>
+            <argument type="service" id="shopware.plugin.cached_config_reader" on-invalid="null"/>
         </service>
 
     </services>

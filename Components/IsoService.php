@@ -27,6 +27,7 @@ namespace SwagVatIdValidation\Components;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Connection;
 use Enlight_Event_EventManager as EventManager;
+use Shopware\Bundle\StoreFrontBundle\Service\ContextServiceInterface;
 
 class IsoService implements IsoServiceInterface
 {
@@ -40,10 +41,24 @@ class IsoService implements IsoServiceInterface
      */
     private $connection;
 
-    public function __construct(EventManager $eventManager, Connection $connection)
-    {
+    /**
+     * @var ContextServiceInterface
+     */
+    private $contextService;
+
+    /**
+     * @var VatIdConfigReaderInterface
+     */
+    private $configReader;
+
+    public function __construct(
+        EventManager $eventManager,
+        Connection $connection,
+        VatIdConfigReaderInterface $configReader
+    ) {
         $this->eventManager = $eventManager;
         $this->connection = $connection;
+        $this->configReader = $configReader;
     }
 
     public function getCountryIdsFromIsoList(): array
@@ -59,41 +74,31 @@ class IsoService implements IsoServiceInterface
 
     public function getCountriesIsoList(): array
     {
-        $collection = new ArrayCollection([
-            'AT',
-            'BE',
-            'BG',
-            'CY',
-            'CZ',
-            'DE',
-            'DK',
-            'EE',
-            'GR',
-            'ES',
-            'FI',
-            'FR',
-            'GB',
-            'HR',
-            'HU',
-            'IE',
-            'IT',
-            'LT',
-            'LU',
-            'LV',
-            'MT',
-            'NL',
-            'PL',
-            'PT',
-            'RO',
-            'SE',
-            'SI',
-            'SK',
-            'SM',
-            'XI',
-        ]);
+        $collection = new ArrayCollection(
+            $this->removeDisabledCountries(EUStates::getEUCountryList())
+        );
 
         $this->eventManager->collect('SwagVatId_Collect_CountryIso', $collection);
 
         return $collection->toArray();
+    }
+
+    private function removeDisabledCountries(array $euCountryList): array
+    {
+        $config = $this->configReader->getPluginConfig();
+
+        $disabledCountryISOs = $config['disabledCountryISOs'];
+
+        if (!\is_array($disabledCountryISOs)) {
+            $disabledCountryISOs = [$disabledCountryISOs];
+        }
+
+        foreach ($euCountryList as $index => $euCountryIso) {
+            if (\in_array($euCountryIso, $disabledCountryISOs)) {
+                unset($euCountryList[$index]);
+            }
+        }
+
+        return $euCountryList;
     }
 }
