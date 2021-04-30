@@ -26,9 +26,12 @@ namespace SwagVatIdValidation\Tests\Functional\Subscriber;
 
 use PHPUnit\Framework\TestCase;
 use SwagVatIdValidation\Subscriber\Forms;
+use SwagVatIdValidation\Tests\PluginConfigCacheTrait;
 
 class FormsTest extends TestCase
 {
+    use PluginConfigCacheTrait;
+
     public function testOnRegister(): void
     {
         $request = new \Enlight_Controller_Request_RequestHttp();
@@ -42,12 +45,14 @@ class FormsTest extends TestCase
 
         $eventArgs = new \Enlight_Event_EventArgs(['subject' => $controller]);
 
+        $this->clearCache();
+
         $this->getFormSubscriber()->onRegister($eventArgs);
 
         $result = $controller->View()->getAssign('countryIsoIdList');
 
         static::assertSame(
-            '["2","5","7","8","9","10","11","12","14","18","21","23","24","25","27","30","31","33","34","35","38","39","40","41","42","43","44","45","209"]',
+            '["2","5","7","8","9","10","11","12","14","18","21","24","25","27","30","31","33","34","35","38","39","40","41","42","43","44","45","209"]',
             $result
         );
     }
@@ -74,6 +79,6 @@ class FormsTest extends TestCase
 
     private function getFormSubscriber(): Forms
     {
-        return new Forms(Shopware()->Container()->get('swag_vat_id_validation.iso_service'));
+        return Shopware()->Container()->get('swag_vat_id_validation.subscriber.forms');
     }
 }

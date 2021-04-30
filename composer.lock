@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/shopwareLabs/plugin-dev-tools.git",
-                "reference": "f722b864f47b3343fbfd4469c0823165c4f6b7d9"
+                "reference": "1bc098ab0d4a98fcbe53c295a3992940acb103ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shopwareLabs/plugin-dev-tools/zipball/f722b864f47b3343fbfd4469c0823165c4f6b7d9",
-                "reference": "f722b864f47b3343fbfd4469c0823165c4f6b7d9",
+                "url": "https://api.github.com/repos/shopwareLabs/plugin-dev-tools/zipball/1bc098ab0d4a98fcbe53c295a3992940acb103ba",
+                "reference": "1bc098ab0d4a98fcbe53c295a3992940acb103ba",
                 "shasum": ""
             },
             "type": "application",
@@ -33,7 +33,7 @@
                 "source": "https://github.com/shopwareLabs/plugin-dev-tools/tree/2.x-dev",
                 "issues": "https://github.com/shopwareLabs/plugin-dev-tools/issues"
             },
-            "time": "2020-10-13T08:11:00+00:00"
+            "time": "2020-12-10T19:58:02+00:00"
         }
     ],
     "aliases": [],
@@ -44,5 +44,6 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "2.0.0"
 }

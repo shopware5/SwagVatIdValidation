@@ -1,7 +1,10 @@
 {extends file="parent:frontend/register/billing_fieldset.tpl"}
 
 {block name='frontend_register_billing_fieldset_input_vatId'}
-    <div class="register-vatId--validationContainer" data-SwagVatIdValidationPlugin="true" data-countryIsoIdList='{$countryIsoIdList}'>
+    <div class="register-vatId--validationContainer"
+         data-SwagVatIdValidationPlugin="true"
+         data-countryIsoIdList='{$countryIsoIdList}'
+         data-vatIdIsRequired="{$vatIdIsRequired}">
         {$smarty.block.parent}
         <div class="vatId-validationContainer--vatId-hint required_fields">
             {s namespace="frontend/swag_vat_id_validation/main" name="hint/vatIdHint"}

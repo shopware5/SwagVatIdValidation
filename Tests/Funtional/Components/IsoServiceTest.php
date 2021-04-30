@@ -25,12 +25,25 @@
 namespace SwagVatIdValidation\Tests\Functional\Components;
 
 use PHPUnit\Framework\TestCase;
+use Shopware\Tests\Functional\Traits\DatabaseTransactionBehaviour;
 use SwagVatIdValidation\Components\IsoServiceInterface;
+use SwagVatIdValidation\Tests\PluginConfigCacheTrait;
 
 class IsoServiceTest extends TestCase
 {
+    use DatabaseTransactionBehaviour;
+    use PluginConfigCacheTrait;
+
     public function testGetCountryIdsFromIsoList(): void
     {
+        $sql = \file_get_contents(__DIR__ . '/_fixtures/config.sql');
+        Shopware()->Container()->get('dbal_connection')->exec($sql);
+
+        $sql = \file_get_contents(__DIR__ . '/_fixtures/update_config.sql');
+        Shopware()->Container()->get('dbal_connection')->exec($sql);
+
+        $this->clearCache();
+
         $result = $this->getIsoService()->getCountryIdsFromIsoList();
 
         $expectedResult = [
@@ -70,6 +83,14 @@ class IsoServiceTest extends TestCase
 
     public function testGetCountriesIsoList(): void
     {
+        $sql = \file_get_contents(__DIR__ . '/_fixtures/config.sql');
+        Shopware()->Container()->get('dbal_connection')->exec($sql);
+
+        $sql = \file_get_contents(__DIR__ . '/_fixtures/update_config.sql');
+        Shopware()->Container()->get('dbal_connection')->exec($sql);
+
+        $this->clearCache();
+
         $result = $this->getIsoService()->getCountriesIsoList();
 
         $expectedResult = [
@@ -81,6 +102,7 @@ class IsoServiceTest extends TestCase
             'DE',
             'DK',
             'EE',
+            'EL',
             'GR',
             'ES',
             'FI',
@@ -106,6 +128,18 @@ class IsoServiceTest extends TestCase
         ];
 
         static::assertSame($expectedResult, $result);
+    }
+
+    public function testGetCountriesIsoListShouldRemoveAT(): void
+    {
+        $sql = \file_get_contents(__DIR__ . '/_fixtures/config.sql');
+        Shopware()->Container()->get('dbal_connection')->exec($sql);
+
+        $this->clearCache();
+
+        $result = $this->getIsoService()->getCountriesIsoList();
+
+        static::assertFalse(\in_array('AT', $result));
     }
 
     private function getIsoService(): IsoServiceInterface

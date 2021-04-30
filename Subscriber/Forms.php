@@ -30,6 +30,7 @@ use Shopware\Bundle\AccountBundle\Form\Account\AddressFormType;
 use Shopware_Controllers_Frontend_Register;
 use SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatId;
 use SwagVatIdValidation\Components\IsoServiceInterface;
+use SwagVatIdValidation\Components\VatIdConfigReaderInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormInterface;
 
@@ -40,9 +41,17 @@ class Forms implements SubscriberInterface
      */
     private $isoService;
 
-    public function __construct(IsoServiceInterface $isoService)
-    {
+    /**
+     * @var VatIdConfigReaderInterface
+     */
+    private $configReader;
+
+    public function __construct(
+        IsoServiceInterface $isoService,
+        VatIdConfigReaderInterface $configReader
+    ) {
         $this->isoService = $isoService;
+        $this->configReader = $configReader;
     }
 
     /**
@@ -86,6 +95,9 @@ class Forms implements SubscriberInterface
             return;
         }
 
+        $config = $this->configReader->getPluginConfig();
+
+        $controller->View()->assign('vatIdIsRequired', \json_encode($config['vatId_is_required']));
         $controller->View()->assign(
             'countryIsoIdList',
             \json_encode(

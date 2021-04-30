@@ -59,6 +59,8 @@ class EUStates
         'SE', //Kingdom of Sweden
         'SI', //Republic of Slovenia
         'SK', //Slovak Republic
+        'SM', //San Marino
+        'XI', //Northern Ireland
     ];
 
     /**
@@ -83,5 +85,10 @@ class EUStates
     public static function hasValidEUCountry(array $countryIsos)
     {
         return (bool) \array_intersect($countryIsos, self::$EUCountries);
+    }
+
+    public static function getEUCountryList(): array
+    {
+        return self::$EUCountries;
     }
 }

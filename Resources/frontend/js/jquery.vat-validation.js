@@ -4,9 +4,11 @@
         defaults: {
             countryIsoIdList: [],
 
+            vatIdIsRequired: false,
+
             vatIdFieldSelector: 'input[name="register[billing][vatId]"]',
 
-            countryFieldSelector: '#country',
+            countryFieldSelector: '#country'
         },
 
         init: function() {
@@ -25,13 +27,19 @@
         },
 
         initializeEventListener: function() {
-            this.countryField.on('change', $.proxy(this.onChangeCountry, this))
             this.vatIdField.on('keyup', $.proxy(this.onChangeVatId, this));
+
+            if (this.opts.vatIdIsRequired === false) {
+                this.removeVatIdRequirement();
+                return;
+            }
+
+            this.countryField.on('change', $.proxy(this.onChangeCountry, this))
         },
 
         onChangeCountry: function() {
             if (this.opts.countryIsoIdList.indexOf(this.countryField.val()) === -1) {
-                this.vatIdField.removeAttr('required');
+                this.removeVatIdRequirement();
             } else {
                 this.vatIdField.attr('required', 'required');
             }
@@ -39,6 +47,10 @@
 
         onChangeVatId: function() {
             this.vatIdField.val(this.vatIdField.val().toUpperCase().replace(/\s|\W/g, ''));
+        },
+
+        removeVatIdRequirement: function() {
+            this.vatIdField.removeAttr('required');
         },
     });
 
