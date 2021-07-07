@@ -31,11 +31,15 @@ use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
 use SwagVatIdValidation\Bootstrap\Installer;
 use SwagVatIdValidation\Bootstrap\Uninstaller;
+use SwagVatIdValidation\Components\SoapExtensionChecker\SoapExtensionChecker;
 
 class SwagVatIdValidation extends Plugin
 {
     public function install(InstallContext $context)
     {
+        $soapExtensionChecker = new SoapExtensionChecker();
+        $soapExtensionChecker->check();
+
         $installer = new Installer(
             $this->container->get('models')
         );

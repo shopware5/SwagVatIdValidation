@@ -22,16 +22,26 @@
  * our trademarks remain entirely with us.
  */
 
-namespace SwagVatIdValidation\Components;
+namespace SwagVatIdValidation\Components\SoapExtensionChecker;
 
-class APIValidationType
+class SoapExtensionChecker
 {
-    /* The type for no api validation */
-    public const NONE = 1;
+    /**
+     * @var bool
+     */
+    private $isSoapExtensionInstalled;
 
-    /* Providing this type will use simple api validation */
-    public const SIMPLE = 2;
+    public function __construct()
+    {
+        $this->isSoapExtensionInstalled = \extension_loaded('soap');
+    }
 
-    /* Providing this type will use extended api validation */
-    public const EXTENDED = 3;
+    public function check(): bool
+    {
+        if ($this->isSoapExtensionInstalled === false) {
+            throw new \RuntimeException('PHP soap extension is not installed');
+        }
+
+        return true;
+    }
 }
