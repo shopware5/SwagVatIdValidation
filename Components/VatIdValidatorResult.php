@@ -27,11 +27,11 @@ namespace SwagVatIdValidation\Components;
 class VatIdValidatorResult implements \Serializable
 {
     //Flags
-    const VAT_ID_OK = 1;
-    const COMPANY_OK = 2;
-    const STREET_OK = 4;
-    const ZIP_CODE_OK = 8;
-    const CITY_OK = 16;
+    public const VAT_ID_OK = 1;
+    public const COMPANY_OK = 2;
+    public const STREET_OK = 4;
+    public const ZIP_CODE_OK = 8;
+    public const CITY_OK = 16;
 
     //States
 
@@ -39,25 +39,25 @@ class VatIdValidatorResult implements \Serializable
      * Status -2 happens when
      * - the VAT ID is required, but empty (not set by a validator, but the login subscriber)
      */
-    const REQUIRED = -2;
+    public const REQUIRED = -2;
 
     /**
      * Status -1 happens when
      * - validation service was unavailable
      */
-    const UNAVAILABLE = -1;
+    public const UNAVAILABLE = -1;
 
     /**
      * Status 0 happens when
      * - the VAT Id is invalid
      */
-    const INVALID = 0;
+    public const INVALID = 0;
 
     /**
      * Status 31 happens when
      * - the check was executed and each was valid
      */
-    const VALID = 31;
+    public const VALID = 31;
 
     /**
      * @var int

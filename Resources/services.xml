@@ -16,6 +16,7 @@
             <argument type="service" id="snippets"/>
             <argument type="service" id="models"/>
             <argument type="service" id="templatemail"/>
+            <argument type="service" id="pluginlogger"/>
         </service>
 
         <service id="swag_vat_id_validation.address_validator_decorator"

@@ -25,6 +25,8 @@
 namespace SwagVatIdValidation\Components;
 
 use Monolog\Logger;
+use Psr\Log\LogLevel;
+use Shopware\Components\Logger as PluginLogger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Country\Country;
 use Shopware\Models\Country\Repository as CountryRepository;
@@ -78,19 +80,26 @@ class ValidationService implements ValidationServiceInterface
     private $countryIso;
 
     /**
+     * @var PluginLogger
+     */
+    private $pluginLogger;
+
+    /**
      * Constructor sets all properties
      */
     public function __construct(
         ShopwareConfig $config,
         SnippetManager $snippetManager,
         ModelManager $modelManager,
-        TemplateMail $templateMail
+        TemplateMail $templateMail,
+        PluginLogger $pluginLogger
     ) {
         $this->config = $config;
         $this->snippetManager = $snippetManager;
         $this->modelManager = $modelManager;
         $this->templateMail = $templateMail;
         $this->countryIso = '';
+        $this->pluginLogger = $pluginLogger;
     }
 
     /**
@@ -362,11 +371,11 @@ class ValidationService implements ValidationServiceInterface
         }
 
         if ($customerCountryCode === 'DE') {
-            return new SimpleMiasVatIdValidator($this->snippetManager);
+            return new SimpleMiasVatIdValidator($this->snippetManager, $this->pluginLogger);
         }
 
         if ($shopCountryCode !== 'DE') {
-            return new SimpleMiasVatIdValidator($this->snippetManager);
+            return new SimpleMiasVatIdValidator($this->snippetManager, $this->pluginLogger);
         }
 
         return new SimpleBffVatIdValidator($this->snippetManager);
@@ -383,11 +392,11 @@ class ValidationService implements ValidationServiceInterface
     private function createExtendedValidator($customerCountryCode, $shopCountryCode)
     {
         if ($customerCountryCode === 'DE') {
-            return new ExtendedMiasVatIdValidator($this->snippetManager);
+            return new ExtendedMiasVatIdValidator($this->snippetManager, $this->pluginLogger);
         }
 
         if ($shopCountryCode !== 'DE') {
-            return new ExtendedMiasVatIdValidator($this->snippetManager);
+            return new ExtendedMiasVatIdValidator($this->snippetManager, $this->pluginLogger);
         }
 
         return new ExtendedBffVatIdValidator($this->snippetManager, $this->config->get('confirmation'));
@@ -439,6 +448,7 @@ class ValidationService implements ValidationServiceInterface
 
         if ($result->isApiUnavailable()) {
             $error = $result->getErrorMessage('messages/checkNotAvailable');
+            $this->pluginLogger->log(LogLevel::ERROR, $error);
         } else {
             $error = \implode("\n", $result->getErrorMessages());
         }
@@ -459,7 +469,7 @@ class ValidationService implements ValidationServiceInterface
             $mail->setFrom($this->config->get('sMAIL'), $this->config->get('sSHOPNAME'));
             $mail->send();
         } catch (\Exception $e) {
-            Shopware()->Container()->get('pluginlogger')->log(Logger::ERROR, $e->getMessage());
+            $this->pluginLogger->log(Logger::ERROR, $e->getMessage());
         }
     }
 
