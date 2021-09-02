@@ -87,7 +87,7 @@ class IsoService implements IsoServiceInterface
     {
         $config = $this->configReader->getPluginConfig();
 
-        $disabledCountryISOs = $config['disabledCountryISOs'];
+        $disabledCountryISOs = $config[VatIdConfigReaderInterface::DISABLED_COUNTRY_ISO_LIST];
 
         if (!\is_array($disabledCountryISOs)) {
             $disabledCountryISOs = [$disabledCountryISOs];

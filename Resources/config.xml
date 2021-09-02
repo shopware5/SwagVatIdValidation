@@ -256,5 +256,14 @@
             <description lang="en">If this setting is active, the setting "Mark VAT number for corporate clients as mandatory field" must be switched off. This setting can be found under: "Settings -> Basic settings -> Login / Registration -> Mark VAT registration number for corporate clients as mandatory field".</description>
         </element>
 
+        <element type="boolean" scope="shop">
+            <name>allow_register_on_api_error</name>
+            <label lang="de">Registrierung zulassen, wenn die API nicht erreichbar ist</label>
+            <label lang="en">Allow registrations if the API is not available</label>
+            <value>false</value>
+            <description lang="de">Wenn diese Einstellung aktiv ist, können sich Kunden dennoch registrieren, auch wenn die USt-IdNr-Validierungs-API nicht erreichbar ist. Nachdem sich die Kunden erneut angemeldet haben, werden sie darüber informiert, dass sie keine gültige USt-IdNr. haben.</description>
+            <description lang="en">If this setting is active, customers can register even if the VAT-ID validation API is not available. When the customers log in again, they will be informed that they do not have a valid VAT-ID.</description>
+        </element>
+
     </elements>
 </config>

@@ -2,6 +2,11 @@
            xmlns="http://symfony.com/schema/dic/services"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
+    <imports>
+        <import resource="servives/subscriber.xml"/>
+        <import resource="servives/validators.xml"/>
+    </imports>
+
     <services>
         <defaults public="true"/>
 
@@ -17,6 +22,8 @@
             <argument type="service" id="models"/>
             <argument type="service" id="templatemail"/>
             <argument type="service" id="pluginlogger"/>
+            <argument type="service" id="SwagVatIdValidation\Components\Validators\ValidatorFactory"/>
+            <argument type="service" id="swag_vat_id_validation.dependency_provider"/>
         </service>
 
         <service id="swag_vat_id_validation.address_validator_decorator"
@@ -26,34 +33,6 @@
             <argument type="service" id="config"/>
             <argument type="service" id="swag_vat_id_validation.validation_service"/>
             <argument type="service" id="validator"/>
-        </service>
-
-        <service id="swag_vat_id_validation.subscriber.checkout_finish"
-                 class="SwagVatIdValidation\Subscriber\CheckoutFinish">
-            <argument type="service" id="swag_vat_id_validation.dependency_provider"/>
-            <argument type="service" id="swag_vat_id_validation.validation_service"/>
-            <tag name="shopware.event_subscriber"/>
-        </service>
-
-        <service id="swag_vat_id_validation.subscriber.forms" class="SwagVatIdValidation\Subscriber\Forms">
-            <argument type="service" id="swag_vat_id_validation.iso_service"/>
-            <argument type="service" id="swag_vat_id_validation.config_reader"/>
-            <tag name="shopware.event_subscriber"/>
-        </service>
-
-        <service id="swag_vat_id_validation.subscriber.login" class="SwagVatIdValidation\Subscriber\Login">
-            <argument type="service" id="swag_vat_id_validation.dependency_provider"/>
-            <argument type="service" id="swag_vat_id_validation.validation_service"/>
-            <argument type="service" id="models"/>
-            <tag name="shopware.event_subscriber"/>
-        </service>
-
-        <service id="swag_vat_id_validation.subscriber.template" class="SwagVatIdValidation\Subscriber\Template">
-            <argument type="service" id="swag_vat_id_validation.dependency_provider"/>
-            <argument type="service" id="snippets"/>
-            <argument type="service" id="config"/>
-            <argument>%swag_vat_id_validation.plugin_dir%</argument>
-            <tag name="shopware.event_subscriber"/>
         </service>
 
         <service id="swag_vat_id_validation.advanced_vat_id_validator"

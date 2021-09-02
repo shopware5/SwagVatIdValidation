@@ -32,12 +32,17 @@ use Shopware\Models\Shop\Shop;
 
 class SwagVatIdValidationTestKernel extends Kernel
 {
+    /**
+     * @var SwagVatIdValidationTestKernel
+     */
+    private static $kernel;
+
     public static function start(): void
     {
-        $kernel = new self((string) \getenv('SHOPWARE_ENV') ?: 'testing', true);
-        $kernel->boot();
+        self::$kernel = new self((string) \getenv('SHOPWARE_ENV') ?: 'testing', true);
+        self::$kernel->boot();
 
-        $container = $kernel->getContainer();
+        $container = self::$kernel->getContainer();
         $container->get('plugins')->Core()->ErrorHandler()->registerErrorHandler(\E_ALL | \E_STRICT);
 
         /** @var \Shopware\Models\Shop\Repository $repository */
@@ -52,6 +57,11 @@ class SwagVatIdValidationTestKernel extends Kernel
         if (!self::assertPlugin('SwagVatIdValidation')) {
             throw new \Exception('Plugin SwagVatIdValidation is not installed or activated.');
         }
+    }
+
+    public static function getKernel(): SwagVatIdValidationTestKernel
+    {
+        return static::$kernel;
     }
 
     private static function assertPlugin(string $name): bool

@@ -35,12 +35,9 @@ use Shopware\Models\Customer\AddressRepository;
 use Shopware_Components_Config as ShopwareConfig;
 use Shopware_Components_Snippet_Manager as SnippetManager;
 use Shopware_Components_TemplateMail as TemplateMail;
-use SwagVatIdValidation\Components\Validators\DummyVatIdValidator;
-use SwagVatIdValidation\Components\Validators\ExtendedBffVatIdValidator;
-use SwagVatIdValidation\Components\Validators\ExtendedMiasVatIdValidator;
-use SwagVatIdValidation\Components\Validators\SimpleBffVatIdValidator;
-use SwagVatIdValidation\Components\Validators\SimpleMiasVatIdValidator;
-use SwagVatIdValidation\Components\Validators\VatIdValidatorInterface;
+use SwagVatIdValidation\Components\Validators\ValidatorFactoryInterface;
+use SwagVatIdValidation\Subscriber\AddressSubscriber;
+use SwagVatIdValidation\Subscriber\Template;
 
 class ValidationService implements ValidationServiceInterface
 {
@@ -85,6 +82,16 @@ class ValidationService implements ValidationServiceInterface
     private $pluginLogger;
 
     /**
+     * @var ValidatorFactoryInterface
+     */
+    private $validatorFactory;
+
+    /**
+     * @var DependencyProvider
+     */
+    private $dependencyProvider;
+
+    /**
      * Constructor sets all properties
      */
     public function __construct(
@@ -92,7 +99,9 @@ class ValidationService implements ValidationServiceInterface
         SnippetManager $snippetManager,
         ModelManager $modelManager,
         TemplateMail $templateMail,
-        PluginLogger $pluginLogger
+        PluginLogger $pluginLogger,
+        ValidatorFactoryInterface $validatorFactory,
+        DependencyProvider $dependencyProvider
     ) {
         $this->config = $config;
         $this->snippetManager = $snippetManager;
@@ -100,6 +109,8 @@ class ValidationService implements ValidationServiceInterface
         $this->templateMail = $templateMail;
         $this->countryIso = '';
         $this->pluginLogger = $pluginLogger;
+        $this->validatorFactory = $validatorFactory;
+        $this->dependencyProvider = $dependencyProvider;
     }
 
     /**
@@ -111,7 +122,8 @@ class ValidationService implements ValidationServiceInterface
          * There is no VAT Id required, if...
          * ... the Vat Id is not required in the config,
          */
-        if (!$this->config->get('vatcheckrequired')) {
+        if (!$this->config->get('vatcheckrequired')
+            && !$this->config->get(VatIdConfigReaderInterface::IS_VAT_ID_REQUIRED)) {
             return false;
         }
 
@@ -127,7 +139,7 @@ class ValidationService implements ValidationServiceInterface
         /**
          * ... or the check is disabled for the billing country.
          */
-        $disabledCountries = $this->config->get('disabledCountryISOs');
+        $disabledCountries = $this->config->get(VatIdConfigReaderInterface::DISABLED_COUNTRY_ISO_LIST);
 
         if (\is_string($disabledCountries)) {
             $disabledCountries = \explode(',', $disabledCountries);
@@ -176,7 +188,7 @@ class ValidationService implements ValidationServiceInterface
             return $result;
         }
 
-        $apiValidationType = (int) $this->config->get('apiValidationType');
+        $apiValidationType = (int) $this->config->get(VatIdConfigReaderInterface::API_VALIDATION_TYPE);
 
         if ($apiValidationType === APIValidationType::NONE) {
             return $result;
@@ -185,7 +197,7 @@ class ValidationService implements ValidationServiceInterface
         /**
          * Get all whitelisted country ISOs from the plugin config
          */
-        $exceptedNonEuISOs = $this->config->get('disabledCountryISOs');
+        $exceptedNonEuISOs = $this->config->get(VatIdConfigReaderInterface::DISABLED_COUNTRY_ISO_LIST);
 
         if (!\is_array($exceptedNonEuISOs)) {
             $exceptedNonEuISOs = \explode(',', $exceptedNonEuISOs);
@@ -231,7 +243,7 @@ class ValidationService implements ValidationServiceInterface
          * Each validator connects to an external API. If the API is not available, the result will be false.
          * The customer VAT Id has not to be empty. Otherwise the result will also be false!
          */
-        $shopInformation = new VatIdInformation($this->config->get('vatId'));
+        $shopInformation = new VatIdInformation($this->config->get(VatIdConfigReaderInterface::VAT_ID));
         $result = $this->validateWithApiValidator($customerInformation, $shopInformation, $apiValidationType);
 
         /*
@@ -247,7 +259,7 @@ class ValidationService implements ValidationServiceInterface
              * ... if the api was unavailable return the result, ...
              */
             if ($result->isApiUnavailable()) {
-                return $result;
+                return $this->handleApiIsUnavailable($billingAddress, $result, $deleteVatIdFromAddress);
             }
 
             /*
@@ -267,7 +279,7 @@ class ValidationService implements ValidationServiceInterface
      */
     public function getRequirementErrorResult()
     {
-        $result = new VatIdValidatorResult($this->snippetManager, 'main');
+        $result = new VatIdValidatorResult($this->snippetManager, 'main', $this->config);
         $result->setVatIdRequired();
 
         return $result;
@@ -321,85 +333,34 @@ class ValidationService implements ValidationServiceInterface
 
     /**
      * Helper function to check a VAT Id with the dummy validator
-     *
-     * @return VatIdValidatorResult
      */
-    private function validateWithDummyValidator(VatIdCustomerInformation $customerInformation)
+    private function validateWithDummyValidator(VatIdCustomerInformation $customerInformation): VatIdValidatorResult
     {
-        return (new DummyVatIdValidator($this->snippetManager))->check($customerInformation);
+        $dummyValidator = $this->validatorFactory->createDummyValidator();
+
+        return $dummyValidator->check($customerInformation, new VatIdInformation($customerInformation->getVatId()));
     }
 
     /**
      * Helper function to check a VAT Id with an API Validator (Bff or Mias, simple or extended)
-     *
-     * @param int $validationType
-     *
-     * @return VatIdValidatorResult
      */
     private function validateWithApiValidator(
         VatIdCustomerInformation $customerInformation,
         VatIdInformation $shopInformation,
-        $validationType
-    ) {
+        int $validationType
+    ): VatIdValidatorResult {
         //an empty Vat Id will occur an error, so the api validation should be skipped
         if ($customerInformation->getVatId() === '') {
-            return new VatIdValidatorResult();
+            return new VatIdValidatorResult($this->snippetManager, '', $this->config);
         }
 
-        $validator = $this->createValidator(
+        $validator = $this->validatorFactory->getValidator(
             $customerInformation->getCountryCode(),
             $shopInformation->getCountryCode(),
             $validationType
         );
 
         return $validator->check($customerInformation, $shopInformation);
-    }
-
-    /**
-     * Helper function to get the correct simple validator
-     *
-     * @param string $customerCountryCode
-     * @param string $shopCountryCode
-     * @param int    $validationType
-     *
-     * @return VatIdValidatorInterface
-     */
-    private function createValidator($customerCountryCode, $shopCountryCode, $validationType)
-    {
-        if ($validationType === APIValidationType::EXTENDED) {
-            return $this->createExtendedValidator($customerCountryCode, $shopCountryCode);
-        }
-
-        if ($customerCountryCode === 'DE') {
-            return new SimpleMiasVatIdValidator($this->snippetManager, $this->pluginLogger);
-        }
-
-        if ($shopCountryCode !== 'DE') {
-            return new SimpleMiasVatIdValidator($this->snippetManager, $this->pluginLogger);
-        }
-
-        return new SimpleBffVatIdValidator($this->snippetManager);
-    }
-
-    /**
-     * Helper function to get the correct extended validator
-     *
-     * @param string $customerCountryCode
-     * @param string $shopCountryCode
-     *
-     * @return VatIdValidatorInterface
-     */
-    private function createExtendedValidator($customerCountryCode, $shopCountryCode)
-    {
-        if ($customerCountryCode === 'DE') {
-            return new ExtendedMiasVatIdValidator($this->snippetManager, $this->pluginLogger);
-        }
-
-        if ($shopCountryCode !== 'DE') {
-            return new ExtendedMiasVatIdValidator($this->snippetManager, $this->pluginLogger);
-        }
-
-        return new ExtendedBffVatIdValidator($this->snippetManager, $this->config->get('confirmation'));
     }
 
     /**
@@ -414,19 +375,28 @@ class ValidationService implements ValidationServiceInterface
             return;
         }
 
-        /** @var Address $billingAddress */
         $billingAddress = $this->getAddressRepository()->find($billingAddressId);
 
-        if (!$billingAddress) {
+        if (!$billingAddress instanceof Address) {
             return;
         }
 
-        $billingAddress->setVatId('');
+        $billingAddress->setVatId(null);
 
         $this->modelManager->persist($billingAddress);
         $this->modelManager->flush($billingAddress);
 
-        if ($this->isVatIdRequired($billingAddress->getCompany(), $billingAddress->getCountry()->getId())) {
+        $country = $billingAddress->getCountry();
+        if (!$country instanceof Country) {
+            return;
+        }
+
+        $company = $billingAddress->getCompany();
+        if ($company === null) {
+            return;
+        }
+
+        if ($this->isVatIdRequired($company, $country->getId())) {
             $result->setVatIdRequired();
         }
     }
@@ -480,7 +450,7 @@ class ValidationService implements ValidationServiceInterface
      */
     private function getEmailAddress()
     {
-        $emailNotification = $this->config->get('shopEmailNotification');
+        $emailNotification = $this->config->get(VatIdConfigReaderInterface::EMAIL_NOTIFICATION);
 
         if (\is_string($emailNotification)) {
             $emailAddress = $emailNotification;
@@ -491,5 +461,23 @@ class ValidationService implements ValidationServiceInterface
         }
 
         return \filter_var($emailAddress, \FILTER_VALIDATE_EMAIL);
+    }
+
+    private function handleApiIsUnavailable(Address $billingAddress, VatIdValidatorResult $result, bool $deleteVatIdFromAddress): VatIdValidatorResult
+    {
+        $allowRegisterOnApiError = (bool) $this->config->get(VatIdConfigReaderInterface::ALLOW_REGISTER_ON_API_ERROR);
+        $session = $this->dependencyProvider->getSession();
+
+        if ($allowRegisterOnApiError === true) {
+            $this->removeVatIdFromBilling($billingAddress->getId(), $result, $deleteVatIdFromAddress);
+
+            $session->offsetSet(AddressSubscriber::DELETE_VAT_ID_SESSION_FLAG, true);
+
+            return $result;
+        }
+
+        $session->offsetSet(Template::REMOVE_ERROR_FIELDS_MESSAGE, true);
+
+        return $result;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware 5
  * Copyright (c) shopware AG
@@ -22,23 +23,20 @@
  * our trademarks remain entirely with us.
  */
 
-namespace SwagVatIdValidation\Components;
+namespace SwagVatIdValidation\Tests;
 
-interface VatIdConfigReaderInterface
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
+trait ContainerTrait
 {
-    public const ALLOW_REGISTER_ON_API_ERROR = 'allow_register_on_api_error';
+    public function getContainer(): ContainerInterface
+    {
+        $container = \SwagVatIdValidationTestKernel::getKernel()->getContainer();
 
-    public const VAT_ID = 'vatId';
+        if (!$container instanceof ContainerInterface) {
+            throw new \UnexpectedValueException('Container not found');
+        }
 
-    public const EMAIL_NOTIFICATION = 'shopEmailNotification';
-
-    public const API_VALIDATION_TYPE = 'apiValidationType';
-
-    public const OFFICIAL_CONFIRMATION = 'confirmation';
-
-    public const DISABLED_COUNTRY_ISO_LIST = 'disabledCountryISOs';
-
-    public const IS_VAT_ID_REQUIRED = 'vatId_is_required';
-
-    public function getPluginConfig(): array;
+        return $container;
+    }
 }

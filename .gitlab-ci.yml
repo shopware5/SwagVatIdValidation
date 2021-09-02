@@ -25,7 +25,7 @@ stages:
     - PHPUnit
 
 default:
-    image: shopware/5-continuous:7.3
+    image: shopware/5-continuous:7.4
     services:
         -   name: mysql:5.7
             alias: mysql
@@ -104,9 +104,9 @@ SW 5.6:
             --configuration phpunit.xml.dist
             --colors=never
 
-SW 5.7 PHP 7.3:
+SW 5.7 PHP 7.4:
     extends: .SW 5.7 default
-    image: shopware/5-continuous:7.3
+    image: shopware/5-continuous:7.4
 
 SW 5.7 PHP 8.0:
     extends: .SW 5.7 default

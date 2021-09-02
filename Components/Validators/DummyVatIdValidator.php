@@ -25,6 +25,7 @@
 namespace SwagVatIdValidation\Components\Validators;
 
 use SwagVatIdValidation\Components\EUStates;
+use SwagVatIdValidation\Components\VatIdConfigReaderInterface;
 use SwagVatIdValidation\Components\VatIdCustomerInformation;
 use SwagVatIdValidation\Components\VatIdInformation;
 use SwagVatIdValidation\Components\VatIdValidatorResult;
@@ -51,12 +52,17 @@ class DummyVatIdValidator implements VatIdValidatorInterface
     private $config;
 
     /**
+     * @var \Shopware_Components_Snippet_Manager
+     */
+    private $snippetManager;
+
+    /**
      * Constructor sets the snippet namespace
      */
-    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager)
+    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, \Shopware_Components_Config $config)
     {
-        $this->result = new VatIdValidatorResult($snippetManager, 'dummyValidator');
-        $this->config = Shopware()->Container()->get('config');
+        $this->snippetManager = $snippetManager;
+        $this->config = $config;
     }
 
     /**
@@ -64,7 +70,9 @@ class DummyVatIdValidator implements VatIdValidatorInterface
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation = null)
     {
-        $exceptedNonEuISOs = $this->config->get('disabledCountryISOs');
+        $this->result = new VatIdValidatorResult($this->snippetManager, 'dummyValidator', $this->config);
+
+        $exceptedNonEuISOs = $this->config->get(VatIdConfigReaderInterface::DISABLED_COUNTRY_ISO_LIST);
 
         if (!\is_array($exceptedNonEuISOs)) {
             $exceptedNonEuISOs = \explode(',', $exceptedNonEuISOs);

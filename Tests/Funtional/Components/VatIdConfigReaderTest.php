@@ -47,7 +47,7 @@ class VatIdConfigReaderTest extends TestCase
         $result = $this->getVatIdConfigReader()->getPluginConfig();
 
         static::assertTrue(\is_array($result));
-        static::assertSame('AT', $result['disabledCountryISOs']);
+        static::assertSame('AT', $result[VatIdConfigReaderInterface::DISABLED_COUNTRY_ISO_LIST]);
     }
 
     public function testGetPluginConfigLegacy()
@@ -73,7 +73,7 @@ class VatIdConfigReaderTest extends TestCase
         $result = $configReader->getPluginConfig();
 
         static::assertTrue(\is_array($result));
-        static::assertSame('AT', $result['disabledCountryISOs']);
+        static::assertSame('AT', $result[VatIdConfigReaderInterface::DISABLED_COUNTRY_ISO_LIST]);
     }
 
     private function getVatIdConfigReader(): VatIdConfigReaderInterface

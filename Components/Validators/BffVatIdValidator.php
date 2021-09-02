@@ -24,6 +24,7 @@
 
 namespace SwagVatIdValidation\Components\Validators;
 
+use SwagVatIdValidation\Components\VatIdConfigReaderInterface;
 use SwagVatIdValidation\Components\VatIdCustomerInformation;
 use SwagVatIdValidation\Components\VatIdInformation;
 use SwagVatIdValidation\Components\VatIdValidatorResult;
@@ -48,14 +49,23 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
     protected $confirmation;
 
     /**
-     * Constructor sets the snippet namespace
-     *
-     * @param bool $confirmation
+     * @var \Shopware_Components_Snippet_Manager
      */
-    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, $confirmation = false)
+    protected $snippetManager;
+
+    /**
+     * @var \Shopware_Components_Config
+     */
+    private $config;
+
+    /**
+     * Constructor sets the snippet namespace
+     */
+    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, \Shopware_Components_Config $config)
     {
-        $this->result = new VatIdValidatorResult($snippetManager, 'bffValidator');
-        $this->confirmation = $confirmation;
+        $this->snippetManager = $snippetManager;
+        $this->config = $config;
+        $this->confirmation = $this->config->get(VatIdConfigReaderInterface::OFFICIAL_CONFIRMATION);
     }
 
     /**
@@ -63,6 +73,8 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
+        $this->result = new VatIdValidatorResult($this->snippetManager, 'bffValidator', $this->config);
+
         $data = $this->getData($customerInformation, $shopInformation);
 
         //The bff validator api does only support 'EL' as greece iso. Therefore, we replace the original GR with the EL.
@@ -71,16 +83,14 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
         $apiRequest = 'https://evatr.bff-online.de/evatrRPC?';
         $apiRequest .= \http_build_query($data, '', '&');
 
-        $context = \stream_context_create(
-            [
-                'http' => [
+        $context = \stream_context_create([
+            'http' => [
                 'method' => 'GET',
                 'header' => 'Content-Type: text/html; charset=utf-8',
                 'timeout' => 5,
                 'user_agent' => 'Shopware',
-                ],
-            ]
-        );
+            ],
+        ]);
         $response = @\file_get_contents($apiRequest, false, $context);
 
         $reg = '#<param>\s*<value><array><data>\s*<value><string>([^<]*)</string></value>\s*<value><string>([^<]*)</string></value>\s*</data></array></value>\s*</param>#msi';
