@@ -24,6 +24,9 @@
 
 namespace SwagVatIdValidation\Components;
 
+use Shopware_Components_Config;
+use Shopware_Components_Snippet_Manager;
+
 class VatIdValidatorResult implements \Serializable
 {
     //Flags
@@ -75,7 +78,7 @@ class VatIdValidatorResult implements \Serializable
     private $flags;
 
     /**
-     * @var \Shopware_Components_Snippet_Manager
+     * @var Shopware_Components_Snippet_Manager
      */
     private $snippetManager;
 
@@ -95,14 +98,14 @@ class VatIdValidatorResult implements \Serializable
     private $validatorSnippets;
 
     /**
-     * If $snippetManager is null, the result only can be VALID
-     *
-     * @param \Shopware_Components_Snippet_Manager $snippetManager
-     * @param string                               $namespace
+     * @var Shopware_Components_Config
      */
-    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager = null, $namespace = '')
+    private $config;
+
+    public function __construct(Shopware_Components_Snippet_Manager $snippetManager, string $namespace, Shopware_Components_Config $config)
     {
         $this->snippetManager = $snippetManager;
+        $this->config = $config;
         $this->init($namespace);
     }
 
@@ -113,11 +116,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setVatIdInvalid($errorCode)
     {
-        if (!$this->snippetManager) {
-            return;
-        }
-
-        $this->status = $this::INVALID;
+        $this->status = self::INVALID;
         $this->errors[$errorCode] = $this->validatorSnippets->get('error' . $errorCode);
         $this->flags['ustid'] = true;
     }
@@ -127,11 +126,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setVatIdRequired()
     {
-        if (!$this->snippetManager) {
-            return;
-        }
-
-        $this->status = $this::REQUIRED;
+        $this->status = self::REQUIRED;
         $this->errors['required'] = $this->pluginSnippets->get('messages/vatIdRequired');
     }
 
@@ -140,7 +135,12 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setServiceUnavailable()
     {
-        $this->status = $this::UNAVAILABLE;
+        $this->status = self::UNAVAILABLE;
+
+        if (!$this->config->get(VatIdConfigReaderInterface::ALLOW_REGISTER_ON_API_ERROR)) {
+            $this->status = self::UNAVAILABLE;
+            $this->errors['serviceUnavailable'] = $this->pluginSnippets->get('messages/serviceUnavailable');
+        }
     }
 
     /**
@@ -148,11 +148,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setCompanyInvalid()
     {
-        if (!$this->snippetManager) {
-            return;
-        }
-
-        $this->status &= ~$this::COMPANY_OK;
+        $this->status &= ~self::COMPANY_OK;
         $this->errors['company'] = $this->pluginSnippets->get('validator/extended/error/company');
         $this->flags['company'] = true;
     }
@@ -162,11 +158,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setStreetInvalid()
     {
-        if (!$this->snippetManager) {
-            return;
-        }
-
-        $this->status &= ~$this::STREET_OK;
+        $this->status &= ~self::STREET_OK;
         $this->errors['street'] = $this->pluginSnippets->get('validator/extended/error/street');
         $this->flags['street'] = true;
     }
@@ -176,11 +168,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setZipCodeInvalid()
     {
-        if (!$this->snippetManager) {
-            return;
-        }
-
-        $this->status &= ~$this::ZIP_CODE_OK;
+        $this->status &= ~self::ZIP_CODE_OK;
         $this->errors['zipCode'] = $this->pluginSnippets->get('validator/extended/error/zipCode');
         $this->flags['zipcode'] = true;
     }
@@ -190,11 +178,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function setCityInvalid()
     {
-        if (!$this->snippetManager) {
-            return;
-        }
-
-        $this->status &= ~$this::CITY_OK;
+        $this->status &= ~self::CITY_OK;
         $this->errors['city'] = $this->pluginSnippets->get('validator/extended/error/city');
         $this->flags['city'] = true;
     }
@@ -216,10 +200,6 @@ class VatIdValidatorResult implements \Serializable
      */
     public function getErrorMessage($key)
     {
-        if (!$this->snippetManager) {
-            return null;
-        }
-
         return $this->pluginSnippets->get($key);
     }
 
@@ -250,7 +230,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function isValid()
     {
-        return $this->status === $this::VALID;
+        return $this->status === self::VALID;
     }
 
     /**
@@ -260,7 +240,7 @@ class VatIdValidatorResult implements \Serializable
      */
     public function isApiUnavailable()
     {
-        return $this->status === $this::UNAVAILABLE;
+        return $this->status === self::UNAVAILABLE;
     }
 
     /**
@@ -305,13 +285,9 @@ class VatIdValidatorResult implements \Serializable
      */
     private function init($namespace)
     {
-        $this->status = $this::VALID;
+        $this->status = self::VALID;
         $this->errors = [];
         $this->flags = [];
-
-        if (!$this->snippetManager) {
-            return;
-        }
 
         $this->pluginSnippets = $this->snippetManager->getNamespace('frontend/swag_vat_id_validation/main');
         $this->namespace = $namespace;
@@ -330,10 +306,6 @@ class VatIdValidatorResult implements \Serializable
      */
     private function addError($errorCode)
     {
-        if (!$this->snippetManager) {
-            return;
-        }
-
         if ($errorCode === 'required') {
             $this->setVatIdRequired();
 

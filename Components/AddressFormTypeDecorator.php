@@ -74,7 +74,7 @@ class AddressFormTypeDecorator extends AbstractType
         $this->coreService->buildForm($builder, $options);
 
         $config = $this->configReader->getByPluginName('SwagVatIdValidation');
-        if ($config['vatId_is_required'] === false) {
+        if ($config[VatIdConfigReaderInterface::IS_VAT_ID_REQUIRED] === false) {
             return;
         }
 

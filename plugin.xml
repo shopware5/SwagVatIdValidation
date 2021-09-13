@@ -12,8 +12,14 @@
     <compatibility minVersion="5.6.0" maxVersion="5.99.99"/>
 
     <changelog version="2.0.7">
-        <changes lang="de">PT-12375 - Bei der Installation wird nun überprüft, ob die PHP Erweiterung "soap" installiert ist;</changes>
-        <changes lang="en">PT-12375 - With the installation, it is now checked whether the PHP extension "soap" is installed;</changes>
+        <changes lang="de">
+            PT-12375 - Bei der Installation wird nun geprüft, ob die PHP Erweiterung "soap" installiert ist;
+            PT-12375 - Neu Option zum Festlegen des Verhaltens bei nicht verfügbarer API wahrend der Registrierung;
+        </changes>
+        <changes lang="en">
+            PT-12375 - During the installation, it is now checked whether the PHP extension "soap" is installed;
+            PT-12375 - New option to specify behaviour in case the API is not available at registration;
+        </changes>
     </changelog>
 
     <changelog version="2.0.6">

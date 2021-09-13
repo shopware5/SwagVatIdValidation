@@ -26,6 +26,7 @@ namespace SwagVatIdValidation\Components\Validators;
 
 use Psr\Log\LogLevel;
 use Shopware\Components\Logger as PluginLogger;
+use Shopware_Components_Config;
 use SwagVatIdValidation\Components\VatIdCustomerInformation;
 use SwagVatIdValidation\Components\VatIdInformation;
 use SwagVatIdValidation\Components\VatIdValidatorResult;
@@ -47,15 +48,26 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
     /**
      * @var PluginLogger
      */
-    private $pluginLogger;
+    protected $pluginLogger;
+
+    /**
+     * @var \Shopware_Components_Snippet_Manager
+     */
+    protected $snippetManager;
+
+    /**
+     * @var Shopware_Components_Config
+     */
+    private $config;
 
     /**
      * Constructor sets the snippet namespace
      */
-    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, PluginLogger $pluginLogger)
+    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, PluginLogger $pluginLogger, Shopware_Components_Config $config)
     {
-        $this->result = new VatIdValidatorResult($snippetManager, 'miasValidator');
         $this->pluginLogger = $pluginLogger;
+        $this->snippetManager = $snippetManager;
+        $this->config = $config;
     }
 
     /**
@@ -63,6 +75,8 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
+        $this->result = new VatIdValidatorResult($this->snippetManager, 'miasValidator', $this->config);
+
         try {
             $client = new \SoapClient('http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl');
         } catch (\SoapFault $error) {

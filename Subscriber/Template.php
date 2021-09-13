@@ -25,15 +25,32 @@
 namespace SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
+use Enlight_Components_Session_Namespace as Session;
 use Enlight_Controller_Action;
 use Enlight_Controller_ActionEventArgs as ActionEventArgs;
+use Enlight_Controller_EventArgs as ControllerEventArgs;
 use Enlight_Controller_Request_RequestHttp as Request;
+use Enlight_View_Default as View;
 use SwagVatIdValidation\Components\DependencyProviderInterface;
 use SwagVatIdValidation\Components\EUStates;
+use SwagVatIdValidation\Components\VatIdConfigReaderInterface;
 use SwagVatIdValidation\Components\VatIdValidatorResult;
 
 class Template implements SubscriberInterface
 {
+    public const REMOVE_ERROR_FIELDS_MESSAGE = 'removeRedFields';
+
+    private const ERROR_ORIGIN_REGISTER = 'register';
+
+    private const ERROR_ORIGIN_EDIT = 'edit';
+
+    private const ERROR_ORIGIN_UNDEFINED = 'undefined';
+
+    /**
+     * @var string
+     */
+    private $errorOrigin = self::ERROR_ORIGIN_UNDEFINED;
+
     /**
      * @var DependencyProviderInterface
      */
@@ -78,6 +95,7 @@ class Template implements SubscriberInterface
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Account' => 'onPostDispatchFrontendAccount',
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onPostDispatchFrontendCheckout',
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Register' => 'onPostDispatchFrontendRegister',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Address' => 'onPostDispatchFrontendAddressEdit',
             'Theme_Inheritance_Template_Directories_Collected' => 'onTemplatesCollected',
         ];
     }
@@ -110,6 +128,14 @@ class Template implements SubscriberInterface
         $this->postDispatchFrontendController($arguments->getSubject(), ['index']);
     }
 
+    public function onPostDispatchFrontendAddressEdit(ControllerEventArgs $args): void
+    {
+        /** @var \Shopware_Controllers_Frontend_Address $subject */
+        $subject = $args->getSubject();
+
+        $this->prepareBillingErrorMessages($session = $this->dependencyProvider->getSession(), $subject->View());
+    }
+
     public function onTemplatesCollected(\Enlight_Event_EventArgs $arguments)
     {
         $dirs = $arguments->getReturn();
@@ -133,11 +159,14 @@ class Template implements SubscriberInterface
             return;
         }
 
-        /** @var \Enlight_Components_Session_Namespace $session */
+        /** @var Session $session */
         $session = $this->dependencyProvider->getSession();
 
-        /** @var \Enlight_View_Default $view */
+        /** @var View $view */
         $view = $controller->View();
+
+        $this->prepareBillingErrorMessages($session, $view);
+
         if ($view->getAssign('sUserData')['billingaddress']['company'] === null) {
             return;
         }
@@ -148,7 +177,7 @@ class Template implements SubscriberInterface
         if ($session->offsetExists('vatIdValidationStatus')) {
             $serialized = $session->get('vatIdValidationStatus');
 
-            $result = new VatIdValidatorResult($this->snippetManager);
+            $result = new VatIdValidatorResult($this->snippetManager, '', $this->config);
             $result->unserialize($serialized);
             $session->offsetUnset('vatIdValidationStatus');
 
@@ -183,7 +212,7 @@ class Template implements SubscriberInterface
     private function hasExceptedEUCountries()
     {
         /** @var array|string $ISOs */
-        $ISOs = $this->config->get('disabledCountryISOs');
+        $ISOs = $this->config->get(VatIdConfigReaderInterface::DISABLED_COUNTRY_ISO_LIST);
 
         if (\is_string($ISOs)) {
             $ISOs = \explode(',', $ISOs);
@@ -191,5 +220,74 @@ class Template implements SubscriberInterface
         }
 
         return EUStates::hasValidEUCountry($ISOs);
+    }
+
+    private function prepareBillingErrorMessages(Session $session, View $view): void
+    {
+        if (!$session->offsetGet(self::REMOVE_ERROR_FIELDS_MESSAGE)) {
+            return;
+        }
+
+        $session->offsetUnset(self::REMOVE_ERROR_FIELDS_MESSAGE);
+
+        $assignedErrors = $this->getAssignedErrors($view);
+
+        if ($this->errorOrigin === self::ERROR_ORIGIN_REGISTER) {
+            $this->handleRegister($assignedErrors, $view);
+
+            return;
+        }
+
+        if ($this->errorOrigin === self::ERROR_ORIGIN_EDIT) {
+            $this->handleEdit($assignedErrors, $view);
+        }
+    }
+
+    private function getAssignedErrors(View $view): array
+    {
+        $assignedErrors = $view->getAssign('errors');
+        if ($assignedErrors !== null) {
+            $this->errorOrigin = self::ERROR_ORIGIN_REGISTER;
+
+            return $assignedErrors;
+        }
+
+        $assignedErrors = $view->getAssign('error_messages');
+        if ($assignedErrors !== null) {
+            $this->errorOrigin = self::ERROR_ORIGIN_EDIT;
+
+            return $assignedErrors;
+        }
+
+        return [];
+    }
+
+    private function handleEdit(array $assignedErrors, View $view): void
+    {
+        if (\count($assignedErrors) < 2) {
+            return;
+        }
+        array_shift($assignedErrors);
+        $this->errorOrigin = self::ERROR_ORIGIN_UNDEFINED;
+
+        $view->assign('error_messages', $assignedErrors);
+    }
+
+    private function handleRegister(?array $assignedErrors, View $view): void
+    {
+        if (!isset($assignedErrors['billing'])) {
+            return;
+        }
+
+        $billingErrorMessages = $assignedErrors['billing'];
+        if (\count($billingErrorMessages) < 2) {
+            return;
+        }
+
+        array_shift($billingErrorMessages);
+        $assignedErrors['billing'] = $billingErrorMessages;
+        $this->errorOrigin = self::ERROR_ORIGIN_UNDEFINED;
+
+        $view->assign('errors', $assignedErrors);
     }
 }

@@ -81,11 +81,6 @@ parameters:
 			path: Components/AddressFormTypeDecorator.php
 
 		-
-			message: "#^Cannot call method getId\\(\\) on Shopware\\\\Models\\\\Country\\\\Country\\|null\\.$#"
-			count: 1
-			path: Components/ValidationService.php
-
-		-
 			message: "#^Method SwagVatIdValidation\\\\Components\\\\ValidationService\\:\\:removeVatIdFromBilling\\(\\) has no return typehint specified\\.$#"
 			count: 1
 			path: Components/ValidationService.php
@@ -97,12 +92,7 @@ parameters:
 
 		-
 			message: "#^Negated boolean expression is always false\\.$#"
-			count: 3
-			path: Components/ValidationService.php
-
-		-
-			message: "#^Parameter \\#1 \\$company of method SwagVatIdValidation\\\\Components\\\\ValidationService\\:\\:isVatIdRequired\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
+			count: 2
 			path: Components/ValidationService.php
 
 		-
@@ -286,16 +276,6 @@ parameters:
 			path: Components/VatIdValidatorResult.php
 
 		-
-			message: "#^Negated boolean expression is always false\\.$#"
-			count: 9
-			path: Components/VatIdValidatorResult.php
-
-		-
-			message: "#^Property SwagVatIdValidation\\\\Components\\\\VatIdValidatorResult\\:\\:\\$snippetManager \\(Shopware_Components_Snippet_Manager\\) does not accept Shopware_Components_Snippet_Manager\\|null\\.$#"
-			count: 1
-			path: Components/VatIdValidatorResult.php
-
-		-
 			message: "#^Method Shopware_Controllers_Widgets_SwagVatIdValidation\\:\\:modalInfoContentAction\\(\\) has no return typehint specified\\.$#"
 			count: 1
 			path: Controllers/Widgets/SwagVatIdValidation.php
@@ -374,26 +354,6 @@ parameters:
 			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:postDispatchFrontendController\\(\\) has no return typehint specified\\.$#"
 			count: 1
 			path: Subscriber/Template.php
-
-		-
-			message: "#^Method SwagVatIdValidation\\\\SwagVatIdValidation\\:\\:activate\\(\\) has no return typehint specified\\.$#"
-			count: 1
-			path: SwagVatIdValidation.php
-
-		-
-			message: "#^Method SwagVatIdValidation\\\\SwagVatIdValidation\\:\\:deactivate\\(\\) has no return typehint specified\\.$#"
-			count: 1
-			path: SwagVatIdValidation.php
-
-		-
-			message: "#^Method SwagVatIdValidation\\\\SwagVatIdValidation\\:\\:install\\(\\) has no return typehint specified\\.$#"
-			count: 1
-			path: SwagVatIdValidation.php
-
-		-
-			message: "#^Method SwagVatIdValidation\\\\SwagVatIdValidation\\:\\:uninstall\\(\\) has no return typehint specified\\.$#"
-			count: 1
-			path: SwagVatIdValidation.php
 
 		-
 			message: "#^Call to an undefined method Enlight_Plugin_PluginManager\\:\\:Core\\(\\)\\.$#"

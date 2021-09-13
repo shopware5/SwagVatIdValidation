@@ -27,20 +27,22 @@ namespace SwagVatIdValidation\Tests\Functional\Components;
 use PHPUnit\Framework\TestCase;
 use Shopware\Tests\Functional\Traits\DatabaseTransactionBehaviour;
 use SwagVatIdValidation\Components\IsoServiceInterface;
+use SwagVatIdValidation\Tests\ContainerTrait;
 use SwagVatIdValidation\Tests\PluginConfigCacheTrait;
 
 class IsoServiceTest extends TestCase
 {
     use DatabaseTransactionBehaviour;
     use PluginConfigCacheTrait;
+    use ContainerTrait;
 
     public function testGetCountryIdsFromIsoList(): void
     {
         $sql = \file_get_contents(__DIR__ . '/_fixtures/config.sql');
-        Shopware()->Container()->get('dbal_connection')->exec($sql);
+        $this->getContainer()->get('dbal_connection')->exec($sql);
 
         $sql = \file_get_contents(__DIR__ . '/_fixtures/update_config.sql');
-        Shopware()->Container()->get('dbal_connection')->exec($sql);
+        $this->getContainer()->get('dbal_connection')->exec($sql);
 
         $this->clearCache();
 
@@ -84,10 +86,10 @@ class IsoServiceTest extends TestCase
     public function testGetCountriesIsoList(): void
     {
         $sql = \file_get_contents(__DIR__ . '/_fixtures/config.sql');
-        Shopware()->Container()->get('dbal_connection')->exec($sql);
+        $this->getContainer()->get('dbal_connection')->exec($sql);
 
         $sql = \file_get_contents(__DIR__ . '/_fixtures/update_config.sql');
-        Shopware()->Container()->get('dbal_connection')->exec($sql);
+        $this->getContainer()->get('dbal_connection')->exec($sql);
 
         $this->clearCache();
 
@@ -133,7 +135,7 @@ class IsoServiceTest extends TestCase
     public function testGetCountriesIsoListShouldRemoveAT(): void
     {
         $sql = \file_get_contents(__DIR__ . '/_fixtures/config.sql');
-        Shopware()->Container()->get('dbal_connection')->exec($sql);
+        $this->getContainer()->get('dbal_connection')->exec($sql);
 
         $this->clearCache();
 
@@ -144,6 +146,9 @@ class IsoServiceTest extends TestCase
 
     private function getIsoService(): IsoServiceInterface
     {
-        return Shopware()->Container()->get('swag_vat_id_validation.iso_service');
+        $isoService = $this->getContainer()->get('swag_vat_id_validation.iso_service');
+        static::assertInstanceOf(IsoServiceInterface::class, $isoService);
+
+        return $isoService;
     }
 }

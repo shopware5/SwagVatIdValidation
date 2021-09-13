@@ -6,7 +6,7 @@
 
             vatIdIsRequired: false,
 
-            vatIdFieldSelector: 'input[name="register[billing][vatId]"]',
+            vatIdFieldSelector: 'input[name="register[billing][vatId]"],input[id="register_billing_vatid"]',
 
             countryFieldSelector: '#country'
         },
