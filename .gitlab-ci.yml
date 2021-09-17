@@ -1,6 +1,4 @@
 variables:
-    PLUGIN_NAME: SwagVatIdValidation
-    SHOPWARE_ENV: swagvatidvalidationtest
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: "tcp://docker:2375"
     DOCKER_TLS_CERTDIR: "/certs"
@@ -10,22 +8,16 @@ variables:
     MYSQL_DATABASE: shopware
     WEB_DOCUMENT_ROOT: $CI_PROJECT_DIR/
     GIT_STRATEGY: clone
+    SHOPWARE_ENV: swagvatidvalidationtest
     CHECKOUT_SHOPWARE_BRANCH: "5.7"
-    DB_USER: "app"
-    DB_PASSWORD: "app"
-    DB_HOST: "mysql"
-    DB_PORT: 3306
-    DB_NAME: shopware
-    SW_HOST: "localhost"
-    SW_BASE_PATH: ""
-    ELASTICSEARCH_HOST: elasticsearch
+    PLUGIN_NAME: SwagVatIdValidation
 
 stages:
-    - Code Style Check
+    - Code Analysis
     - PHPUnit
 
 default:
-    image: shopware/5-continuous:7.4
+    image: gitlab.shopware.com:5005/shopware/5/product/image/continuous:7.4
     services:
         -   name: mysql:5.7
             alias: mysql
@@ -43,7 +35,7 @@ default:
         - /entrypoint supervisord &>/dev/null &
 
 PHP analyze:
-    stage: Code Style Check
+    stage: Code Analysis
     script:
         - php bin/console -e production
         - cd custom/plugins/${PLUGIN_NAME}
@@ -52,7 +44,7 @@ PHP analyze:
 
 Code Coverage:
     stage: PHPUnit
-    needs: [PHP analyze]
+    needs: [ PHP analyze ]
     script:
         - cd custom/plugins/${PLUGIN_NAME}
         - php -d pcov.enabled=1 -d pcov.directory=$CI_PROJECT_DIR
@@ -71,8 +63,8 @@ Code Coverage:
 
 SW 5.6:
     stage: PHPUnit
-    needs: [PHP analyze]
-    image: shopware/5-continuous:7.2
+    needs: [ PHP analyze ]
+    image: gitlab.shopware.com:5005/shopware/5/product/image/continuous:7.2
     variables:
         CHECKOUT_SHOPWARE_BRANCH: "5.6"
     before_script: [ ]
@@ -82,7 +74,6 @@ SW 5.6:
         - unzip -q plugin.zip -d shopware/custom/plugins/${PLUGIN_NAME}
         - cd shopware
         - ./psh.phar init --SW_HOST="localhost"
-        - cp -r custom/plugins/${PLUGIN_NAME}/Tests/config_gitlab.php config.php
         - php bin/console sw:plugin:refresh
         - php bin/console sw:plugin:list
         - php bin/console sw:plugin:install --activate ${PLUGIN_NAME}
@@ -92,12 +83,13 @@ SW 5.6:
         - php ../../../vendor/bin/phpunit
             --configuration phpunit.xml.dist
             --colors=never
+    services:
+        -   name: mysql:5.7
+            alias: mysql
 
 .SW 5.7 default:
     stage: PHPUnit
     needs: [PHP analyze]
-    variables:
-        CHECKOUT_SHOPWARE_BRANCH: "5.7"
     script:
         - cd custom/plugins/${PLUGIN_NAME}
         - php ../../../vendor/bin/phpunit
@@ -106,7 +98,8 @@ SW 5.6:
 
 SW 5.7 PHP 7.4:
     extends: .SW 5.7 default
-    image: shopware/5-continuous:7.4
+    only:
+        - master
 
 SW 5.7 PHP 8.0:
     extends: .SW 5.7 default

@@ -81,6 +81,41 @@ parameters:
 			path: Components/AddressFormTypeDecorator.php
 
 		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\EUStates\\:\\:getEUCountryList\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/EUStates.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\IsoService\\:\\:getCountriesIsoList\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/IsoService.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\IsoService\\:\\:getCountryIdsFromIsoList\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/IsoService.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\IsoService\\:\\:removeDisabledCountries\\(\\) has parameter \\$euCountryList with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/IsoService.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\IsoService\\:\\:removeDisabledCountries\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/IsoService.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\IsoServiceInterface\\:\\:getCountriesIsoList\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/IsoServiceInterface.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\IsoServiceInterface\\:\\:getCountryIdsFromIsoList\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/IsoServiceInterface.php
+
+		-
 			message: "#^Method SwagVatIdValidation\\\\Components\\\\ValidationService\\:\\:removeVatIdFromBilling\\(\\) has no return typehint specified\\.$#"
 			count: 1
 			path: Components/ValidationService.php
@@ -126,7 +161,22 @@ parameters:
 			path: Components/Validators/BffVatIdValidator.php
 
 		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\BffVatIdValidator\\:\\:addExtendedResults\\(\\) has parameter \\$response with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/Validators/BffVatIdValidator.php
+
+		-
 			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\BffVatIdValidator\\:\\:createSimpleValidatorResult\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: Components/Validators/BffVatIdValidator.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\BffVatIdValidator\\:\\:createSimpleValidatorResult\\(\\) has parameter \\$response with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/Validators/BffVatIdValidator.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\BffVatIdValidator\\:\\:getData\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Components/Validators/BffVatIdValidator.php
 
@@ -146,6 +196,16 @@ parameters:
 			path: Components/Validators/ExtendedBffVatIdValidator.php
 
 		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\ExtendedBffVatIdValidator\\:\\:addExtendedResults\\(\\) has parameter \\$response with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/Validators/ExtendedBffVatIdValidator.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\ExtendedBffVatIdValidator\\:\\:getData\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/Validators/ExtendedBffVatIdValidator.php
+
+		-
 			message: "#^Cannot access property \\$traderAddress on array\\.$#"
 			count: 2
 			path: Components/Validators/ExtendedMiasVatIdValidator.php
@@ -157,6 +217,16 @@ parameters:
 
 		-
 			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\ExtendedMiasVatIdValidator\\:\\:addExtendedResults\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: Components/Validators/ExtendedMiasVatIdValidator.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\ExtendedMiasVatIdValidator\\:\\:addExtendedResults\\(\\) has parameter \\$response with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/Validators/ExtendedMiasVatIdValidator.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\ExtendedMiasVatIdValidator\\:\\:getData\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Components/Validators/ExtendedMiasVatIdValidator.php
 
@@ -186,7 +256,22 @@ parameters:
 			path: Components/Validators/MiasVatIdValidator.php
 
 		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\MiasVatIdValidator\\:\\:getData\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/Validators/MiasVatIdValidator.php
+
+		-
 			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\SimpleBffVatIdValidator\\:\\:addExtendedResults\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: Components/Validators/SimpleBffVatIdValidator.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\SimpleBffVatIdValidator\\:\\:addExtendedResults\\(\\) has parameter \\$response with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/Validators/SimpleBffVatIdValidator.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\SimpleBffVatIdValidator\\:\\:getData\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Components/Validators/SimpleBffVatIdValidator.php
 
@@ -194,6 +279,26 @@ parameters:
 			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\SimpleMiasVatIdValidator\\:\\:addExtendedResults\\(\\) has no return typehint specified\\.$#"
 			count: 1
 			path: Components/Validators/SimpleMiasVatIdValidator.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\SimpleMiasVatIdValidator\\:\\:addExtendedResults\\(\\) has parameter \\$response with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/Validators/SimpleMiasVatIdValidator.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\SimpleMiasVatIdValidator\\:\\:getData\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/Validators/SimpleMiasVatIdValidator.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\ValidatorFactory\\:\\:__construct\\(\\) has parameter \\$validators with no value type specified in iterable type IteratorAggregate\\.$#"
+			count: 1
+			path: Components/Validators/ValidatorFactory.php
+
+		-
+			message: "#^Property SwagVatIdValidation\\\\Components\\\\Validators\\\\ValidatorFactory\\:\\:\\$validators type has no value type specified in iterable type IteratorAggregate\\.$#"
+			count: 1
+			path: Components/Validators/ValidatorFactory.php
 
 		-
 			message: "#^Cannot call method getByPluginName\\(\\) on Shopware\\\\Components\\\\Plugin\\\\Configuration\\\\CachedReader\\|null\\.$#"
@@ -206,9 +311,19 @@ parameters:
 			path: Components/VatIdConfigReader.php
 
 		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\VatIdConfigReader\\:\\:getPluginConfig\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/VatIdConfigReader.php
+
+		-
 			message: "#^Property SwagVatIdValidation\\\\Components\\\\VatIdConfigReader\\:\\:\\$cachedConfigReader \\(Shopware\\\\Components\\\\Plugin\\\\Configuration\\\\CachedReader\\|null\\) does not accept Shopware\\\\Components\\\\Plugin\\\\CachedConfigReader\\|null\\.$#"
 			count: 1
 			path: Components/VatIdConfigReader.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\VatIdConfigReaderInterface\\:\\:getPluginConfig\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/VatIdConfigReaderInterface.php
 
 		-
 			message: "#^Cannot call method getIso\\(\\) on Shopware\\\\Models\\\\Country\\\\Country\\|null\\.$#"
@@ -227,6 +342,16 @@ parameters:
 
 		-
 			message: "#^Method SwagVatIdValidation\\\\Components\\\\VatIdValidatorResult\\:\\:addError\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: Components/VatIdValidatorResult.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\VatIdValidatorResult\\:\\:getErrorFlags\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/VatIdValidatorResult.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Components\\\\VatIdValidatorResult\\:\\:getErrorMessages\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Components/VatIdValidatorResult.php
 
@@ -276,12 +401,47 @@ parameters:
 			path: Components/VatIdValidatorResult.php
 
 		-
+			message: "#^Property SwagVatIdValidation\\\\Components\\\\VatIdValidatorResult\\:\\:\\$errors type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/VatIdValidatorResult.php
+
+		-
+			message: "#^Property SwagVatIdValidation\\\\Components\\\\VatIdValidatorResult\\:\\:\\$flags type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Components/VatIdValidatorResult.php
+
+		-
+			message: "#^Property SwagVatIdValidation\\\\Components\\\\VatIdValidatorResult\\:\\:\\$pluginSnippets type has no value type specified in iterable type Enlight_Components_Snippet_Namespace\\.$#"
+			count: 1
+			path: Components/VatIdValidatorResult.php
+
+		-
+			message: "#^Property SwagVatIdValidation\\\\Components\\\\VatIdValidatorResult\\:\\:\\$validatorSnippets type has no value type specified in iterable type Enlight_Components_Snippet_Namespace\\.$#"
+			count: 1
+			path: Components/VatIdValidatorResult.php
+
+		-
 			message: "#^Method Shopware_Controllers_Widgets_SwagVatIdValidation\\:\\:modalInfoContentAction\\(\\) has no return typehint specified\\.$#"
 			count: 1
 			path: Controllers/Widgets/SwagVatIdValidation.php
 
 		-
+			message: "#^PHPDoc tag @var for variable \\$ISOs has no value type specified in iterable type Enlight_Config\\.$#"
+			count: 1
+			path: Controllers/Widgets/SwagVatIdValidation.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\CheckoutFinish\\:\\:getSubscribedEvents\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Subscriber/CheckoutFinish.php
+
+		-
 			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\CheckoutFinish\\:\\:onPostDispatchCheckout\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: Subscriber/CheckoutFinish.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\CheckoutFinish\\:\\:onPostDispatchCheckout\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Controller_ActionEventArgs\\.$#"
 			count: 1
 			path: Subscriber/CheckoutFinish.php
 
@@ -291,12 +451,32 @@ parameters:
 			path: Subscriber/CheckoutFinish.php
 
 		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\CheckoutFinish\\:\\:onPreDispatchCheckout\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Controller_ActionEventArgs\\.$#"
+			count: 1
+			path: Subscriber/CheckoutFinish.php
+
+		-
 			message: "#^Negated boolean expression is always false\\.$#"
 			count: 1
 			path: Subscriber/CheckoutFinish.php
 
 		-
+			message: "#^PHPDoc tag @var for variable \\$orderDetails contains generic class ArrayObject but does not specify its types\\: TKey, TValue$#"
+			count: 1
+			path: Subscriber/CheckoutFinish.php
+
+		-
 			message: "#^Call to an undefined method Enlight_Event_EventArgs\\:\\:getSubject\\(\\)\\.$#"
+			count: 1
+			path: Subscriber/Forms.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Forms\\:\\:onFormBuild\\(\\) has parameter \\$args with no value type specified in iterable type Enlight_Event_EventArgs\\.$#"
+			count: 1
+			path: Subscriber/Forms.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Forms\\:\\:onRegister\\(\\) has parameter \\$args with no value type specified in iterable type Enlight_Event_EventArgs\\.$#"
 			count: 1
 			path: Subscriber/Forms.php
 
@@ -316,6 +496,11 @@ parameters:
 			path: Subscriber/Login.php
 
 		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Login\\:\\:onLoginSuccessful\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Event_EventArgs\\.$#"
+			count: 1
+			path: Subscriber/Login.php
+
+		-
 			message: "#^Negated boolean expression is always false\\.$#"
 			count: 1
 			path: Subscriber/Login.php
@@ -331,7 +516,32 @@ parameters:
 			path: Subscriber/Login.php
 
 		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:getAssignedErrors\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Subscriber/Template.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:handleEdit\\(\\) has parameter \\$assignedErrors with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Subscriber/Template.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:handleRegister\\(\\) has parameter \\$assignedErrors with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Subscriber/Template.php
+
+		-
 			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:onPostDispatchFrontendAccount\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: Subscriber/Template.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:onPostDispatchFrontendAccount\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Controller_ActionEventArgs\\.$#"
+			count: 1
+			path: Subscriber/Template.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:onPostDispatchFrontendAddressEdit\\(\\) has parameter \\$args with no value type specified in iterable type Enlight_Controller_EventArgs\\.$#"
 			count: 1
 			path: Subscriber/Template.php
 
@@ -341,7 +551,17 @@ parameters:
 			path: Subscriber/Template.php
 
 		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:onPostDispatchFrontendCheckout\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Controller_ActionEventArgs\\.$#"
+			count: 1
+			path: Subscriber/Template.php
+
+		-
 			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:onPostDispatchFrontendRegister\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: Subscriber/Template.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:onPostDispatchFrontendRegister\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Controller_ActionEventArgs\\.$#"
 			count: 1
 			path: Subscriber/Template.php
 
@@ -351,14 +571,19 @@ parameters:
 			path: Subscriber/Template.php
 
 		-
+			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:onTemplatesCollected\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Event_EventArgs\\.$#"
+			count: 1
+			path: Subscriber/Template.php
+
+		-
 			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:postDispatchFrontendController\\(\\) has no return typehint specified\\.$#"
 			count: 1
 			path: Subscriber/Template.php
 
 		-
-			message: "#^Call to an undefined method Enlight_Plugin_PluginManager\\:\\:Core\\(\\)\\.$#"
+			message: "#^PHPDoc tag @var for variable \\$ISOs has no value type specified in iterable type array\\.$#"
 			count: 1
-			path: Tests/Bootstrap.php
+			path: Subscriber/Template.php
 
 		-
 			message: "#^Parameter \\#1 \\$sql of method Doctrine\\\\DBAL\\\\Connection\\:\\:exec\\(\\) expects string, string\\|false given\\.$#"
@@ -369,6 +594,11 @@ parameters:
 			message: "#^Parameter \\#1 \\$company of method SwagVatIdValidation\\\\Components\\\\ValidationService\\:\\:isVatIdRequired\\(\\) expects string, null given\\.$#"
 			count: 1
 			path: Tests/Funtional/Components/ValidationServiceTest.php
+
+		-
+			message: "#^Method SwagVatIdValidation\\\\Tests\\\\Functional\\\\Components\\\\Validators\\\\ValidatorFactoryTest\\:\\:createValidatorTestDataProvider\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: Tests/Funtional/Components/Validators/ValidatorFactoryTest.php
 
 		-
 			message: "#^Method SwagVatIdValidation\\\\Tests\\\\Functional\\\\Components\\\\VatIdConfigReaderTest\\:\\:testGetPluginConfigLegacy\\(\\) has no return typehint specified\\.$#"
