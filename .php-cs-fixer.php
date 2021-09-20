@@ -1,29 +1,26 @@
 <?php
 /**
- * Shopware 5
+ * Shopware Plugins
  * Copyright (c) shopware AG
  *
- * According to our dual licensing model, this program can be used either
- * under the terms of the GNU Affero General Public License, version 3,
- * or under a proprietary license.
+ * According to our dual licensing model, this plugin can be used under
+ * a proprietary license as set forth in our Terms and Conditions,
+ * section 2.1.2.2 (Conditions of Usage).
  *
- * The texts of the GNU Affero General Public License with an additional
- * permission and of our proprietary license can be found at and
- * in the LICENSE file you have received along with this program.
+ * The text of our proprietary license additionally can be found at and
+ * in the LICENSE file you have received along with this plugin.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Affero General Public License for more details.
+ * This plugin is distributed in the hope that it will be useful,
+ * with LIMITED WARRANTY AND LIABILITY as set forth in our
+ * Terms and Conditions, sections 9 (Warranty) and 10 (Liability).
  *
  * "Shopware" is a registered trademark of shopware AG.
- * The licensing of the program under the AGPLv3 does not imply a
- * trademark license. Therefore any rights, title and interest in
- * our trademarks remain entirely with us.
+ * The licensing of the plugin does not imply a trademark license.
+ * Therefore any rights, title and interest in our trademarks
+ * remain entirely with us.
  */
 
 use PhpCsFixer\Config;
-use PhpCsFixer\Finder;
 use PhpCsFixerCustomFixers\Fixer\NoSuperfluousConcatenationFixer;
 use PhpCsFixerCustomFixers\Fixer\NoUselessCommentFixer;
 use PhpCsFixerCustomFixers\Fixer\NoUselessParenthesisFixer;
@@ -33,30 +30,28 @@ use PhpCsFixerCustomFixers\Fixer\SingleSpaceAfterStatementFixer;
 use PhpCsFixerCustomFixers\Fixer\SingleSpaceBeforeStatementFixer;
 use PhpCsFixerCustomFixers\Fixers;
 
-$finder = Finder::create()
+$finder = PhpCsFixer\Finder::create()
     ->in(__DIR__);
 
 $header = <<<EOF
-Shopware 5
+Shopware Plugins
 Copyright (c) shopware AG
 
-According to our dual licensing model, this program can be used either
-under the terms of the GNU Affero General Public License, version 3,
-or under a proprietary license.
+According to our dual licensing model, this plugin can be used under
+a proprietary license as set forth in our Terms and Conditions,
+section 2.1.2.2 (Conditions of Usage).
 
-The texts of the GNU Affero General Public License with an additional
-permission and of our proprietary license can be found at and
-in the LICENSE file you have received along with this program.
+The text of our proprietary license additionally can be found at and
+in the LICENSE file you have received along with this plugin.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
+This plugin is distributed in the hope that it will be useful,
+with LIMITED WARRANTY AND LIABILITY as set forth in our
+Terms and Conditions, sections 9 (Warranty) and 10 (Liability).
 
 "Shopware" is a registered trademark of shopware AG.
-The licensing of the program under the AGPLv3 does not imply a
-trademark license. Therefore any rights, title and interest in
-our trademarks remain entirely with us.
+The licensing of the plugin does not imply a trademark license.
+Therefore any rights, title and interest in our trademarks
+remain entirely with us.
 EOF;
 
 return (new Config())
