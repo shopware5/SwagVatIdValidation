@@ -81,8 +81,8 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
         $extendedData['city'] = [$address[1], $customerInformation->getCity()];
 
         foreach ($extendedData as &$data) {
-            $string1 = \trim($data[0]);
-            $string2 = \trim($data[1]);
+            $string1 = \trim($data[0] ?? '');
+            $string2 = \trim($data[1] ?? '');
 
             $data = $this->validateString($string1, $string2);
         }

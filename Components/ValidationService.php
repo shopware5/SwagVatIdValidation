@@ -70,7 +70,7 @@ class ValidationService implements ValidationServiceInterface
     private $countryRepository;
 
     /**
-     * @var string
+     * @var ?string
      */
     private $countryIso;
 
@@ -132,7 +132,7 @@ class ValidationService implements ValidationServiceInterface
             return false;
         }
 
-        $countryISO = $this->getCountryIso($countryId);
+        $countryISO = $this->getCountryIso((int) $countryId);
 
         /**
          * ... or the check is disabled for the billing country.
@@ -313,16 +313,17 @@ class ValidationService implements ValidationServiceInterface
 
     /**
      * Helper function to get the country iso of the given billing address
-     *
-     * @param int $countryId
-     *
-     * @return string
      */
-    private function getCountryIso($countryId)
+    private function getCountryIso(int $countryId): ?string
     {
         if (!$this->countryIso) {
             /** @var Country $country */
             $country = $this->getCountryRepository()->find($countryId);
+
+            if (!$country instanceof Country) {
+                return $this->countryIso;
+            }
+
             $this->countryIso = $country->getIso();
         }
 

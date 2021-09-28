@@ -28,6 +28,8 @@ use Enlight_Controller_Action;
 use Enlight_Controller_ActionEventArgs as ActionEventArgs;
 use Enlight_Controller_Request_RequestHttp as Request;
 use Enlight_View_Default as View;
+use Shopware_Components_Config as Config;
+use Shopware_Components_Snippet_Manager as SnippetManager;
 use SwagVatIdValidation\Components\DependencyProviderInterface;
 use SwagVatIdValidation\Components\EUStates;
 use SwagVatIdValidation\Components\VatIdConfigReaderInterface;
@@ -54,12 +56,12 @@ class Template implements SubscriberInterface
     private $dependencyProvider;
 
     /**
-     * @var \Shopware_Components_Snippet_Manager
+     * @var SnippetManager
      */
     private $snippetManager;
 
     /**
-     * @var \Shopware_Components_Config
+     * @var Config
      */
     private $config;
 
@@ -73,8 +75,8 @@ class Template implements SubscriberInterface
      */
     public function __construct(
         DependencyProviderInterface $dependencyProvider,
-        \Shopware_Components_Snippet_Manager $snippetManager,
-        \Shopware_Components_Config $config,
+        SnippetManager $snippetManager,
+        Config $config,
         $pluginPath
     ) {
         $this->dependencyProvider = $dependencyProvider;
@@ -93,6 +95,7 @@ class Template implements SubscriberInterface
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onPostDispatchFrontendCheckout',
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Register' => 'onPostDispatchFrontendRegister',
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Address' => 'onPostDispatchFrontendAddressEdit',
+            'Enlight_Controller_Action_PostDispatchSecure_Backend_Customer' => 'onCustomerPostDispatch',
             'Theme_Inheritance_Template_Directories_Collected' => 'onTemplatesCollected',
         ];
     }
@@ -199,6 +202,21 @@ class Template implements SubscriberInterface
                 ],
             ]
         );
+    }
+
+    public function onCustomerPostDispatch(ActionEventArgs $args): void
+    {
+        /** @var \Shopware_Controllers_Backend_Customer $controller */
+        $controller = $args->getSubject();
+
+        $view = $controller->View();
+
+        $view->addTemplateDir($this->pluginPath . '/Resources/views');
+
+        if ($args->getRequest()->getActionName() === 'load') {
+            $view->extendsTemplate('backend/vat_id/customer/view/address/detail/address.js');
+            $view->extendsTemplate('backend/vat_id/customer/view/address/detail/window.js');
+        }
     }
 
     /**

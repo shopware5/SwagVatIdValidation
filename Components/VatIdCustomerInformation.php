@@ -32,7 +32,7 @@ class VatIdCustomerInformation extends VatIdInformation
     protected $company;
 
     /**
-     * @var string
+     * @var ?string
      */
     protected $street;
 
@@ -47,7 +47,7 @@ class VatIdCustomerInformation extends VatIdInformation
     protected $city;
 
     /**
-     * @var string
+     * @var ?string
      */
     protected $billingCountryIso;
 
@@ -78,7 +78,7 @@ class VatIdCustomerInformation extends VatIdInformation
     /**
      * Returns the street
      *
-     * @return string
+     * @return ?string
      */
     public function getStreet()
     {
@@ -108,7 +108,7 @@ class VatIdCustomerInformation extends VatIdInformation
     /**
      * Returns the iso code of the billing country
      *
-     * @return string
+     * @return ?string
      */
     public function getBillingCountryIso()
     {
