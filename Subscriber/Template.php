@@ -26,7 +26,6 @@ use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Session_Namespace as Session;
 use Enlight_Controller_Action;
 use Enlight_Controller_ActionEventArgs as ActionEventArgs;
-use Enlight_Controller_EventArgs as ControllerEventArgs;
 use Enlight_Controller_Request_RequestHttp as Request;
 use Enlight_View_Default as View;
 use SwagVatIdValidation\Components\DependencyProviderInterface;
@@ -126,12 +125,12 @@ class Template implements SubscriberInterface
         $this->postDispatchFrontendController($arguments->getSubject(), ['index']);
     }
 
-    public function onPostDispatchFrontendAddressEdit(ControllerEventArgs $args): void
+    public function onPostDispatchFrontendAddressEdit(ActionEventArgs $args): void
     {
         /** @var \Shopware_Controllers_Frontend_Address $subject */
         $subject = $args->getSubject();
 
-        $this->prepareBillingErrorMessages($session = $this->dependencyProvider->getSession(), $subject->View());
+        $this->prepareBillingErrorMessages($this->dependencyProvider->getSession(), $subject->View());
     }
 
     public function onTemplatesCollected(\Enlight_Event_EventArgs $arguments)

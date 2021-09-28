@@ -10,3 +10,5 @@ parameters:
     excludes_analyse:
         - .githooks
         - vendor
+    ignoreErrors:
+        - '#no value type specified in iterable type Enlight_Controller_ActionEventArgs#'

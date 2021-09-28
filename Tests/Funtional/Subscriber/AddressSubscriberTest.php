@@ -26,7 +26,7 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Enlight_Components_Session_Namespace as ShopwareSession;
 use PHPUnit\Framework\TestCase;
 use Shopware\Models\Customer\Address;
-use SwagVatIdValidation\Components\DependencyProvider;
+use Shopware\Models\Customer\Customer;
 use SwagVatIdValidation\Subscriber\AddressSubscriber;
 use SwagVatIdValidation\Tests\ContainerTrait;
 
@@ -42,6 +42,8 @@ class AddressSubscriberTest extends TestCase
         $address->setVatId($vatId);
 
         $args = new LifecycleEventArgs($address, $this->getContainer()->get('models'));
+
+        $this->setFrontendRequest();
 
         $this->getAddressSubscriber()->prePersist($args);
 
@@ -61,6 +63,8 @@ class AddressSubscriberTest extends TestCase
 
         $args = new LifecycleEventArgs($address, $this->getContainer()->get('models'));
 
+        $this->setFrontendRequest();
+
         $this->getAddressSubscriber()->prePersist($args);
 
         static::assertNull($address->getVatId());
@@ -77,6 +81,8 @@ class AddressSubscriberTest extends TestCase
         $address->setVatId($vatId);
 
         $args = new LifecycleEventArgs($address, $this->getContainer()->get('models'));
+
+        $this->setFrontendRequest();
 
         $this->getAddressSubscriber()->preUpdate($args);
 
@@ -96,6 +102,8 @@ class AddressSubscriberTest extends TestCase
 
         $args = new LifecycleEventArgs($address, $this->getContainer()->get('models'));
 
+        $this->setFrontendRequest();
+
         $this->getAddressSubscriber()->preUpdate($args);
 
         static::assertNull($address->getVatId());
@@ -104,11 +112,46 @@ class AddressSubscriberTest extends TestCase
         $session->offsetUnset(AddressSubscriber::DELETE_VAT_ID_SESSION_FLAG);
     }
 
+    public function testPreUpdateWithBackendRequest(): void
+    {
+        $vatId = 'DE123456789';
+
+        $customer = $this->getContainer()->get('models')->getRepository(Customer::class)->find(1);
+        static::assertInstanceOf(Customer::class, $customer);
+
+        $address = new Address();
+        $address->setVatId($vatId);
+        $address->setCustomer($customer);
+
+        $args = new LifecycleEventArgs($address, $this->getContainer()->get('models'));
+
+        $this->setBackendRequest();
+
+        $this->getAddressSubscriber()->preUpdate($args);
+
+        static::assertSame($vatId, $address->getVatId());
+    }
+
+    public function setFrontendRequest(): void
+    {
+        $request = new \Enlight_Controller_Request_RequestTestCase();
+        $request->setModuleName('frontend');
+
+        $this->getContainer()->get('front')->setRequest($request);
+    }
+
+    public function setBackendRequest(): void
+    {
+        $request = new \Enlight_Controller_Request_RequestTestCase();
+        $request->setModuleName('backend');
+
+        $this->getContainer()->get('front')->setRequest($request);
+    }
+
     private function getAddressSubscriber(): AddressSubscriber
     {
-        $dependencyProvider = $this->getContainer()->get('swag_vat_id_validation.dependency_provider');
-        static::assertInstanceOf(DependencyProvider::class, $dependencyProvider);
-
-        return new AddressSubscriber($dependencyProvider);
+        return new AddressSubscriber(
+            $this->getContainer()->get('swag_vat_id_validation.dependency_provider')
+        );
     }
 }

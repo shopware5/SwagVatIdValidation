@@ -63,6 +63,10 @@ class AddressSubscriber implements EventSubscriber
 
     private function handle(LifecycleEventArgs $arguments): void
     {
+        if (!$this->isFrontendRequest()) {
+            return;
+        }
+
         $address = $arguments->getEntity();
         if (!$address instanceof Address) {
             return;
@@ -77,5 +81,24 @@ class AddressSubscriber implements EventSubscriber
         $session->offsetUnset(self::DELETE_VAT_ID_SESSION_FLAG);
 
         $address->setVatId(null);
+    }
+
+    private function isFrontendRequest(): bool
+    {
+        $frontController = $this->dependencyProvider->getFront();
+        if (!$frontController instanceof \Enlight_Controller_Front) {
+            return false;
+        }
+
+        $request = $frontController->Request();
+        if ($request === null) {
+            return false;
+        }
+
+        if ($request->getModuleName() === 'backend') {
+            return false;
+        }
+
+        return true;
     }
 }
