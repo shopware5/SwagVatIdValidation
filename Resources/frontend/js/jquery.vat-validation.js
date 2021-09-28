@@ -27,8 +27,6 @@
         },
 
         initializeEventListener: function() {
-            this.vatIdField.on('keyup', $.proxy(this.onChangeVatId, this));
-
             if (this.opts.vatIdIsRequired === false) {
                 this.removeVatIdRequirement();
                 return;
@@ -43,10 +41,6 @@
             } else {
                 this.vatIdField.attr('required', 'required');
             }
-        },
-
-        onChangeVatId: function() {
-            this.vatIdField.val(this.vatIdField.val().toUpperCase().replace(/\s|\W/g, ''));
         },
 
         removeVatIdRequirement: function() {

@@ -214,7 +214,6 @@ class Template implements SubscriberInterface
         $view->addTemplateDir($this->pluginPath . '/Resources/views');
 
         if ($args->getRequest()->getActionName() === 'load') {
-            $view->extendsTemplate('backend/vat_id/customer/view/address/detail/address.js');
             $view->extendsTemplate('backend/vat_id/customer/view/address/detail/window.js');
         }
     }
