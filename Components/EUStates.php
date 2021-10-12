@@ -64,7 +64,7 @@ class EUStates
     /**
      * A helper function that returns a boolean indicating if a country is in the EU or not
      *
-     * @param string $countryIso
+     * @param ?string $countryIso
      *
      * @return bool
      */
