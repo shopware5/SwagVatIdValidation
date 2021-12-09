@@ -411,22 +411,7 @@ parameters:
 			path: Components/VatIdValidatorResult.php
 
 		-
-			message: "#^Property SwagVatIdValidation\\\\Components\\\\VatIdValidatorResult\\:\\:\\$pluginSnippets type has no value type specified in iterable type Enlight_Components_Snippet_Namespace\\.$#"
-			count: 1
-			path: Components/VatIdValidatorResult.php
-
-		-
-			message: "#^Property SwagVatIdValidation\\\\Components\\\\VatIdValidatorResult\\:\\:\\$validatorSnippets type has no value type specified in iterable type Enlight_Components_Snippet_Namespace\\.$#"
-			count: 1
-			path: Components/VatIdValidatorResult.php
-
-		-
 			message: "#^Method Shopware_Controllers_Widgets_SwagVatIdValidation\\:\\:modalInfoContentAction\\(\\) has no return typehint specified\\.$#"
-			count: 1
-			path: Controllers/Widgets/SwagVatIdValidation.php
-
-		-
-			message: "#^PHPDoc tag @var for variable \\$ISOs has no value type specified in iterable type Enlight_Config\\.$#"
 			count: 1
 			path: Controllers/Widgets/SwagVatIdValidation.php
 
@@ -441,17 +426,7 @@ parameters:
 			path: Subscriber/CheckoutFinish.php
 
 		-
-			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\CheckoutFinish\\:\\:onPostDispatchCheckout\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Controller_ActionEventArgs\\.$#"
-			count: 1
-			path: Subscriber/CheckoutFinish.php
-
-		-
 			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\CheckoutFinish\\:\\:onPreDispatchCheckout\\(\\) has no return typehint specified\\.$#"
-			count: 1
-			path: Subscriber/CheckoutFinish.php
-
-		-
-			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\CheckoutFinish\\:\\:onPreDispatchCheckout\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Controller_ActionEventArgs\\.$#"
 			count: 1
 			path: Subscriber/CheckoutFinish.php
 
@@ -471,16 +446,6 @@ parameters:
 			path: Subscriber/Forms.php
 
 		-
-			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Forms\\:\\:onFormBuild\\(\\) has parameter \\$args with no value type specified in iterable type Enlight_Event_EventArgs\\.$#"
-			count: 1
-			path: Subscriber/Forms.php
-
-		-
-			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Forms\\:\\:onRegister\\(\\) has parameter \\$args with no value type specified in iterable type Enlight_Event_EventArgs\\.$#"
-			count: 1
-			path: Subscriber/Forms.php
-
-		-
 			message: "#^Call to an undefined method object\\:\\:Request\\(\\)\\.$#"
 			count: 1
 			path: Subscriber/Login.php
@@ -492,11 +457,6 @@ parameters:
 
 		-
 			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Login\\:\\:onLoginSuccessful\\(\\) has no return typehint specified\\.$#"
-			count: 1
-			path: Subscriber/Login.php
-
-		-
-			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Login\\:\\:onLoginSuccessful\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Event_EventArgs\\.$#"
 			count: 1
 			path: Subscriber/Login.php
 
@@ -551,11 +511,6 @@ parameters:
 			path: Subscriber/Template.php
 
 		-
-			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:onTemplatesCollected\\(\\) has parameter \\$arguments with no value type specified in iterable type Enlight_Event_EventArgs\\.$#"
-			count: 1
-			path: Subscriber/Template.php
-
-		-
 			message: "#^Method SwagVatIdValidation\\\\Subscriber\\\\Template\\:\\:postDispatchFrontendController\\(\\) has no return typehint specified\\.$#"
 			count: 1
 			path: Subscriber/Template.php
@@ -594,4 +549,3 @@ parameters:
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"
 			count: 2
 			path: Tests/Funtional/Components/VatIdConfigReaderTest.php
-
