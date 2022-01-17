@@ -53,8 +53,8 @@ class Shopware_Controllers_Backend_SwagVatIdValidation extends Shopware_Controll
      */
     private function getAddress(array $data): ?Address
     {
-        $addressId = (int) $data['id'] ?? 0;
-        $countryId = (int) $data['countryId'] ?? 0;
+        $addressId = (int) ($data['id'] ?? 0);
+        $countryId = (int) ($data['countryId'] ?? 0);
         $vatId = $data['vatId'] ?? null;
 
         if ($vatId === null || \strlen($vatId) <= 0 || $countryId === 0) {

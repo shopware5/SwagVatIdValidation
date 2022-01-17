@@ -27,7 +27,6 @@ use Enlight_Event_EventArgs as EventArgs;
 use Shopware\Bundle\AccountBundle\Form\Account\AddressFormType;
 use Shopware_Controllers_Frontend_Register;
 use SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatId;
-use SwagVatIdValidation\Components\DependencyProvider;
 use SwagVatIdValidation\Components\IsoServiceInterface;
 use SwagVatIdValidation\Components\VatIdConfigReaderInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -45,19 +44,12 @@ class Forms implements SubscriberInterface
      */
     private $configReader;
 
-    /**
-     * @var DependencyProvider
-     */
-    private $dependencyProvider;
-
     public function __construct(
         IsoServiceInterface $isoService,
-        VatIdConfigReaderInterface $configReader,
-        DependencyProvider $dependencyProvider
+        VatIdConfigReaderInterface $configReader
     ) {
         $this->isoService = $isoService;
         $this->configReader = $configReader;
-        $this->dependencyProvider = $dependencyProvider;
     }
 
     /**
