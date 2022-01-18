@@ -15,7 +15,6 @@
         <service id="swag_vat_id_validation.subscriber.forms" class="SwagVatIdValidation\Subscriber\Forms">
             <argument type="service" id="swag_vat_id_validation.iso_service"/>
             <argument type="service" id="swag_vat_id_validation.config_reader"/>
-            <argument type="service" id="swag_vat_id_validation.dependency_provider"/>
             <tag name="shopware.event_subscriber"/>
         </service>
 

@@ -25,7 +25,6 @@ namespace SwagVatIdValidation\Components;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Connection;
 use Enlight_Event_EventManager as EventManager;
-use Shopware\Bundle\StoreFrontBundle\Service\ContextServiceInterface;
 
 class IsoService implements IsoServiceInterface
 {
@@ -38,11 +37,6 @@ class IsoService implements IsoServiceInterface
      * @var Connection
      */
     private $connection;
-
-    /**
-     * @var ContextServiceInterface
-     */
-    private $contextService;
 
     /**
      * @var VatIdConfigReaderInterface

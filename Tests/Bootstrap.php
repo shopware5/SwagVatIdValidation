@@ -59,7 +59,7 @@ class SwagVatIdValidationTestKernel extends Kernel
 
     public static function getKernel(): SwagVatIdValidationTestKernel
     {
-        return static::$kernel;
+        return self::$kernel;
     }
 
     private static function assertPlugin(string $name): bool
