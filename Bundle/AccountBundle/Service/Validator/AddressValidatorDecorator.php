@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -24,6 +25,7 @@ namespace SwagVatIdValidation\Bundle\AccountBundle\Service\Validator;
 
 use Shopware\Bundle\AccountBundle\Service\Validator\AddressValidatorInterface;
 use Shopware\Components\Api\Exception\ValidationException;
+use Shopware\Models\Country\Country;
 use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
 use Shopware_Components_Config as ShopwareConfig;
@@ -68,12 +70,13 @@ class AddressValidatorDecorator implements AddressValidatorInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     public function validate(Address $address)
     {
         $this->coreAddressValidator->validate($address);
 
-        /** @var ContextualValidatorInterface $validationContext */
         $validationContext = $this->validator->startContext();
 
         $additional = $address->getAdditional();
@@ -96,13 +99,15 @@ class AddressValidatorDecorator implements AddressValidatorInterface
         return $this->coreAddressValidator->isValid($address);
     }
 
-    /**
-     * @param ContextualValidatorInterface $validationContext
-     */
-    private function addVatIdValidation(Address $address, $validationContext)
+    private function addVatIdValidation(Address $address, ContextualValidatorInterface $validationContext): void
     {
+        $country = $address->getCountry();
+        if (!$country instanceof Country) {
+            return;
+        }
+
         $company = $address->getCompany();
-        $countryId = $address->getCountry()->getId();
+        $countryId = $country->getId();
         if ($this->validationService->isVatIdRequired($company, $countryId)) {
             $validationContext->atPath('vatId')->validate(
                 $address->getVatId(),

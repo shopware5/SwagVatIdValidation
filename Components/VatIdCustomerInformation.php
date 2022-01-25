@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -27,12 +28,12 @@ use Shopware\Models\Customer\Address;
 class VatIdCustomerInformation extends VatIdInformation
 {
     /**
-     * @var string
+     * @var string|null
      */
     protected $company;
 
     /**
-     * @var ?string
+     * @var string|null
      */
     protected $street;
 
@@ -47,7 +48,7 @@ class VatIdCustomerInformation extends VatIdInformation
     protected $city;
 
     /**
-     * @var ?string
+     * @var string|null
      */
     protected $billingCountryIso;
 
@@ -56,19 +57,20 @@ class VatIdCustomerInformation extends VatIdInformation
      */
     public function __construct(Address $billingAddress)
     {
-        parent::__construct($billingAddress->getVatId());
+        parent::__construct((string) $billingAddress->getVatId());
 
         $this->company = $billingAddress->getCompany();
         $this->street = $billingAddress->getStreet();
         $this->zipCode = $billingAddress->getZipcode();
         $this->city = $billingAddress->getCity();
-        $this->billingCountryIso = $billingAddress->getCountry()->getIso();
+        $billingCountry = $billingAddress->getCountry();
+        $this->billingCountryIso = $billingCountry ? $billingCountry->getIso() : null;
     }
 
     /**
      * Returns the company
      *
-     * @return string
+     * @return string|null
      */
     public function getCompany()
     {
@@ -78,7 +80,7 @@ class VatIdCustomerInformation extends VatIdInformation
     /**
      * Returns the street
      *
-     * @return ?string
+     * @return string|null
      */
     public function getStreet()
     {
@@ -108,7 +110,7 @@ class VatIdCustomerInformation extends VatIdInformation
     /**
      * Returns the iso code of the billing country
      *
-     * @return ?string
+     * @return string|null
      */
     public function getBillingCountryIso()
     {

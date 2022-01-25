@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -37,8 +38,6 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
 {
     /**
      * Puts the customer and shop information into the format the API needs it.
-     *
-     * @return array
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
@@ -58,8 +57,6 @@ class ExtendedBffVatIdValidator extends BffVatIdValidator
      * Evaluates the returned address data of a validation request
      * The Bff validator checks the committed address data itself, so it returns the result of each comparison
      * (A = valid, B = invalid, C = not requested, D = state does not approve)
-     *
-     * @param array $response
      */
     protected function addExtendedResults($response)
     {

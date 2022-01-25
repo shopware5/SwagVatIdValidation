@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -37,9 +38,11 @@ class IsoServiceTest extends TestCase
     public function testGetCountryIdsFromIsoList(): void
     {
         $sql = \file_get_contents(__DIR__ . '/_fixtures/config.sql');
+        static::assertIsString($sql);
         $this->getContainer()->get('dbal_connection')->exec($sql);
 
         $sql = \file_get_contents(__DIR__ . '/_fixtures/update_config.sql');
+        static::assertIsString($sql);
         $this->getContainer()->get('dbal_connection')->exec($sql);
 
         $this->clearCache();
@@ -84,9 +87,11 @@ class IsoServiceTest extends TestCase
     public function testGetCountriesIsoList(): void
     {
         $sql = \file_get_contents(__DIR__ . '/_fixtures/config.sql');
+        static::assertIsString($sql);
         $this->getContainer()->get('dbal_connection')->exec($sql);
 
         $sql = \file_get_contents(__DIR__ . '/_fixtures/update_config.sql');
+        static::assertIsString($sql);
         $this->getContainer()->get('dbal_connection')->exec($sql);
 
         $this->clearCache();
@@ -133,6 +138,7 @@ class IsoServiceTest extends TestCase
     public function testGetCountriesIsoListShouldRemoveAT(): void
     {
         $sql = \file_get_contents(__DIR__ . '/_fixtures/config.sql');
+        static::assertIsString($sql);
         $this->getContainer()->get('dbal_connection')->exec($sql);
 
         $this->clearCache();

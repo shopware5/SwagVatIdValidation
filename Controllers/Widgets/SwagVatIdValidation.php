@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -21,16 +23,16 @@
  */
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Query\QueryBuilder;
 
 class Shopware_Controllers_Widgets_SwagVatIdValidation extends Enlight_Controller_Action
 {
     /**
      * This action displays the content of the modal box
+     *
+     * @return void
      */
     public function modalInfoContentAction()
     {
-        /** @var Enlight_Config|string $ISOs */
         $ISOs = $this->get('plugins')->Core()->SwagVatIdValidation()->Config()->get('disabledCountryISOs');
 
         if (\is_string($ISOs)) {
@@ -40,7 +42,6 @@ class Shopware_Controllers_Widgets_SwagVatIdValidation extends Enlight_Controlle
             $ISOs = $ISOs->toArray();
         }
 
-        /** @var QueryBuilder $builder */
         $builder = $this->get('dbal_connection')->createQueryBuilder();
 
         $countryNameArray = $builder->select('countries.countryname')

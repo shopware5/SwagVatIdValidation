@@ -52,6 +52,9 @@ class ValidatorFactoryTest extends TestCase
         static::assertSame($expectedValidator, \get_class($validator));
     }
 
+    /**
+     * @return array<array{0: 'DE'|'EN', 1: 'DE'|'EN', 2: APIValidationType::*, 3: class-string<VatIdValidatorInterface>}>
+     */
     public function createValidatorTestDataProvider(): array
     {
         return [

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -30,7 +31,7 @@ interface DependencyProviderInterface
     public function getSession();
 
     /**
-     * @return \Enlight_Controller_Front|object
+     * @return \Enlight_Controller_Front
      */
     public function getFront();
 }

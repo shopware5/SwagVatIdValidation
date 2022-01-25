@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -101,6 +102,9 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
 
         if (\preg_match_all($reg, $response, $matches)) {
             $response = \array_combine($matches[1], $matches[2]);
+            if (!\is_array($response)) {
+                throw new \RuntimeException('Invalid response');
+            }
             $this->createSimpleValidatorResult($response);
             $this->addExtendedResults($response);
         }
@@ -111,7 +115,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
     /**
      * Helper function that returns an array in the format the validator needs it
      *
-     * @return array
+     * @return array{UstId_1: string, UstId_2: string, Firmenname: string|null, Ort: string, PLZ: string, Strasse: string|null, Druck: 'ja'|'nein'|''}
      */
     abstract protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
 
@@ -119,15 +123,15 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
      * Helper function to set the address data results of a qualified confirmation request
      *
      * @param array $response
+     *
+     * @return void
      */
     abstract protected function addExtendedResults($response);
 
     /**
      * Helper function to set the VAT Id result of a confirmation request
-     *
-     * @param array $response
      */
-    private function createSimpleValidatorResult($response)
+    private function createSimpleValidatorResult(array $response): void
     {
         if ($response['ErrorCode'] === '200'
             || $response['ErrorCode'] === '222'

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -40,6 +41,8 @@ class Uninstaller
 
     /**
      * @param bool $keepUserData
+     *
+     * @return void
      */
     public function uninstall($keepUserData)
     {
@@ -53,17 +56,15 @@ class Uninstaller
     /**
      * Helper function to remove the mail template
      */
-    private function removeMailTemplate()
+    private function removeMailTemplate(): void
     {
-        /** @var Mail $mail */
-        $mail = $this->modelManager->getRepository(Mail::class)
-            ->findOneBy(['name' => 'sSWAGVATIDVALIDATION_VALIDATIONERROR']);
+        $mail = $this->modelManager->getRepository(Mail::class)->findOneBy(['name' => 'sSWAGVATIDVALIDATION_VALIDATIONERROR']);
 
-        if (!$mail) {
+        if (!$mail instanceof Mail) {
             return;
         }
 
-        $this->removeMailTranslations($mail->getId());
+        $this->removeMailTranslations((int) $mail->getId());
 
         $this->modelManager->remove($mail);
         $this->modelManager->flush($mail);
@@ -72,12 +73,11 @@ class Uninstaller
     /**
      * Helper function to remove the translations of the mail template
      */
-    private function removeMailTranslations($mailTemplateId)
+    private function removeMailTranslations(int $mailTemplateId): void
     {
         $translations = $this->modelManager->getRepository(Translation::class)
             ->findBy(['key' => $mailTemplateId]);
 
-        /** @var Translation $translation */
         foreach ($translations as $translation) {
             if ($translation->getType() !== 'config_mails') {
                 continue;

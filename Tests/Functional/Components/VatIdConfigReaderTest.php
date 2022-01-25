@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -32,7 +33,7 @@ class VatIdConfigReaderTest extends TestCase
 {
     use PluginConfigCacheTrait;
 
-    public function testGetPluginConfigShopware57andAbove()
+    public function testGetPluginConfigShopware57andAbove(): void
     {
         if (!Shopware()->Container()->initialized(CachedReader::class)) {
             static::markTestSkipped('Test is only for Shopware 5.7 and above.');
@@ -48,7 +49,7 @@ class VatIdConfigReaderTest extends TestCase
         static::assertSame('AT', $result[VatIdConfigReaderInterface::DISABLED_COUNTRY_ISO_LIST]);
     }
 
-    public function testGetPluginConfigLegacy()
+    public function testGetPluginConfigLegacy(): void
     {
         if (!Shopware()->Container()->initialized('shopware.plugin.cached_config_reader')) {
             static::markTestSkipped('legacy shopware.plugin.cached_config_reader is removed.');
@@ -63,10 +64,6 @@ class VatIdConfigReaderTest extends TestCase
         $configReaderReflectionProperty = (new \ReflectionClass(VatIdConfigReader::class))->getProperty('cachedConfigReader');
         $configReaderReflectionProperty->setAccessible(true);
         $configReaderReflectionProperty->setValue($configReader, Shopware()->Container()->get('shopware.plugin.cached_config_reader'));
-
-        $isLegacyReflectionProperty = (new \ReflectionClass(VatIdConfigReader::class))->getProperty('isLegacy');
-        $isLegacyReflectionProperty->setAccessible(true);
-        $isLegacyReflectionProperty->setValue($configReader, true);
 
         $result = $configReader->getPluginConfig();
 

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -24,6 +25,8 @@ namespace SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Country\Country;
+use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
 use SwagVatIdValidation\Components\DependencyProviderInterface;
 use SwagVatIdValidation\Components\ValidationServiceInterface;
@@ -65,22 +68,29 @@ class Login implements SubscriberInterface
         ];
     }
 
+    /**
+     * @return void
+     */
     public function onLoginSuccessful(\Enlight_Event_EventArgs $arguments)
     {
         //After successfully registration, this would be a second validation. The first on save, the second on login.
-        if ($this->dependencyProvider->getFront()->Request()->getActionName() === 'saveRegister') {
+        $request = $this->dependencyProvider->getFront()->Request();
+        if (!$request instanceof \Enlight_Controller_Request_Request || $request->getActionName() === 'saveRegister') {
             return;
         }
 
         $user = $arguments->get('user');
-        /** @var Customer $customer */
         $customer = $this->modelManager->getRepository(Customer::class)->find($user['id']);
-        if (!$customer) {
+        if (!$customer instanceof Customer) {
             return;
         }
 
         $billingAddress = $customer->getDefaultBillingAddress();
-        if (!$billingAddress) {
+        if (!$billingAddress instanceof Address) {
+            return;
+        }
+
+        if (!$billingAddress->getCountry() instanceof Country) {
             return;
         }
 
@@ -92,7 +102,7 @@ class Login implements SubscriberInterface
 
         $session = $this->dependencyProvider->getSession();
 
-        if ($required && (!\trim($billingAddress->getVatId()))) {
+        if ($required && (!\trim((string) $billingAddress->getVatId()))) {
             $result = $this->validationService->getRequirementErrorResult();
             $session->offsetSet('vatIdValidationStatus', $result->serialize());
 

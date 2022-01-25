@@ -22,6 +22,8 @@ declare(strict_types=1);
  * remain entirely with us.
  */
 
+namespace SwagVatIdValidation\Tests\Functional\Controller\Backend;
+
 use PHPUnit\Framework\TestCase;
 use Shopware\Components\DependencyInjection\Container as ShopwareContainer;
 use Shopware_Controllers_Backend_SwagVatIdValidation as VatIdValidationBackendController;
@@ -77,9 +79,9 @@ class SwagVatIdValidationTest extends TestCase
         static::assertInstanceOf(ShopwareContainer::class, $container);
 
         $controller->setContainer($container);
-        $controller->setRequest(new Enlight_Controller_Request_RequestTestCase());
-        $controller->setResponse(new Enlight_Controller_Response_ResponseTestCase());
-        $controller->setView(new Enlight_View_Default(new Enlight_Template_Manager()));
+        $controller->setRequest(new \Enlight_Controller_Request_RequestTestCase());
+        $controller->setResponse(new \Enlight_Controller_Response_ResponseTestCase());
+        $controller->setView(new \Enlight_View_Default(new \Enlight_Template_Manager()));
 
         return $controller;
     }

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -25,12 +26,10 @@ namespace SwagVatIdValidation\Subscriber;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Event_EventArgs as EventArgs;
 use Shopware\Bundle\AccountBundle\Form\Account\AddressFormType;
-use Shopware_Controllers_Frontend_Register;
 use SwagVatIdValidation\Bundle\AccountBundle\Constraints\AdvancedVatId;
 use SwagVatIdValidation\Components\IsoServiceInterface;
 use SwagVatIdValidation\Components\VatIdConfigReaderInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\FormInterface;
 
 class Forms implements SubscriberInterface
 {
@@ -70,7 +69,6 @@ class Forms implements SubscriberInterface
             return;
         }
 
-        /** @var FormInterface $builder */
         $builder = $args->get('builder');
 
         $builder->add(
@@ -84,8 +82,7 @@ class Forms implements SubscriberInterface
 
     public function onRegister(EventArgs $args): void
     {
-        /** @var Shopware_Controllers_Frontend_Register $controller */
-        $controller = $args->getSubject();
+        $controller = $args->get('subject');
 
         $request = $controller->Request();
 

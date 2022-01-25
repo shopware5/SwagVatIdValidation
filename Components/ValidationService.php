@@ -221,7 +221,7 @@ class ValidationService implements ValidationServiceInterface
          * Each validator connects to an external API. If the API is not available, the result will be false.
          * The customer VAT Id has not to be empty. Otherwise the result will also be false!
          */
-        $shopInformation = new VatIdInformation($this->config->get(VatIdConfigReaderInterface::VAT_ID));
+        $shopInformation = new VatIdInformation($this->config->get(VatIdConfigReaderInterface::VAT_ID, ''));
         $result = $this->validateWithApiValidator($customerInformation, $shopInformation, $apiValidationType);
 
         /*
