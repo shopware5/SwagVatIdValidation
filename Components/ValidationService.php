@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -27,9 +28,7 @@ use Psr\Log\LogLevel;
 use Shopware\Components\Logger as PluginLogger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Country\Country;
-use Shopware\Models\Country\Repository as CountryRepository;
 use Shopware\Models\Customer\Address;
-use Shopware\Models\Customer\AddressRepository;
 use Shopware_Components_Config as ShopwareConfig;
 use Shopware_Components_Snippet_Manager as SnippetManager;
 use Shopware_Components_TemplateMail as TemplateMail;
@@ -60,21 +59,6 @@ class ValidationService implements ValidationServiceInterface
     private $templateMail;
 
     /**
-     * @var AddressRepository
-     */
-    private $billingRepository;
-
-    /**
-     * @var CountryRepository
-     */
-    private $countryRepository;
-
-    /**
-     * @var ?string
-     */
-    private $countryIso;
-
-    /**
      * @var PluginLogger
      */
     private $pluginLogger;
@@ -89,9 +73,6 @@ class ValidationService implements ValidationServiceInterface
      */
     private $dependencyProvider;
 
-    /**
-     * Constructor sets all properties
-     */
     public function __construct(
         ShopwareConfig $config,
         SnippetManager $snippetManager,
@@ -105,7 +86,6 @@ class ValidationService implements ValidationServiceInterface
         $this->snippetManager = $snippetManager;
         $this->modelManager = $modelManager;
         $this->templateMail = $templateMail;
-        $this->countryIso = '';
         $this->pluginLogger = $pluginLogger;
         $this->validatorFactory = $validatorFactory;
         $this->dependencyProvider = $dependencyProvider;
@@ -284,50 +264,16 @@ class ValidationService implements ValidationServiceInterface
     }
 
     /**
-     * Helper function to get the address repository
-     *
-     * @return AddressRepository
-     */
-    private function getAddressRepository()
-    {
-        if (!$this->billingRepository) {
-            $this->billingRepository = $this->modelManager->getRepository(Address::class);
-        }
-
-        return $this->billingRepository;
-    }
-
-    /**
-     * Helper function to get the CountryRepository
-     *
-     * @return CountryRepository
-     */
-    private function getCountryRepository()
-    {
-        if (!$this->countryRepository) {
-            $this->countryRepository = $this->modelManager->getRepository(Country::class);
-        }
-
-        return $this->countryRepository;
-    }
-
-    /**
      * Helper function to get the country iso of the given billing address
      */
     private function getCountryIso(int $countryId): ?string
     {
-        if (!$this->countryIso) {
-            /** @var Country $country */
-            $country = $this->getCountryRepository()->find($countryId);
-
-            if (!$country instanceof Country) {
-                return $this->countryIso;
-            }
-
-            $this->countryIso = $country->getIso();
+        $country = $this->modelManager->getRepository(Country::class)->find($countryId);
+        if (!$country instanceof Country) {
+            return null;
         }
 
-        return $this->countryIso;
+        return $country->getIso();
     }
 
     /**
@@ -364,17 +310,14 @@ class ValidationService implements ValidationServiceInterface
 
     /**
      * Helper function to remove the VAT Id from the customer billing address
-     *
-     * @param int  $billingAddressId
-     * @param bool $deleteVatIdFromAddress
      */
-    private function removeVatIdFromBilling($billingAddressId, VatIdValidatorResult $result, $deleteVatIdFromAddress)
+    private function removeVatIdFromBilling(int $billingAddressId, VatIdValidatorResult $result, bool $deleteVatIdFromAddress): void
     {
         if (!$deleteVatIdFromAddress || empty($billingAddressId)) {
             return;
         }
 
-        $billingAddress = $this->getAddressRepository()->find($billingAddressId);
+        $billingAddress = $this->modelManager->getRepository(Address::class)->find($billingAddressId);
 
         if (!$billingAddress instanceof Address) {
             return;
@@ -403,7 +346,7 @@ class ValidationService implements ValidationServiceInterface
     /**
      * Helper function to send an email to the shop owner, informing him about an invalid Vat Id
      */
-    private function sendShopOwnerEmail(VatIdCustomerInformation $customerInformation, VatIdValidatorResult $result)
+    private function sendShopOwnerEmail(VatIdCustomerInformation $customerInformation, VatIdValidatorResult $result): void
     {
         if ($customerInformation->getCompany() === null) {
             return;
@@ -417,7 +360,7 @@ class ValidationService implements ValidationServiceInterface
 
         if ($result->isApiUnavailable()) {
             $error = $result->getErrorMessage('messages/checkNotAvailable');
-            $this->pluginLogger->log(LogLevel::ERROR, $error);
+            $this->pluginLogger->log(LogLevel::ERROR, (string) $error);
         } else {
             $error = \implode("\n", $result->getErrorMessages());
         }
@@ -445,7 +388,7 @@ class ValidationService implements ValidationServiceInterface
     /**
      * Helper function returns the configured email address or false if deactivated or invalid
      *
-     * @return bool|string
+     * @return false|string
      */
     private function getEmailAddress()
     {
@@ -464,6 +407,10 @@ class ValidationService implements ValidationServiceInterface
 
     private function handleApiIsUnavailable(Address $billingAddress, VatIdValidatorResult $result, bool $deleteVatIdFromAddress): VatIdValidatorResult
     {
+        if (!$this->isFrontendRequest()) {
+            return $result;
+        }
+
         $allowRegisterOnApiError = (bool) $this->config->get(VatIdConfigReaderInterface::ALLOW_REGISTER_ON_API_ERROR);
         $session = $this->dependencyProvider->getSession();
 
@@ -478,5 +425,24 @@ class ValidationService implements ValidationServiceInterface
         $session->offsetSet(Template::REMOVE_ERROR_FIELDS_MESSAGE, true);
 
         return $result;
+    }
+
+    private function isFrontendRequest(): bool
+    {
+        $frontController = $this->dependencyProvider->getFront();
+        if (!$frontController instanceof \Enlight_Controller_Front) {
+            return false;
+        }
+
+        $request = $frontController->Request();
+        if ($request === null) {
+            return false;
+        }
+
+        if ($request->getModuleName() === 'backend') {
+            return false;
+        }
+
+        return true;
     }
 }
