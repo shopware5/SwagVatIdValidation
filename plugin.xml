@@ -16,7 +16,7 @@
             PT-12573 - Problem bei der Validierung im Backend-Kunden-Modul behoben;
             SW-26398, PT-26422 - Verbesserung der allgemeinen Code-Qualität;
         </changes>
-        <changes lang="de">
+        <changes lang="en">
             PT-12573 - Fix problem during validation in backend customer module;
             SW-26398, PT-26422 - Improve overall code quality;
         </changes>
