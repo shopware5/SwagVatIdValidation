@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -23,7 +24,6 @@
 namespace SwagVatIdValidation\Components;
 
 use Shopware\Components\Plugin\CachedConfigReader;
-use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -57,6 +57,9 @@ class AddressFormTypeDecorator extends AbstractType
         $this->isoService = $isoService;
     }
 
+    /**
+     * @return void
+     */
     public function configureOptions(OptionsResolver $resolver)
     {
         $this->coreService->configureOptions($resolver);
@@ -67,6 +70,9 @@ class AddressFormTypeDecorator extends AbstractType
         return $this->coreService->getBlockPrefix();
     }
 
+    /**
+     * @return void
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $this->coreService->buildForm($builder, $options);
@@ -83,7 +89,6 @@ class AddressFormTypeDecorator extends AbstractType
     {
         $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {
             $form = $event->getForm();
-            /** @var Address $data */
             $data = $form->getData();
 
             $customerType = $form->get('additional')->get('customer_type')->getData();

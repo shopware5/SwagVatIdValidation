@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -41,10 +42,8 @@ class VatIdInformation
 
     /**
      * Constructor sets all properties
-     *
-     * @param string $vatId
      */
-    public function __construct($vatId)
+    public function __construct(string $vatId)
     {
         $this->vatId = $vatId;
         $this->countryCode = \substr($this->vatId, 0, 2);

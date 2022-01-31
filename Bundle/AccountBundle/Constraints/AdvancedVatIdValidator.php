@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -24,8 +25,6 @@ namespace SwagVatIdValidation\Bundle\AccountBundle\Constraints;
 
 use Shopware\Models\Customer\Address;
 use SwagVatIdValidation\Components\ValidationServiceInterface;
-use SwagVatIdValidation\Components\VatIdValidatorResult;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
@@ -43,10 +42,11 @@ class AdvancedVatIdValidator extends ConstraintValidator
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     public function validate($value, Constraint $constraint)
     {
-        /** @var AdvancedVatId $constraint */
         if (!$constraint instanceof AdvancedVatId) {
             throw new \RuntimeException('Invalid constraint for validator given.');
         }
@@ -55,19 +55,16 @@ class AdvancedVatIdValidator extends ConstraintValidator
             return;
         }
 
-        /** @var Form $form */
         $form = $this->context->getRoot();
         if (!$form) {
             return;
         }
 
-        /** @var Address $address */
         $address = $constraint->address;
-        if (!$address) {
+        if (!$address instanceof Address) {
             $address = $form->getData();
         }
 
-        /** @var VatIdValidatorResult $result */
         $result = $this->validationService->validateVatId($address, false);
 
         if (empty($result->getErrorMessages())) {

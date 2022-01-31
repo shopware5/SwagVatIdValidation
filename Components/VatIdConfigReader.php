@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -23,6 +24,7 @@
 namespace SwagVatIdValidation\Components;
 
 use Shopware\Bundle\StoreFrontBundle\Service\ContextServiceInterface;
+use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\CachedConfigReader;
 use Shopware\Components\Plugin\Configuration\CachedReader;
 use Shopware\Models\Shop\Shop;
@@ -40,27 +42,28 @@ class VatIdConfigReader implements VatIdConfigReaderInterface
     private $contextService;
 
     /**
-     * @var CachedReader|null
+     * @var ModelManager
      */
-    private $cachedConfigReader;
+    private $modelManager;
 
     /**
-     * @var bool
+     * @var CachedReader|CachedConfigReader|null
      */
-    private $isLegacy = false;
+    private $cachedConfigReader;
 
     public function __construct(
         string $pluginName,
         ContextServiceInterface $contextService,
+        ModelManager $modelManager,
         CachedReader $cachedConfigReader = null,
         CachedConfigReader $legacyCachedConfigReader = null
     ) {
         $this->pluginName = $pluginName;
         $this->contextService = $contextService;
+        $this->modelManager = $modelManager;
 
         if ($cachedConfigReader === null) {
             $this->cachedConfigReader = $legacyCachedConfigReader;
-            $this->isLegacy = true;
         } else {
             $this->cachedConfigReader = $cachedConfigReader;
         }
@@ -68,8 +71,9 @@ class VatIdConfigReader implements VatIdConfigReaderInterface
 
     public function getPluginConfig(): array
     {
-        if ($this->isLegacy) {
-            $shop = new Shop(['id' => $this->contextService->getShopContext()->getShop()->getId()]);
+        if ($this->cachedConfigReader instanceof CachedConfigReader) {
+            $shopId = $this->contextService->getShopContext()->getShop()->getId();
+            $shop = $this->modelManager->getRepository(Shop::class)->getActiveById($shopId);
 
             return $this->cachedConfigReader->getByPluginName(
                 $this->pluginName,
@@ -77,9 +81,13 @@ class VatIdConfigReader implements VatIdConfigReaderInterface
             );
         }
 
-        return $this->cachedConfigReader->getByPluginName(
-            $this->pluginName,
-            $this->contextService->getShopContext()->getShop()->getId()
-        );
+        if ($this->cachedConfigReader instanceof CachedReader) {
+            return $this->cachedConfigReader->getByPluginName(
+                $this->pluginName,
+                $this->contextService->getShopContext()->getShop()->getId()
+            );
+        }
+
+        throw new \RuntimeException('No valid plugin config reader in DI container');
     }
 }

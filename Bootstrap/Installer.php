@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -40,6 +41,9 @@ class Installer
         $this->modelManager = $modelManager;
     }
 
+    /**
+     * @return void
+     */
     public function install()
     {
         if (!$this->isMailExists()) {
@@ -50,7 +54,7 @@ class Installer
     /**
      * Helper function to create the mail template
      */
-    private function createMailTemplate()
+    private function createMailTemplate(): void
     {
         $mail = $this->getMail();
 
@@ -69,25 +73,20 @@ class Installer
 
     /**
      * Check, if mail template already exists (because secureUninstall and update)
-     *
-     * @return bool
      */
-    private function isMailExists()
+    private function isMailExists(): bool
     {
         $mail = $this->modelManager->getRepository(Mail::class)
             ->findOneBy(['name' => 'sSWAGVATIDVALIDATION_VALIDATIONERROR']);
 
-        if ($mail) {
+        if ($mail instanceof Mail) {
             return true;
         }
 
         return false;
     }
 
-    /**
-     * @return Mail
-     */
-    private function getMail()
+    private function getMail(): Mail
     {
         //Template
         $content = "Hallo,\n\nbei der Überprüfung der USt-IdNr. {\$sVatId} der Firma\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nLändercode: {\$sCountryCode}\n\nist ein Fehler aufgetreten:\n\n{\$sError}\n\n{config name=shopName}";
@@ -103,16 +102,13 @@ class Installer
         return $mail;
     }
 
-    /**
-     * @return Translation|null
-     */
-    private function getTranslation(Mail $mail)
+    private function getTranslation(Mail $mail): ?Translation
     {
-        $shop = $this->modelManager->getRepository(Shop::class)
-            ->findOneBy(['locale' => $this->modelManager->getRepository(Locale::class)
-                ->findOneBy(['locale' => 'en_GB']), ]);
+        $shop = $this->modelManager->getRepository(Shop::class)->findOneBy([
+            'locale' => $this->modelManager->getRepository(Locale::class)->findOneBy(['locale' => 'en_GB']),
+        ]);
 
-        if (!$shop) {
+        if (!$shop instanceof Shop) {
             return null;
         }
 

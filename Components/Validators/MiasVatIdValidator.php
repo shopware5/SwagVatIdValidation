@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -130,12 +131,16 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
     /**
      * Helper function that returns an array in the format the validator needs it
      *
-     * @return array
+     * @return array{countryCode: string, vatNumber: string, traderName: string|null, traderCompanyType: string, traderPostcode: string, traderCity: string, requesterCountryCode: string, requesterVatNumber: string}
      */
     abstract protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation);
 
     /**
      * Helper function to set the address data results of a qualified confirmation request
+     *
+     * @param object $response
+     *
+     * @return void
      */
     abstract protected function addExtendedResults($response, VatIdCustomerInformation $customerInformation);
 }

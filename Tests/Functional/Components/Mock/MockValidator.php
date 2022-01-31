@@ -21,39 +21,42 @@ declare(strict_types=1);
  * remain entirely with us.
  */
 
-namespace SwagVatIdValidation\Components\Validators;
+namespace SwagVatIdValidation\Tests\Functional\Components\Mock;
 
+use SwagVatIdValidation\Components\Validators\VatIdValidatorInterface;
 use SwagVatIdValidation\Components\VatIdCustomerInformation;
 use SwagVatIdValidation\Components\VatIdInformation;
+use SwagVatIdValidation\Components\VatIdValidatorResult;
 
-/**
- * Simple Bff Validator:
- * - will be used when shop VAT ID is german, customer VAT ID is foreign and extended check is disabled
- * - checks only the VAT ID
- * - returns a detailed error message, if the VAT ID is invalid
- */
-class SimpleBffVatIdValidator extends BffVatIdValidator
+class MockValidator implements VatIdValidatorInterface
 {
     /**
-     * Puts the customer and shop information into the format the API needs it.
+     * @var \Shopware_Components_Snippet_Manager
      */
-    protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
-    {
-        return [
-            'UstId_1' => $shopInformation->getVatId(),
-            'UstId_2' => $customerInformation->getVatId(),
-            'Firmenname' => '',
-            'Ort' => '',
-            'PLZ' => '',
-            'Strasse' => '',
-            'Druck' => '',
-        ];
-    }
+    private $snippetManager;
 
     /**
-     * Only useful in extended validators
+     * @var \Shopware_Components_Config
      */
-    protected function addExtendedResults($response)
+    private $config;
+
+    public function __construct(
+        \Shopware_Components_Snippet_Manager $snippetManager,
+        \Shopware_Components_Config $config
+    ) {
+        $this->snippetManager = $snippetManager;
+        $this->config = $config;
+    }
+
+    public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
+        $result = new VatIdValidatorResult(
+            $this->snippetManager,
+            '',
+            $this->config
+        );
+        $result->setServiceUnavailable();
+
+        return $result;
     }
 }

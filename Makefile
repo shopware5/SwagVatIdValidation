@@ -34,11 +34,27 @@ else
 	SHOPWARE_ENV=$(envname) ./../../../vendor/phpunit/phpunit/phpunit --verbose --filter $(filter)
 endif
 
+CS_FIXER_RUN=
 fix-cs: ## Run the code style fixer
-	./../../../vendor/bin/php-cs-fixer fix
+	./../../../vendor/bin/php-cs-fixer fix -v $(CS_FIXER_RUN)
 
-fix-cs-dry: ## Run the code style fixer in dry mode
-	./../../../vendor/bin/php-cs-fixer fix --dry-run -vvv
+fix-cs-dry: CS_FIXER_RUN= --dry-run
+fix-cs-dry: fix-cs  ## Run the code style fixer in dry mode
+
+check-js-code: check-eslint-frontend check-eslint-backend
+
+ESLINT_FIX=
+check-eslint-frontend:
+	./../../../themes/node_modules/eslint/bin/eslint.js --ignore-path .eslintignore -c ./../../../themes/Frontend/.eslintrc.js --global "jQuery,StateManager" Resources/frontend/js $(ESLINT_FIX)
+
+fix-eslint-frontend: ESLINT_FIX= --fix
+fix-eslint-frontend: check-eslint-frontend
+
+check-eslint-backend:
+	./../../../themes/node_modules/eslint/bin/eslint.js --ignore-path .eslintignore -c ./../../../themes/Backend/.eslintrc.js Resources/views/backend $(ESLINT_FIX)
+
+fix-eslint-backend: ESLINT_FIX= --fix
+fix-eslint-backend: check-eslint-backend
 
 phpstan: ## Run PHPStan
 	./../../../vendor/bin/phpstan analyse .

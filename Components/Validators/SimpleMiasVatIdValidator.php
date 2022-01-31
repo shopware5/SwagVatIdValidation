@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -35,8 +36,6 @@ class SimpleMiasVatIdValidator extends MiasVatIdValidator
 {
     /**
      * Puts the customer and shop information into the format the API needs it.
-     *
-     * @return array
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
@@ -54,8 +53,6 @@ class SimpleMiasVatIdValidator extends MiasVatIdValidator
 
     /**
      * Only useful in extended validators
-     *
-     * @param array $response
      */
     protected function addExtendedResults($response, VatIdCustomerInformation $customerInformation)
     {

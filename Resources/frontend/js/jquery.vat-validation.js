@@ -1,5 +1,4 @@
 (function($) {
-
     $.plugin('swagVatIdValidation', {
         defaults: {
             countryIsoIdList: [],
@@ -32,7 +31,7 @@
                 return;
             }
 
-            this.countryField.on('change', $.proxy(this.onChangeCountry, this))
+            this.countryField.on('change', $.proxy(this.onChangeCountry, this));
         },
 
         onChangeCountry: function() {
@@ -45,11 +44,10 @@
 
         removeVatIdRequirement: function() {
             this.vatIdField.removeAttr('required');
-        },
+        }
     });
 
     $(function() {
         $('*[data-SwagVatIdValidationPlugin="true"]').swagVatIdValidation();
     });
-
 })(jQuery);

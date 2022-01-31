@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -29,8 +30,8 @@ interface ValidationServiceInterface
     /**
      * Helper method returns true if the VAT ID is required
      *
-     * @param string $company
-     * @param int    $countryId
+     * @param string|null $company
+     * @param int         $countryId
      *
      * @return bool
      */

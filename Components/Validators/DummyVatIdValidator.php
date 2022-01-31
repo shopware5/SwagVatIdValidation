@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -40,11 +41,6 @@ use SwagVatIdValidation\Components\VatIdValidatorResult;
 class DummyVatIdValidator implements VatIdValidatorInterface
 {
     /**
-     * @var VatIdValidatorResult
-     */
-    private $result;
-
-    /**
      * @var \Shopware_Components_Config
      */
     private $config;
@@ -68,7 +64,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
      */
     public function check(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation = null)
     {
-        $this->result = new VatIdValidatorResult($this->snippetManager, 'dummyValidator', $this->config);
+        $result = new VatIdValidatorResult($this->snippetManager, 'dummyValidator', $this->config);
 
         $exceptedNonEuISOs = $this->config->get(VatIdConfigReaderInterface::DISABLED_COUNTRY_ISO_LIST);
 
@@ -82,50 +78,50 @@ class DummyVatIdValidator implements VatIdValidatorInterface
         //An empty VAT Id can't be valid
         if ($customerInformation->getVatId() === '') {
             //Set the error code to 1 to avoid vatIds with only a "."
-            $this->result->setVatIdInvalid('1');
+            $result->setVatIdInvalid('1');
 
-            return $this->result;
+            return $result;
         }
 
         //If there is a VAT Id for a Non-EU-countries, its invalid
         if (!EUStates::isEUCountry($customerInformation->getBillingCountryIso()) && !$isExcepted) {
-            $this->result->setVatIdInvalid('5');
-            $this->result->setCountryInvalid();
+            $result->setVatIdInvalid('5');
+            $result->setCountryInvalid();
 
-            return $this->result;
+            return $result;
         }
 
         //All VAT IDs have a length of 4 to 14 chars (romania has a min. length of 4 characters)
         if (\strlen($customerInformation->getVatId()) < 4) {
-            $this->result->setVatIdInvalid('1');
+            $result->setVatIdInvalid('1');
         } elseif (\strlen($customerInformation->getVatId()) > 14) {
-            $this->result->setVatIdInvalid('2');
+            $result->setVatIdInvalid('2');
         }
 
         $isExcepted = \in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs, true);
 
         //The country code has to be an EU prefix and has to match the billing country
         if (!EUStates::isEUCountry($customerInformation->getCountryCode()) && !$isExcepted) {
-            $this->result->setVatIdInvalid('3');
+            $result->setVatIdInvalid('3');
         } elseif ($customerInformation->getCountryCode() !== $customerInformation->getBillingCountryIso()) {
             //The country greece has two different ISO codes. GR and EL
             //Since shopware does only know "GR" as "Greece", we have to manually check for "EL" here.
             if ($customerInformation->getCountryCode() !== 'EL' || $customerInformation->getBillingCountryIso() !== 'GR') {
-                $this->result->setVatIdInvalid('6');
-                $this->result->setCountryInvalid();
+                $result->setVatIdInvalid('6');
+                $result->setCountryInvalid();
             }
         }
 
         //The VAT number always only consists of alphanumerical chars
         if (!\ctype_alnum($customerInformation->getVatNumber())) {
-            $this->result->setVatIdInvalid('4');
+            $result->setVatIdInvalid('4');
         }
 
         //If the VAT number only consists alphas its invalid
         if (\ctype_alpha($customerInformation->getVatNumber())) {
-            $this->result->setVatIdInvalid('4');
+            $result->setVatIdInvalid('4');
         }
 
-        return $this->result;
+        return $result;
     }
 }

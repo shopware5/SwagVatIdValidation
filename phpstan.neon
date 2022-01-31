@@ -6,8 +6,16 @@ parameters:
     reportUnmatchedIgnoredErrors: true
     symfony:
         constant_hassers: false
-        container_xml_path: '../../../var/cache/production____REVISION___/container.xml'
+        container_xml_path: ../../../var/cache/production____REVISION___/container.xml
         console_application_loader: ../../../tests/phpstan-console-application.php
+    doctrine:
+        repositoryClass: Shopware\Components\Model\ModelRepository
+        objectManagerLoader: ../../../tests/phpstan-doctrine-model-manager.php
     excludePaths:
         - .githooks
         - vendor
+    ignoreErrors:
+        - # Skipped tests for different Shopware versions
+            message: '#Unreachable statement - code above always terminates#'
+            count: 2
+            path: Tests/Functional/Components/VatIdConfigReaderTest.php

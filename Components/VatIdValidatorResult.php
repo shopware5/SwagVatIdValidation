@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -111,6 +112,8 @@ class VatIdValidatorResult implements \Serializable
      * Sets the VAT ID to 'invalid' and sets the validator error message by $errorCode
      *
      * @param string $errorCode
+     *
+     * @return void
      */
     public function setVatIdInvalid($errorCode)
     {
@@ -121,6 +124,8 @@ class VatIdValidatorResult implements \Serializable
 
     /**
      * Sets the VAT ID required
+     *
+     * @return void
      */
     public function setVatIdRequired()
     {
@@ -130,6 +135,8 @@ class VatIdValidatorResult implements \Serializable
 
     /**
      * Sets the result to the api service was not available
+     *
+     * @return void
      */
     public function setServiceUnavailable()
     {
@@ -143,6 +150,8 @@ class VatIdValidatorResult implements \Serializable
 
     /**
      * Sets the company to invalid
+     *
+     * @return void
      */
     public function setCompanyInvalid()
     {
@@ -153,6 +162,8 @@ class VatIdValidatorResult implements \Serializable
 
     /**
      * Sets the street / streetnumber combination to invalid
+     *
+     * @return void
      */
     public function setStreetInvalid()
     {
@@ -163,6 +174,8 @@ class VatIdValidatorResult implements \Serializable
 
     /**
      * Sets the zipcode to invalid
+     *
+     * @return void
      */
     public function setZipCodeInvalid()
     {
@@ -173,6 +186,8 @@ class VatIdValidatorResult implements \Serializable
 
     /**
      * Sets the city to invalid
+     *
+     * @return void
      */
     public function setCityInvalid()
     {
@@ -183,6 +198,8 @@ class VatIdValidatorResult implements \Serializable
 
     /**
      * Sets the country to invalid
+     *
+     * @return void
      */
     public function setCountryInvalid()
     {
@@ -278,10 +295,8 @@ class VatIdValidatorResult implements \Serializable
 
     /**
      * Helper function to init the result. Used in constructor and unserialize()
-     *
-     * @param string $namespace
      */
-    private function init($namespace)
+    private function init(string $namespace): void
     {
         $this->status = self::VALID;
         $this->errors = [];
@@ -299,10 +314,8 @@ class VatIdValidatorResult implements \Serializable
 
     /**
      * Helper function to add an error by its error code
-     *
-     * @param string $errorCode
      */
-    private function addError($errorCode)
+    private function addError(string $errorCode): void
     {
         if ($errorCode === 'required') {
             $this->setVatIdRequired();

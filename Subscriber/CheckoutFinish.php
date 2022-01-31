@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -22,12 +23,8 @@
 
 namespace SwagVatIdValidation\Subscriber;
 
-use ArrayObject;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Controller_ActionEventArgs as ActionEventArgs;
-use Enlight_Controller_Request_RequestHttp as Request;
-use Enlight_Controller_Response_ResponseHttp as Response;
-use Shopware_Controllers_Frontend_Checkout as CheckoutController;
 use SwagVatIdValidation\Components\DependencyProviderInterface;
 use SwagVatIdValidation\Components\ValidationServiceInterface;
 
@@ -54,11 +51,6 @@ class CheckoutFinish implements SubscriberInterface
         $this->validationService = $validationService;
     }
 
-    /**
-     * Returns the events we need to subscribe to
-     *
-     * @return array
-     */
     public static function getSubscribedEvents()
     {
         return [
@@ -69,16 +61,15 @@ class CheckoutFinish implements SubscriberInterface
 
     /**
      * Listener to check on checkout finish, whether the VAT ID is stated when required
+     *
+     * @return void
      */
     public function onPreDispatchCheckout(ActionEventArgs $arguments)
     {
-        /** @var CheckoutController $subject */
         $subject = $arguments->getSubject();
 
-        /** @var Request $request */
         $request = $subject->Request();
 
-        /** @var Response $response */
         $response = $subject->Response();
 
         if (!$request->isDispatched()
@@ -89,7 +80,6 @@ class CheckoutFinish implements SubscriberInterface
             return;
         }
 
-        /** @var ArrayObject $orderDetails */
         $orderDetails = $this->dependencyProvider->getSession()->get('sOrderVariables');
 
         //The user might have been logged out during the last request.
@@ -105,20 +95,18 @@ class CheckoutFinish implements SubscriberInterface
 
         if ($required && !$billing['vatId']) {
             $subject->forward('confirm', 'checkout', null, ['vatIdRequiredButEmpty' => true]);
-
-            return;
         }
     }
 
     /**
      * Listener to show the requirement error message
+     *
+     * @return void
      */
     public function onPostDispatchCheckout(ActionEventArgs $arguments)
     {
-        /** @var CheckoutController $subject */
         $subject = $arguments->getSubject();
 
-        /** @var Request $request */
         $request = $subject->Request();
 
         if ($request->getActionName() !== 'confirm') {

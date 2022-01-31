@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -26,7 +27,6 @@ use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Session_Namespace as Session;
 use Enlight_Controller_Action;
 use Enlight_Controller_ActionEventArgs as ActionEventArgs;
-use Enlight_Controller_Request_RequestHttp as Request;
 use Enlight_View_Default as View;
 use Shopware_Components_Config as Config;
 use Shopware_Components_Snippet_Manager as SnippetManager;
@@ -70,14 +70,11 @@ class Template implements SubscriberInterface
      */
     private $pluginPath;
 
-    /**
-     * @param string $pluginPath
-     */
     public function __construct(
         DependencyProviderInterface $dependencyProvider,
         SnippetManager $snippetManager,
         Config $config,
-        $pluginPath
+        string $pluginPath
     ) {
         $this->dependencyProvider = $dependencyProvider;
         $this->snippetManager = $snippetManager;
@@ -104,6 +101,8 @@ class Template implements SubscriberInterface
      * Listener to FrontendAccount (index and billing)
      * On Account Index, a short info message will be shown if the validator was not available
      * On Account Billing, the Vat Id input field can be set required
+     *
+     * @return void
      */
     public function onPostDispatchFrontendAccount(ActionEventArgs $arguments)
     {
@@ -113,6 +112,8 @@ class Template implements SubscriberInterface
     /**
      * Listener to FrontendCheckout (confirm),
      * Shows a short info message if the validator was not available
+     *
+     * @return void
      */
     public function onPostDispatchFrontendCheckout(ActionEventArgs $arguments)
     {
@@ -122,6 +123,8 @@ class Template implements SubscriberInterface
     /**
      * Listener to FrontendRegister (index)
      * The Vat Id input field can be set required
+     *
+     * @return void
      */
     public function onPostDispatchFrontendRegister(ActionEventArgs $arguments)
     {
@@ -130,12 +133,14 @@ class Template implements SubscriberInterface
 
     public function onPostDispatchFrontendAddressEdit(ActionEventArgs $args): void
     {
-        /** @var \Shopware_Controllers_Frontend_Address $subject */
         $subject = $args->getSubject();
 
         $this->prepareBillingErrorMessages($this->dependencyProvider->getSession(), $subject->View());
     }
 
+    /**
+     * @return void
+     */
     public function onTemplatesCollected(\Enlight_Event_EventArgs $arguments)
     {
         $dirs = $arguments->getReturn();
@@ -149,20 +154,19 @@ class Template implements SubscriberInterface
      * Helper function to assign the plugin data to the template
      *
      * @param string[] $actions
+     *
+     * @return void
      */
     public function postDispatchFrontendController(Enlight_Controller_Action $controller, array $actions)
     {
-        /** @var Request $request */
         $request = $controller->Request();
 
         if (!\in_array($request->getActionName(), $actions, true)) {
             return;
         }
 
-        /** @var Session $session */
         $session = $this->dependencyProvider->getSession();
 
-        /** @var View $view */
         $view = $controller->View();
 
         $this->prepareBillingErrorMessages($session, $view);
@@ -206,7 +210,6 @@ class Template implements SubscriberInterface
 
     public function onCustomerPostDispatch(ActionEventArgs $args): void
     {
-        /** @var \Shopware_Controllers_Backend_Customer $controller */
         $controller = $args->getSubject();
 
         $view = $controller->View();
@@ -225,7 +228,6 @@ class Template implements SubscriberInterface
      */
     private function hasExceptedEUCountries()
     {
-        /** @var array|string $ISOs */
         $ISOs = $this->config->get(VatIdConfigReaderInterface::DISABLED_COUNTRY_ISO_LIST);
 
         if (\is_string($ISOs)) {

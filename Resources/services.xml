@@ -59,6 +59,7 @@
         <service id="swag_vat_id_validation.config_reader" class="SwagVatIdValidation\Components\VatIdConfigReader">
             <argument>%swag_vat_id_validation.plugin_name%</argument>
             <argument type="service" id="shopware_storefront.context_service"/>
+            <argument type="service" id="models"/>
             <argument type="service" id="Shopware\Components\Plugin\Configuration\CachedReader" on-invalid="null"/>
             <argument type="service" id="shopware.plugin.cached_config_reader" on-invalid="null"/>
         </service>

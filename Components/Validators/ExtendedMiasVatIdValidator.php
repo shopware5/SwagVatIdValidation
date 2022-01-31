@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Shopware Plugins
  * Copyright (c) shopware AG
@@ -37,8 +38,6 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
 {
     /**
      * Puts the customer and shop information into the format the API needs.
-     *
-     * @return array
      */
     protected function getData(VatIdCustomerInformation $customerInformation, VatIdInformation $shopInformation)
     {
@@ -58,18 +57,17 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
      * Evaluates the returned address data of a validation request
      * Because the Mias service doesn't compare the address data itself, but rather return the deposited address data
      * (if approved), this validator class has to compare the returned address with the provided address itself.
-     *
-     * @param array $response
      */
     protected function addExtendedResults($response, VatIdCustomerInformation $customerInformation)
     {
-        if (!$response->traderAddress) {
+        if (!isset($response->traderAddress)) {
             return;
         }
 
         $extendedData = [];
 
-        $extendedData['company'] = [$response->traderName, $customerInformation->getCompany()];
+        $traderName = isset($response->traderName) ? $response->traderName : '';
+        $extendedData['company'] = [$traderName, $customerInformation->getCompany()];
 
         $address = \explode("\n", $response->traderAddress);
         $extendedData['street'] = [$address[0], $customerInformation->getStreet()];
@@ -80,27 +78,27 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
         $extendedData['zipCode'] = [$address[0], $customerInformation->getZipCode()];
         $extendedData['city'] = [$address[1], $customerInformation->getCity()];
 
-        foreach ($extendedData as &$data) {
-            $string1 = \trim($data[0] ?? '');
-            $string2 = \trim($data[1] ?? '');
+        $validationResult = [];
+        foreach ($extendedData as $key => $data) {
+            $valueFromApi = \trim($data[0] ?? '');
+            $valueFromShopware = \trim($data[1] ?? '');
 
-            $data = $this->validateString($string1, $string2);
+            $validationResult[$key] = $this->validateString($valueFromApi, $valueFromShopware);
         }
-        unset($data);
 
-        if (!$extendedData['company']) {
+        if (!$validationResult['company']) {
             $this->result->setCompanyInvalid();
         }
 
-        if (!$extendedData['street']) {
+        if (!$validationResult['street']) {
             $this->result->setStreetInvalid();
         }
 
-        if (!$extendedData['zipCode']) {
+        if (!$validationResult['zipCode']) {
             $this->result->setZipCodeInvalid();
         }
 
-        if (!$extendedData['city']) {
+        if (!$validationResult['city']) {
             $this->result->setCityInvalid();
         }
     }
@@ -108,36 +106,14 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
     /**
      * Helper function to check the similarity of two address data strings
      * If the difference is too big, the correct error message will be set to result
-     *
-     * @param string $string1
-     * @param string $string2
-     *
-     * @return bool
      */
-    private function validateString($string1, $string2)
+    private function validateString(string $valueFromApi, string $valueFromShopware): bool
     {
-        if ($this->isSimilar($string1, $string2)) {
-            return true;
-        }
+        $valueFromApi = \strtolower($valueFromApi);
+        $valueFromShopware = \strtolower($valueFromShopware);
 
-        return false;
-    }
+        \similar_text($valueFromApi, $valueFromShopware, $percentage);
 
-    /**
-     * Helper function to check the similarity of two strings. On default, there have to
-     * be a minimum accordance of 75%.
-     *
-     * @param int $minPercentage
-     *
-     * @return bool
-     */
-    private function isSimilar($string1, $string2, $minPercentage = 75)
-    {
-        $string1 = \strtolower($string1);
-        $string2 = \strtolower($string2);
-
-        \similar_text($string1, $string2, $percentage);
-
-        return $percentage >= $minPercentage;
+        return $percentage >= 75;
     }
 }
