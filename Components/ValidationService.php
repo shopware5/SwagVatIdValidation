@@ -311,7 +311,7 @@ class ValidationService implements ValidationServiceInterface
     /**
      * Helper function to remove the VAT Id from the customer billing address
      */
-    private function removeVatIdFromBilling(int $billingAddressId, VatIdValidatorResult $result, bool $deleteVatIdFromAddress): void
+    private function removeVatIdFromBilling(?int $billingAddressId, VatIdValidatorResult $result, bool $deleteVatIdFromAddress): void
     {
         if (!$deleteVatIdFromAddress || empty($billingAddressId)) {
             return;
