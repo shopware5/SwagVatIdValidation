@@ -49,7 +49,7 @@ JavaScript analyze:
         - unzip -q plugin.zip -d shopware/custom/plugins/${PLUGIN_NAME}
     script:
         - cd shopware
-        - make install-theme-depencencies
+        - make .make.install.npm-dependencies
         - cd custom/plugins/${PLUGIN_NAME}
         - make check-js-code
 

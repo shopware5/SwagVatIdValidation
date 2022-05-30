@@ -56,16 +56,6 @@ parameters:
 			path: Components/Validators/SimpleBffVatIdValidator.php
 
 		-
-			message: "#^Method SwagVatIdValidation\\\\Components\\\\Validators\\\\ValidatorFactory\\:\\:__construct\\(\\) has parameter \\$validators with no value type specified in iterable type IteratorAggregate\\.$#"
-			count: 1
-			path: Components/Validators/ValidatorFactory.php
-
-		-
-			message: "#^Property SwagVatIdValidation\\\\Components\\\\Validators\\\\ValidatorFactory\\:\\:\\$validators type has no value type specified in iterable type IteratorAggregate\\.$#"
-			count: 1
-			path: Components/Validators/ValidatorFactory.php
-
-		-
 			message: "#^Method SwagVatIdValidation\\\\Components\\\\VatIdConfigReader\\:\\:getPluginConfig\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: Components/VatIdConfigReader.php

@@ -80,7 +80,7 @@ class ExtendedMiasVatIdValidator extends MiasVatIdValidator
 
         $validationResult = [];
         foreach ($extendedData as $key => $data) {
-            $valueFromApi = \trim($data[0] ?? '');
+            $valueFromApi = \trim($data[0]);
             $valueFromShopware = \trim($data[1] ?? '');
 
             $validationResult[$key] = $this->validateString($valueFromApi, $valueFromShopware);
