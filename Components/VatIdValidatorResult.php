@@ -28,14 +28,14 @@ use Shopware_Components_Snippet_Manager;
 
 class VatIdValidatorResult implements \Serializable
 {
-    //Flags
+    // Flags
     public const VAT_ID_OK = 1;
     public const COMPANY_OK = 2;
     public const STREET_OK = 4;
     public const ZIP_CODE_OK = 8;
     public const CITY_OK = 16;
 
-    //States
+    // States
 
     /**
      * Status -2 happens when

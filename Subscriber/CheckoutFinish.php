@@ -82,8 +82,8 @@ class CheckoutFinish implements SubscriberInterface
 
         $orderDetails = $this->dependencyProvider->getSession()->get('sOrderVariables');
 
-        //The user might have been logged out during the last request.
-        //If so, the orderDetails object won't be available.
+        // The user might have been logged out during the last request.
+        // If so, the orderDetails object won't be available.
         if (!$orderDetails) {
             return;
         }

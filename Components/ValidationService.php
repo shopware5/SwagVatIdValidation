@@ -294,7 +294,7 @@ class ValidationService implements ValidationServiceInterface
         VatIdInformation $shopInformation,
         int $validationType
     ): VatIdValidatorResult {
-        //an empty Vat Id will occur an error, so the api validation should be skipped
+        // an empty Vat Id will occur an error, so the api validation should be skipped
         if ($customerInformation->getVatId() === '') {
             return new VatIdValidatorResult($this->snippetManager, '', $this->config);
         }

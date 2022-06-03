@@ -73,7 +73,7 @@ class Login implements SubscriberInterface
      */
     public function onLoginSuccessful(\Enlight_Event_EventArgs $arguments)
     {
-        //After successfully registration, this would be a second validation. The first on save, the second on login.
+        // After successfully registration, this would be a second validation. The first on save, the second on login.
         $request = $this->dependencyProvider->getFront()->Request();
         if (!$request instanceof \Enlight_Controller_Request_Request || $request->getActionName() === 'saveRegister') {
             return;
@@ -110,7 +110,7 @@ class Login implements SubscriberInterface
         }
 
         if (!$required) {
-            //The check is not required, no validation required
+            // The check is not required, no validation required
             return;
         }
 

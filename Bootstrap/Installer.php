@@ -88,7 +88,7 @@ class Installer
 
     private function getMail(): Mail
     {
-        //Template
+        // Template
         $content = "Hallo,\n\nbei der Überprüfung der USt-IdNr. {\$sVatId} der Firma\n\n{\$sCompany}\n{\$sStreet}\n{\$sZipCode} {\$sCity}\n\nLändercode: {\$sCountryCode}\n\nist ein Fehler aufgetreten:\n\n{\$sError}\n\n{config name=shopName}";
 
         $mail = new Mail();
@@ -112,7 +112,7 @@ class Installer
             return null;
         }
 
-        //Translation
+        // Translation
         $translation = new Translation();
         $translation->setShop($shop);
         $translation->setType('config_mails');

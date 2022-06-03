@@ -75,15 +75,15 @@ class DummyVatIdValidator implements VatIdValidatorInterface
 
         $isExcepted = \in_array($customerInformation->getBillingCountryIso(), $exceptedNonEuISOs, true);
 
-        //An empty VAT Id can't be valid
+        // An empty VAT Id can't be valid
         if ($customerInformation->getVatId() === '') {
-            //Set the error code to 1 to avoid vatIds with only a "."
+            // Set the error code to 1 to avoid vatIds with only a "."
             $result->setVatIdInvalid('1');
 
             return $result;
         }
 
-        //If there is a VAT Id for a Non-EU-countries, its invalid
+        // If there is a VAT Id for a Non-EU-countries, its invalid
         if (!EUStates::isEUCountry($customerInformation->getBillingCountryIso()) && !$isExcepted) {
             $result->setVatIdInvalid('5');
             $result->setCountryInvalid();
@@ -91,7 +91,7 @@ class DummyVatIdValidator implements VatIdValidatorInterface
             return $result;
         }
 
-        //All VAT IDs have a length of 4 to 14 chars (romania has a min. length of 4 characters)
+        // All VAT IDs have a length of 4 to 14 chars (romania has a min. length of 4 characters)
         if (\strlen($customerInformation->getVatId()) < 4) {
             $result->setVatIdInvalid('1');
         } elseif (\strlen($customerInformation->getVatId()) > 14) {
@@ -100,24 +100,24 @@ class DummyVatIdValidator implements VatIdValidatorInterface
 
         $isExcepted = \in_array($customerInformation->getCountryCode(), $exceptedNonEuISOs, true);
 
-        //The country code has to be an EU prefix and has to match the billing country
+        // The country code has to be an EU prefix and has to match the billing country
         if (!EUStates::isEUCountry($customerInformation->getCountryCode()) && !$isExcepted) {
             $result->setVatIdInvalid('3');
         } elseif ($customerInformation->getCountryCode() !== $customerInformation->getBillingCountryIso()) {
-            //The country greece has two different ISO codes. GR and EL
-            //Since shopware does only know "GR" as "Greece", we have to manually check for "EL" here.
+            // The country greece has two different ISO codes. GR and EL
+            // Since shopware does only know "GR" as "Greece", we have to manually check for "EL" here.
             if ($customerInformation->getCountryCode() !== 'EL' || $customerInformation->getBillingCountryIso() !== 'GR') {
                 $result->setVatIdInvalid('6');
                 $result->setCountryInvalid();
             }
         }
 
-        //The VAT number always only consists of alphanumerical chars
+        // The VAT number always only consists of alphanumerical chars
         if (!\ctype_alnum($customerInformation->getVatNumber())) {
             $result->setVatIdInvalid('4');
         }
 
-        //If the VAT number only consists alphas its invalid
+        // If the VAT number only consists alphas its invalid
         if (\ctype_alpha($customerInformation->getVatNumber())) {
             $result->setVatIdInvalid('4');
         }
