@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace SwagVatIdValidation\Tests\Functional\Controller\Backend;
 
+use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use Shopware\Components\DependencyInjection\Container as ShopwareContainer;
 use Shopware_Controllers_Backend_SwagVatIdValidation as VatIdValidationBackendController;
@@ -42,7 +43,12 @@ class SwagVatIdValidationTest extends TestCase
 
         $controller->validateVatIdAction();
 
-        static::assertTrue($controller->View()->getAssign('success'));
+        try {
+            static::assertTrue($controller->View()->getAssign('success'));
+        } catch (ExpectationFailedException $e) {
+            static::assertArrayHasKey('serviceUnavailable', $controller->View()->getAssign('errors'));
+            $this->markAsRisky();
+        }
     }
 
     public function testValidateVatIdActionSuccessShouldBeFalse(): void
@@ -55,7 +61,12 @@ class SwagVatIdValidationTest extends TestCase
 
         $controller->validateVatIdAction();
 
-        static::assertFalse($controller->View()->getAssign('success'));
+        try {
+            static::assertFalse($controller->View()->getAssign('success'));
+        } catch (ExpectationFailedException $e) {
+            static::assertArrayHasKey('serviceUnavailable', $controller->View()->getAssign('errors'));
+            $this->markAsRisky();
+        }
     }
 
     public function testValidateVatIdActionSuccessShouldBeTrueWithNewAddress(): void
@@ -68,7 +79,12 @@ class SwagVatIdValidationTest extends TestCase
 
         $controller->validateVatIdAction();
 
-        static::assertTrue($controller->View()->getAssign('success'));
+        try {
+            static::assertTrue($controller->View()->getAssign('success'));
+        } catch (ExpectationFailedException $e) {
+            static::assertArrayHasKey('serviceUnavailable', $controller->View()->getAssign('errors'));
+            $this->markAsRisky();
+        }
     }
 
     private function getController(): VatIdValidationBackendController
