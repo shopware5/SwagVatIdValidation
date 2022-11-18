@@ -23,9 +23,6 @@ declare(strict_types=1);
 
 namespace SwagVatIdValidation\Components;
 
-use Shopware_Components_Config;
-use Shopware_Components_Snippet_Manager;
-
 class VatIdValidatorResult implements \Serializable
 {
     // Flags
@@ -77,7 +74,7 @@ class VatIdValidatorResult implements \Serializable
     private $flags;
 
     /**
-     * @var Shopware_Components_Snippet_Manager
+     * @var \Shopware_Components_Snippet_Manager
      */
     private $snippetManager;
 
@@ -97,11 +94,11 @@ class VatIdValidatorResult implements \Serializable
     private $validatorSnippets;
 
     /**
-     * @var Shopware_Components_Config
+     * @var \Shopware_Components_Config
      */
     private $config;
 
-    public function __construct(Shopware_Components_Snippet_Manager $snippetManager, string $namespace, Shopware_Components_Config $config)
+    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, string $namespace, \Shopware_Components_Config $config)
     {
         $this->snippetManager = $snippetManager;
         $this->config = $config;

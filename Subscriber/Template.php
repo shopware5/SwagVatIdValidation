@@ -25,7 +25,6 @@ namespace SwagVatIdValidation\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Session_Namespace as Session;
-use Enlight_Controller_Action;
 use Enlight_Controller_ActionEventArgs as ActionEventArgs;
 use Enlight_View_Default as View;
 use Shopware_Components_Config as Config;
@@ -157,7 +156,7 @@ class Template implements SubscriberInterface
      *
      * @return void
      */
-    public function postDispatchFrontendController(Enlight_Controller_Action $controller, array $actions)
+    public function postDispatchFrontendController(\Enlight_Controller_Action $controller, array $actions)
     {
         $request = $controller->Request();
 

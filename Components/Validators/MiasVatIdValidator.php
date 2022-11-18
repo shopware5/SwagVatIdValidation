@@ -25,7 +25,6 @@ namespace SwagVatIdValidation\Components\Validators;
 
 use Psr\Log\LogLevel;
 use Shopware\Components\Logger as PluginLogger;
-use Shopware_Components_Config;
 use SwagVatIdValidation\Components\VatIdCustomerInformation;
 use SwagVatIdValidation\Components\VatIdInformation;
 use SwagVatIdValidation\Components\VatIdValidatorResult;
@@ -55,14 +54,14 @@ abstract class MiasVatIdValidator implements VatIdValidatorInterface
     protected $snippetManager;
 
     /**
-     * @var Shopware_Components_Config
+     * @var \Shopware_Components_Config
      */
     private $config;
 
     /**
      * Constructor sets the snippet namespace
      */
-    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, PluginLogger $pluginLogger, Shopware_Components_Config $config)
+    public function __construct(\Shopware_Components_Snippet_Manager $snippetManager, PluginLogger $pluginLogger, \Shopware_Components_Config $config)
     {
         $this->pluginLogger = $pluginLogger;
         $this->snippetManager = $snippetManager;
