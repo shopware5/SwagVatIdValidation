@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 /**
  * (c) shopware AG <info@shopware.com>
@@ -62,6 +63,48 @@ class VatIdValidatorResultTest extends TestCase
 
         static::assertFalse($validatorResult->isValid());
         static::assertEmpty($validatorResult->getErrorMessages());
+    }
+
+    /**
+     * @dataProvider provideVatIdValidatorResults
+     *
+     * @param array<int, mixed>  $errorCodes
+     * @param array<int, string> $expectedErrorMessages
+     */
+    public function testAddErrorCodesWillNotThrowAnError(string $serializedVatIdValidatorResult, array $errorCodes, array $expectedErrorMessages): void
+    {
+        $validatorResult = $this->createVatIdValidatorResult();
+        $validatorResult->unserialize($serializedVatIdValidatorResult);
+
+        static::assertFalse($validatorResult->isValid());
+
+        $errorMessages = $validatorResult->getErrorMessages();
+
+        $counter = 0;
+        foreach ($errorMessages as $errorCode => $errorMessage) {
+            static::assertSame($errorCodes[$counter], $errorCode);
+            static::assertSame($expectedErrorMessages[$counter], $errorMessage);
+
+            ++$counter;
+        }
+    }
+
+    /**
+     * @return \Generator<array{serializedVatIdValidatorResult: string, errorCodes: array<int, mixed>, expectedErrorMessages: array<int, string>}>
+     */
+    public function provideVatIdValidatorResults(): \Generator
+    {
+        yield 'existing VatId is invalid but required' => [
+            'serializedVatIdValidatorResult' => 'a:2:{s:9:"namespace";s:13:"miasValidator";s:4:"keys";a:2:{i:0;i:1;i:1;s:8:"required";}}',
+            'errorCodes' => [
+                1,
+                'required',
+            ],
+            'expectedErrorMessages' => [
+                'Die angefragte USt-IdNr. ist ungültig.',
+                'Sie haben gegenwärtig keine USt-IdNr. angegeben. Bitte tragen Sie sie in Ihrem Account nach.',
+            ],
+        ];
     }
 
     private function createVatIdValidatorResult(): VatIdValidatorResult
