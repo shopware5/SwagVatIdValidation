@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace SwagVatIdValidation\Tests\Functional\Components;
 
 use PHPUnit\Framework\TestCase;
-use Shopware\Components\DependencyInjection\Container;
 use Shopware_Components_Config as ShopwareConfig;
 use SwagVatIdValidation\Components\VatIdConfigReaderInterface;
 use SwagVatIdValidation\Components\VatIdValidatorResult;
@@ -20,20 +19,29 @@ class VatIdValidatorResultTest extends TestCase
 {
     use ContainerTrait;
 
+    private const DEFAULT_CONFIG_ALLOW_REGISTER_ON_API_ERROR = false;
+
+    /**
+     * @var ShopwareConfig
+     */
+    private $config;
+
+    /**
+     * @before
+     */
+    public function setUp(): void
+    {
+        $this->config = $this->getContainer()->get('config');
+    }
+
     public function testSetServiceUnavailable(): void
     {
-        $container = $this->getContainer();
-        static::assertInstanceOf(Container::class, $container);
-
-        $config = $container->get('config');
-        static::assertInstanceOf(ShopwareConfig::class, $config);
-
-        $config->offsetSet(VatIdConfigReaderInterface::ALLOW_REGISTER_ON_API_ERROR, false);
+        $this->config->offsetSet(VatIdConfigReaderInterface::ALLOW_REGISTER_ON_API_ERROR, false);
 
         $validatorResult = $this->createVatIdValidatorResult();
         $validatorResult->setServiceUnavailable();
 
-        $container->reset('config');
+        $this->config->offsetSet(VatIdConfigReaderInterface::ALLOW_REGISTER_ON_API_ERROR, self::DEFAULT_CONFIG_ALLOW_REGISTER_ON_API_ERROR);
 
         static::assertFalse($validatorResult->isValid());
         static::assertNotEmpty($validatorResult->getErrorMessages());
@@ -45,18 +53,12 @@ class VatIdValidatorResultTest extends TestCase
 
     public function testSetServiceUnavailableExpectNoErrorMessage(): void
     {
-        $container = $this->getContainer();
-        static::assertInstanceOf(Container::class, $container);
-
-        $config = $container->get('config');
-        static::assertInstanceOf(ShopwareConfig::class, $config);
-
-        $config->offsetSet(VatIdConfigReaderInterface::ALLOW_REGISTER_ON_API_ERROR, true);
+        $this->config->offsetSet(VatIdConfigReaderInterface::ALLOW_REGISTER_ON_API_ERROR, true);
 
         $validatorResult = $this->createVatIdValidatorResult();
         $validatorResult->setServiceUnavailable();
 
-        $container->reset('config');
+        $this->config->offsetSet(VatIdConfigReaderInterface::ALLOW_REGISTER_ON_API_ERROR, self::DEFAULT_CONFIG_ALLOW_REGISTER_ON_API_ERROR);
 
         static::assertFalse($validatorResult->isValid());
         static::assertEmpty($validatorResult->getErrorMessages());
