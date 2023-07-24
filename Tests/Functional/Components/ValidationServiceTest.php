@@ -15,12 +15,15 @@ use Shopware\Models\Customer\Address;
 use SwagVatIdValidation\Components\ValidationService;
 use SwagVatIdValidation\Components\Validators\DummyVatIdValidator;
 use SwagVatIdValidation\Components\Validators\ValidatorFactory;
+use SwagVatIdValidation\Components\VatIdConfigReaderInterface;
 use SwagVatIdValidation\Tests\ContainerTrait;
 use SwagVatIdValidation\Tests\Functional\Components\Mock\MockValidator;
 
 class ValidationServiceTest extends TestCase
 {
     use ContainerTrait;
+
+    private const DEFAULT_CONFIG_EMAIL_NOTIFICATION = 1;
 
     public function testIsVatIdRequiredNoVatCheckRequiredShouldBeFalse(): void
     {
@@ -85,6 +88,59 @@ class ValidationServiceTest extends TestCase
 
         static::assertFalse($result->isValid());
         static::assertTrue($result->isApiUnavailable());
+    }
+
+    /**
+     * @dataProvider provideEmailNotificationConfig
+     *
+     * @param string|int $expectedResult
+     */
+    public function testGetEmailAddress(string $configSettings, $expectedResult): void
+    {
+        $config = $this->getContainer()->get('config');
+
+        if ($configSettings !== '') {
+            $config->offsetSet(VatIdConfigReaderInterface::EMAIL_NOTIFICATION, $configSettings);
+        }
+
+        $validationService = $this->getValidationService();
+
+        $reflectionClass = new \ReflectionClass($validationService);
+        $privateMethod = $reflectionClass->getMethod('getEmailAddress');
+        $privateMethod->setAccessible(true);
+
+        $result = $privateMethod->invoke($validationService);
+
+        $config->offsetSet(VatIdConfigReaderInterface::EMAIL_NOTIFICATION, self::DEFAULT_CONFIG_EMAIL_NOTIFICATION);
+
+        static::assertSame($expectedResult, $result);
+    }
+
+    /**
+     * @return \Generator<array{setConfig: string, expectedResult: string|bool}>
+     */
+    public function provideEmailNotificationConfig(): \Generator
+    {
+        yield 'default setting = 1 = send email to shopowner email address' => [
+            'setConfig' => '',
+            'expectedResult' => 'info@example.com',
+        ];
+        yield 'send no email' => [
+            'setConfig' => '0',
+            'expectedResult' => false,
+        ];
+        yield 'send email to shopowner email address' => [
+            'setConfig' => '1',
+            'expectedResult' => 'info@example.com',
+        ];
+        yield 'send email to valid custom email address' => [
+            'setConfig' => 'test@shopware.com',
+            'expectedResult' => 'test@shopware.com',
+        ];
+        yield 'send email to invalid custom email address' => [
+            'setConfig' => 'test@shopware.com||',
+            'expectedResult' => false,
+        ];
     }
 
     private function getValidationService(bool $vatCheckRequired = true): ValidationService
