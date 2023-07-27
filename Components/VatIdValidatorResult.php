@@ -272,7 +272,7 @@ class VatIdValidatorResult implements \Serializable
         $this->init($serializeArray['namespace']);
 
         foreach ($serializeArray['keys'] as $errorCode) {
-            $this->addError($errorCode);
+            $this->addError((string) $errorCode);
         }
     }
 

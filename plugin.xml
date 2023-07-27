@@ -11,6 +11,15 @@
     <author>Shopware AG</author>
     <compatibility minVersion="5.6.0" maxVersion="5.99.99"/>
 
+    <changelog version="REPLACE_GLOBALLY_WITH_NEXT_VERSION(2.0.10)">
+        <changes lang="de">
+            PT-12602 - Einstellungen für "eMail-Benachrichtigung" werden wieder korrekt ausgewertet;
+        </changes>
+        <changes lang="en">
+            PT-12602 - Settings for "eMail notification" are processed correctly again;
+        </changes>
+    </changelog>
+
     <changelog version="2.0.9">
         <changes lang="de">PT-12589 - Fehlverhalten bei Validierung von ungültiger ID korrigiert;</changes>
         <changes lang="en">PT-12589 - Fix error during validation of invalid ID;</changes>

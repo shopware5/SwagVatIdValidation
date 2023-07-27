@@ -378,14 +378,16 @@ class ValidationService implements ValidationServiceInterface
      */
     private function getEmailAddress()
     {
-        $emailNotification = $this->config->get(VatIdConfigReaderInterface::EMAIL_NOTIFICATION);
+        $emailNotification = (string) $this->config->get(VatIdConfigReaderInterface::EMAIL_NOTIFICATION);
 
-        if (\is_string($emailNotification)) {
-            $emailAddress = $emailNotification;
-        } elseif ($emailNotification) {
+        if ($emailNotification === '0') {
+            return false;
+        }
+
+        if ($emailNotification === '1') {
             $emailAddress = $this->config->get('sMAIL');
         } else {
-            return false;
+            $emailAddress = $emailNotification;
         }
 
         return \filter_var($emailAddress, \FILTER_VALIDATE_EMAIL);
