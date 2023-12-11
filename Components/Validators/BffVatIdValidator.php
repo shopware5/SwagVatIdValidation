@@ -72,7 +72,7 @@ abstract class BffVatIdValidator implements VatIdValidatorInterface
             'http' => [
                 'method' => 'GET',
                 'header' => 'Content-Type: text/html; charset=utf-8',
-                'timeout' => 5,
+                'timeout' => 15,
                 'user_agent' => 'Shopware',
             ],
         ]);
